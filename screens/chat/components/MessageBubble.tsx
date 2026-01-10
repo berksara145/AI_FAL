@@ -11,9 +11,10 @@ type Message = {
 
 type MessageBubbleProps = {
   message: Message;
+  onStreamingComplete?: (messageId: string) => void;
 };
 
-export default function MessageBubble({ message }: MessageBubbleProps) {
+export default function MessageBubble({ message, onStreamingComplete }: MessageBubbleProps) {
   const isUser = message.role === "user";
   const senderName = isUser ? "You" : "LUNARA";
   const [displayedText, setDisplayedText] = useState("");
@@ -74,8 +75,10 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
             clearInterval(streamIntervalRef.current);
             streamIntervalRef.current = null;
           }
+          // Notify parent that streaming is complete
+          onStreamingComplete?.(messageIdRef.current);
         }
-      }, 50); // Slower speed: higher = slower (was 30, now 50)
+      }, 25); // Streaming speed: 25ms per character (2x faster)
     } else if (!message.isStreaming && message.content && !hasStartedStreamingRef.current && streamIntervalRef.current === null) {
       // Message was added without streaming, show full content immediately
       setDisplayedText(message.content);

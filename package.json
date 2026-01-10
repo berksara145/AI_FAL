@@ -2,8 +2,8 @@
   "name": "my-expo-app",
   "version": "1.0.0",
   "scripts": {
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "start": "expo start",
     "prebuild": "expo prebuild",
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\" && prettier -c \"**/*.{js,jsx,ts,tsx,json}\"",
@@ -19,6 +19,7 @@
     "axios": "^1.13.2",
     "dayjs": "^1.11.19",
     "expo": "^54.0.0",
+    "expo-navigation-bar": "^5.0.10",
     "expo-sqlite": "~16.0.10",
     "expo-status-bar": "~3.0.8",
     "formik": "^2.4.9",

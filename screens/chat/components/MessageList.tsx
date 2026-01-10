@@ -13,9 +13,10 @@ type Message = {
 type MessageListProps = {
   messages: Message[];
   scrollViewRef?: React.RefObject<ScrollView | null>;
+  onStreamingComplete?: (messageId: string) => void;
 };
 
-export default function MessageList({ messages, scrollViewRef }: MessageListProps) {
+export default function MessageList({ messages, scrollViewRef, onStreamingComplete }: MessageListProps) {
   useEffect(() => {
     // Auto-scroll to bottom when new messages arrive
     if (scrollViewRef?.current && messages.length > 0) {
@@ -48,7 +49,11 @@ export default function MessageList({ messages, scrollViewRef }: MessageListProp
         </View>
       ) : (
         messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
+          <MessageBubble 
+            key={message.id} 
+            message={message} 
+            onStreamingComplete={onStreamingComplete}
+          />
         ))
       )}
     </ScrollView>

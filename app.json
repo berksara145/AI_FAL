@@ -10,7 +10,14 @@
       "tsconfigPaths": true
     },
     "plugins": [
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-navigation-bar",
+        {
+          "backgroundColor": "#1a0d2e",
+          "barStyle": "light-content"
+        }
+      ]
     ],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,7 +25,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1a0d2e"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -34,7 +41,12 @@
       "statusBar": {
         "barStyle": "light-content",
         "backgroundColor": "#1a0d2e"
-      }
+      },
+      "navigationBar": {
+        "barStyle": "light-content",
+        "backgroundColor": "#1a0d2e"
+      },
+      "package": "com.berk8174985.myexpoapp"
     }
   }
 }

@@ -18,6 +18,7 @@ type BasicChatUIProps = {
   onSendMessage: (text: string) => void | Promise<void>;
   messages?: ChatMessage[];
   disabled?: boolean;
+  onStreamingComplete?: (messageId: string) => void;
 };
 
 export default function BasicChatUI({
@@ -26,6 +27,7 @@ export default function BasicChatUI({
   onSendMessage,
   messages: externalMessages,
   disabled = false,
+  onStreamingComplete,
 }: BasicChatUIProps) {
   const insets = useSafeAreaInsets();
   const [internalMessages, setInternalMessages] = useState<ChatMessage[]>(() => {
@@ -98,7 +100,11 @@ export default function BasicChatUI({
 
         {/* Chat Messages - Script Style */}
         <View className="flex-1" style={{ backgroundColor: "#1a0d2e" }}>
-          <MessageList messages={messages} scrollViewRef={scrollViewRef} />
+          <MessageList 
+            messages={messages} 
+            scrollViewRef={scrollViewRef} 
+            onStreamingComplete={onStreamingComplete}
+          />
         </View>
 
         {/* Text Input - Minimal Theatre Style */}

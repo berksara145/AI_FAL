@@ -60,7 +60,7 @@ export default function IOSDatePicker({
 
       <View style={styles.pickerWrapper}>
         {/* Selection indicator */}
-        <View style={styles.selectionIndicator} />
+        <View style={styles.selectionIndicator} pointerEvents="none" />
 
         <ScrollView
           ref={scrollRef}
