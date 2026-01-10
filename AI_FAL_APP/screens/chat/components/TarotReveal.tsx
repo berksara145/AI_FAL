@@ -1,1 +1,0 @@
-// Tarot reveal component
