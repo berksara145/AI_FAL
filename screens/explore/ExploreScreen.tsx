@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/RootStack";
@@ -58,11 +58,11 @@ export default function ExploreScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>
-            ────────────────────────{"\n"}
-            {"        "}Astra ✨{"\n"}
-            ────────────────────────
-          </Text>
+          <Image 
+            source={require("../../assets/lunara.png")} 
+            style={styles.headerImage}
+            resizeMode="cover"
+          />
         </View>
 
         {/* Main Feature Card */}
@@ -73,13 +73,16 @@ export default function ExploreScreen() {
             style={styles.mainCard}
           >
             <View style={styles.mainCardArt}>
-              <Text style={styles.mainCardEmoji}>✨</Text>
+              <Image 
+                source={require("../../assets/feature1.png")} 
+                style={styles.mainCardImage}
+                resizeMode="contain"
+              />
             </View>
             <Text style={styles.mainCardTitle}>
               ✨ What's weighing{"\n"}
               {"    "}on you?
             </Text>
-            <Text style={styles.mainCardSubtitle}>Speak freely.</Text>
           </TouchableOpacity>
         </View>
 
@@ -88,7 +91,7 @@ export default function ExploreScreen() {
           <View style={styles.gridRow}>
             <View style={styles.gridItem}>
               <FeatureCard
-                emoji="🌙"
+                image={require("../../assets/feature2.png")}
                 title="Today's energy"
                 onPress={() => handleFeaturePress("todays-energy")}
                 variant="small"
@@ -96,7 +99,7 @@ export default function ExploreScreen() {
             </View>
             <View style={styles.gridItem}>
               <FeatureCard
-                emoji="❤️"
+                image={require("../../assets/feature3.png")}
                 title="Someone on your mind?"
                 onPress={() => handleFeaturePress("someone-on-mind")}
                 variant="small"
@@ -135,23 +138,20 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: 16,
     paddingTop: 8,
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "400",
-    color: "#d4af37",
-    letterSpacing: 2,
-    textAlign: "center",
-    lineHeight: 28,
+  headerImage: {
+    width: "100%",
+    height: 300,
+    maxWidth: 600,
   },
   mainCardContainer: {
     marginBottom: 32,
     alignItems: "center",
   },
   mainCard: {
-    backgroundColor: "#2d1b3d",
+    backgroundColor: "#1a0d2e",
     borderWidth: 2,
     borderColor: "rgba(212, 175, 55, 0.4)",
     borderRadius: 20,
@@ -164,16 +164,14 @@ const styles = StyleSheet.create({
   mainCardArt: {
     width: 100,
     height: 100,
-    borderWidth: 2,
-    borderColor: "rgba(212, 175, 55, 0.4)",
-    borderStyle: "dashed",
-    borderRadius: 16,
     marginBottom: 16,
     justifyContent: "center",
     alignItems: "center",
+    overflow: "hidden",
   },
-  mainCardEmoji: {
-    fontSize: 40,
+  mainCardImage: {
+    width: "100%",
+    height: "100%",
   },
   mainCardTitle: {
     fontSize: 20,

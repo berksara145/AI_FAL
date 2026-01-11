@@ -51,7 +51,7 @@ function HeaderRight() {
       <TouchableOpacity
         onPress={() => navigation.navigate("History")}
       >
-        <Text style={{ fontSize: 24 }}>📜</Text>
+        <MaterialCommunityIcons name="history" size={24} color="#d4af37" />
       </TouchableOpacity>
     </View>
   );

@@ -1,10 +1,11 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Image, ImageSourcePropType } from "react-native";
 
 type FeatureCardProps = {
   title: string;
   subtitle?: string;
-  emoji: string;
+  emoji?: string;
+  image?: ImageSourcePropType;
   onPress?: () => void;
   variant?: "large" | "small";
 };
@@ -13,6 +14,7 @@ export default function FeatureCard({
   title,
   subtitle,
   emoji,
+  image,
   onPress,
   variant = "small",
 }: FeatureCardProps) {
@@ -23,12 +25,12 @@ export default function FeatureCard({
       onPress={onPress}
       activeOpacity={0.8}
       style={{
-        backgroundColor: "#2d1b3d",
-        borderWidth: 1,
+        backgroundColor: "#1a0d2e",
+        borderWidth: 2,
         borderColor: "rgba(212, 175, 55, 0.3)",
         borderRadius: 16,
         padding: isLarge ? 24 : 20,
-        minHeight: isLarge ? 140 : 120,
+        height: isLarge ? 140 : 160,
         justifyContent: "center",
         alignItems: "center",
       }}
@@ -38,16 +40,21 @@ export default function FeatureCard({
         style={{
           width: isLarge ? 80 : 60,
           height: isLarge ? 80 : 60,
-          borderWidth: 2,
-          borderColor: "rgba(212, 175, 55, 0.4)",
-          borderStyle: "dashed",
-          borderRadius: 12,
           marginBottom: 12,
           justifyContent: "center",
           alignItems: "center",
+          overflow: "hidden",
         }}
       >
-        <Text style={{ fontSize: isLarge ? 32 : 24 }}>{emoji}</Text>
+        {image ? (
+          <Image 
+            source={image} 
+            style={{ width: "100%", height: "100%" }}
+            resizeMode="contain"
+          />
+        ) : (
+          <Text style={{ fontSize: isLarge ? 32 : 24 }}>{emoji}</Text>
+        )}
       </View>
 
       {/* Title */}
