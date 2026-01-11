@@ -18,9 +18,9 @@ export type RootStackParamList = {
   // Chat Session (full-screen, reusable)
   ChatSession: {
     sessionId?: string;
-    personId?: string;
     mode?: "interactive" | "readonly";
     feature?: string; // e.g., "dailyHoroscope", "compatibility", "big3", etc.
+    initialMessage?: string; // Predetermined initial message from AI
   };
 };
 
@@ -35,7 +35,7 @@ export default function RootStack() {
       {/* Onboarding Flow */}
       <Stack.Screen name="UserInfoChat" component={UserInfoChatScreen} />
 
-      {/* Main App (Bottom Tabs: Explore / Persons) */}
+      {/* Main App (Bottom Tabs: Insights / Persons) */}
       <Stack.Screen name="MainApp" component={MainTabs} />
 
       {/* Chat Session - full-screen modal */}

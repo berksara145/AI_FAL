@@ -10,22 +10,48 @@ type ChatHeaderProps = {
 
 export default function ChatHeader({ title, onClose, mode = "interactive" }: ChatHeaderProps) {
   return (
-    <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-      <View className="flex-1">
-        <Text className="text-lg font-semibold text-gray-900" numberOfLines={1}>
-          {title}
-        </Text>
-        {mode === "readonly" && (
-          <Text className="text-xs text-gray-500 mt-1">Read Only</Text>
-        )}
-      </View>
+    <View 
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: "#1a0d2e",
+        borderBottomWidth: 1,
+        borderBottomColor: "rgba(212, 175, 55, 0.2)",
+      }}
+    >
       <TouchableOpacity
         onPress={onClose}
-        className="p-2 ml-4"
-        activeOpacity={0.7}
+        style={{ 
+          padding: 8,
+          marginRight: 12,
+          opacity: 0.8,
+        }}
+        activeOpacity={0.5}
       >
-        <MaterialCommunityIcons name="close" size={24} color="#374151" />
+        <MaterialCommunityIcons name="arrow-left" size={24} color="#d4af37" />
       </TouchableOpacity>
+      <View style={{ flex: 1 }}>
+        {title ? (
+          <Text 
+            style={{
+              fontSize: 18,
+              fontWeight: "400",
+              color: "#d4af37",
+              letterSpacing: 1,
+            }}
+            numberOfLines={1}
+          >
+            {title}
+          </Text>
+        ) : null}
+        {mode === "readonly" && (
+          <Text style={{ fontSize: 12, color: "rgba(212, 175, 55, 0.6)", marginTop: 4 }}>
+            Read Only
+          </Text>
+        )}
+      </View>
     </View>
   );
 }

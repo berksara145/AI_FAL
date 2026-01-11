@@ -48,8 +48,65 @@ export const initDatabase = (): Promise<void> => {
         // Column already exists, ignore
       }
 
-      // You can add more tables here as needed
-      // For example: persons, chats, messages, etc.
+      // Chat sessions table
+      db.execSync(`
+        CREATE TABLE IF NOT EXISTS chat_sessions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT,
+          person_id INTEGER,
+          mode TEXT DEFAULT 'interactive',
+          feature TEXT,
+          initial_message TEXT,
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+      `);
+
+      // Messages table
+      db.execSync(`
+        CREATE TABLE IF NOT EXISTS messages (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          session_id INTEGER NOT NULL,
+          role TEXT NOT NULL,
+          content TEXT NOT NULL,
+          timestamp TEXT NOT NULL DEFAULT (datetime('now')),
+          FOREIGN KEY (session_id) REFERENCES chat_sessions(id) ON DELETE CASCADE
+        );
+      `);
+
+      // Create index for faster message queries
+      try {
+        db.execSync(`CREATE INDEX IF NOT EXISTS idx_messages_session_id ON messages(session_id);`);
+      } catch (e) {
+        // Index might already exist, ignore
+      }
+
+      // Add columns if they don't exist (for existing databases)
+      try {
+        db.execSync(`ALTER TABLE chat_sessions ADD COLUMN title TEXT;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
+      try {
+        db.execSync(`ALTER TABLE chat_sessions ADD COLUMN person_id INTEGER;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
+      try {
+        db.execSync(`ALTER TABLE chat_sessions ADD COLUMN mode TEXT DEFAULT 'interactive';`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
+      try {
+        db.execSync(`ALTER TABLE chat_sessions ADD COLUMN feature TEXT;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
+      try {
+        db.execSync(`ALTER TABLE chat_sessions ADD COLUMN initial_message TEXT;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
 
       console.log("Database initialized successfully");
       resolve();
@@ -63,7 +120,7 @@ export const initDatabase = (): Promise<void> => {
 // Helper function to execute SQL queries
 export const executeSql = (
   sql: string,
-  params: (string | number)[] = []
+  params: (string | number | null)[] = []
 ): Promise<SQLite.SQLiteRunResult> => {
   return new Promise((resolve, reject) => {
     try {
@@ -78,7 +135,7 @@ export const executeSql = (
 // Helper function to execute SQL queries and get results
 export const querySql = <T = any>(
   sql: string,
-  params: (string | number)[] = []
+  params: (string | number | null)[] = []
 ): Promise<T[]> => {
   return new Promise((resolve, reject) => {
     try {

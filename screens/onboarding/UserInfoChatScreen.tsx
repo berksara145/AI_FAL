@@ -7,7 +7,7 @@ import BasicChatUI, { type ChatMessage } from "../../components/BasicChatUI";
 import { INITIAL_MESSAGE } from "./constants";
 import { useOnboardingState } from "./hooks/useOnboardingState";
 import { useStreamingAction } from "./hooks/useStreamingAction";
-import { useInitialMessageStreaming } from "./hooks/useMessageStreaming";
+import { useInitialMessageStreaming, markMessageDone as markMessageDoneStreaming } from "./hooks/useMessageStreaming";
 import { handleNameCollection } from "./handlers/nameHandler";
 import { handleDateConfirmation } from "./handlers/dateHandler";
 import BirthDatePicker from "./components/BirthDatePicker";
@@ -66,10 +66,14 @@ export default function UserInfoChatScreen() {
         setMessages,
         setNameCollected,
         setCurrentStep,
-        setPendingAction: (messageId: string) => {
+        setPendingAction: (messageId: string, action: () => void) => {
           setPendingAction(messageId, () => {
             setShowDatePicker(true);
+            action();
           });
+        },
+        markMessageDone: (messageId: string, content: string) => {
+          markMessageDoneStreaming(setMessages, messageId, content);
         },
       });
     }

@@ -1,7 +1,7 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View, Text } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 // @expo/vector-icons is included with Expo, but if not available, use react-native-vector-icons
@@ -14,7 +14,7 @@ import SettingsScreen from "../screens/explore/SettingsScreen";
 import HistoryScreen from "../screens/explore/HistoryScreen";
 
 export type MainTabsParamList = {
-  Explore: undefined;
+  Insights: undefined;
   Persons: undefined;
 };
 
@@ -27,25 +27,49 @@ export type MainStackParamList = {
 const Tab = createBottomTabNavigator<MainTabsParamList>();
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
-// Header buttons component that uses parent navigation
-function HeaderButtons() {
+// Header left button (Settings)
+function HeaderLeft() {
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   
   return (
-    <View style={{ flexDirection: "row", marginRight: 8 }}>
-      <TouchableOpacity
-        onPress={() => navigation.navigate("History")}
-        style={{ marginRight: 16 }}
-      >
-        <MaterialCommunityIcons name="history" size={24} color="#6200ee" />
-      </TouchableOpacity>
+    <View style={{ minWidth: 56, alignItems: "flex-start", paddingLeft: 16 }}>
       <TouchableOpacity
         onPress={() => navigation.navigate("Settings")}
-        style={{ marginRight: 16 }}
       >
-        <MaterialCommunityIcons name="cog-outline" size={24} color="#6200ee" />
+        <MaterialCommunityIcons name="cog-outline" size={24} color="#d4af37" />
       </TouchableOpacity>
     </View>
+  );
+}
+
+// Header right button (History)
+function HeaderRight() {
+  const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
+  
+  return (
+    <View style={{ minWidth: 56, alignItems: "flex-end", paddingRight: 16 }}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("History")}
+      >
+        <Text style={{ fontSize: 24 }}>📜</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+// Custom header title for Insights
+function InsightsHeaderTitle() {
+  return (
+    <Text
+      style={{
+        fontSize: 20,
+        fontWeight: "400",
+        color: "#d4af37",
+        letterSpacing: 2,
+      }}
+    >
+      Insights
+    </Text>
   );
 }
 
@@ -55,19 +79,37 @@ function BottomTabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: true,
-        tabBarActiveTintColor: "#6200ee",
-        tabBarInactiveTintColor: "#757575",
-        headerRight: () => <HeaderButtons />,
+        headerStyle: {
+          backgroundColor: "#1a0d2e",
+        },
+        headerTintColor: "#d4af37",
+        headerTitleStyle: {
+          color: "#d4af37",
+          fontWeight: "400",
+          letterSpacing: 1,
+        },
+        tabBarStyle: {
+          backgroundColor: "#1a0d2e",
+          borderTopWidth: 1,
+          borderTopColor: "rgba(212, 175, 55, 0.2)",
+        },
+        tabBarActiveTintColor: "#d4af37",
+        tabBarInactiveTintColor: "rgba(212, 175, 55, 0.5)",
+        headerTitleAlign: "center",
       }}
     >
       <Tab.Screen
-        name="Explore"
+        name="Insights"
         component={ExploreScreen}
         options={{
-          tabBarLabel: "Explore",
+          tabBarLabel: "Insights",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="compass-outline" size={size} color={color} />
           ),
+          headerTitle: () => <InsightsHeaderTitle />,
+          headerTitleAlign: "center",
+          headerLeft: () => <HeaderLeft />,
+          headerRight: () => <HeaderRight />,
         }}
       />
       <Tab.Screen
@@ -87,7 +129,18 @@ function BottomTabs() {
 // Main stack that wraps bottom tabs and includes Settings/History
 export default function MainTabs() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: "#1a0d2e",
+        },
+        headerTintColor: "#d4af37",
+        headerTitleStyle: {
+          color: "#d4af37",
+          fontWeight: "400",
+        },
+      }}
+    >
       <Stack.Screen
         name="MainTabs"
         component={BottomTabs}

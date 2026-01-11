@@ -8,7 +8,8 @@ interface HandleNameCollectionParams {
   setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   setNameCollected: (value: boolean) => void;
   setCurrentStep: (step: "name" | "date" | "complete") => void;
-  setPendingAction: (messageId: string) => void;
+  setPendingAction: (messageId: string, action: () => void) => void;
+  markMessageDone: (messageId: string, content: string) => void;
 }
 
 export const handleNameCollection = async ({
@@ -36,6 +37,7 @@ export const handleNameCollection = async ({
       },
     ]);
 
+    markMessageDone(aiMessageId, fullResponse);
     return false;
   }
 
@@ -59,7 +61,12 @@ export const handleNameCollection = async ({
     ]);
 
     // Set up action to show date picker when streaming completes
-    setPendingAction(aiMessageId);
+    // Note: The actual action will be set by the parent component via the wrapper
+    setPendingAction(aiMessageId, () => {
+      // This will be set by the parent component
+    });
+
+    markMessageDone(aiMessageId, fullResponse);
     return true;
   } catch (error) {
     console.error("Error updating user name:", error);
