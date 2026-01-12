@@ -1,90 +1,87 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Image, ImageSourcePropType } from "react-native";
+import { View, Text, TouchableOpacity, Image, ImageSourcePropType, StyleSheet } from "react-native";
 
 type FeatureCardProps = {
   title: string;
-  subtitle?: string;
   emoji?: string;
   image?: ImageSourcePropType;
   onPress?: () => void;
-  variant?: "large" | "small";
+  noBackground?: boolean;
 };
 
 export default function FeatureCard({
   title,
-  subtitle,
   emoji,
   image,
   onPress,
-  variant = "small",
+  noBackground = false,
 }: FeatureCardProps) {
-  const isLarge = variant === "large";
-
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.8}
-      style={{
-        backgroundColor: "#1a0d2e",
-        borderWidth: 2,
-        borderColor: "rgba(212, 175, 55, 0.3)",
-        borderRadius: 16,
-        padding: isLarge ? 24 : 20,
-        height: isLarge ? 140 : 160,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      {/* Art placeholder - outline */}
-      <View
-        style={{
-          width: isLarge ? 80 : 60,
-          height: isLarge ? 80 : 60,
-          marginBottom: 12,
-          justifyContent: "center",
-          alignItems: "center",
-          overflow: "hidden",
-        }}
+    <View style={styles.container}>
+      <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={0.8}
+        style={[
+          styles.square,
+          noBackground && { backgroundColor: "transparent" },
+        ]}
       >
         {image ? (
           <Image 
             source={image} 
-            style={{ width: "100%", height: "100%" }}
+            style={styles.image}
             resizeMode="contain"
           />
-        ) : (
-          <Text style={{ fontSize: isLarge ? 32 : 24 }}>{emoji}</Text>
-        )}
-      </View>
-
-      {/* Title */}
-      <Text
-        style={{
-          fontSize: isLarge ? 18 : 16,
-          fontWeight: "500",
-          color: "#d4af37",
-          textAlign: "center",
-          letterSpacing: 0.5,
-          marginBottom: subtitle ? 4 : 0,
-        }}
-      >
-        {title}
-      </Text>
-
-      {/* Subtitle */}
-      {subtitle && (
-        <Text
-          style={{
-            fontSize: 13,
-            color: "rgba(212, 175, 55, 0.7)",
-            textAlign: "center",
-            fontStyle: "italic",
-            marginTop: 4,
-          }}
-        >
-          {subtitle}
+        ) : emoji ? (
+          <Text style={styles.emoji}>{emoji}</Text>
+        ) : null}
+      </TouchableOpacity>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title} numberOfLines={2}>
+          {title}
         </Text>
-      )}
-    </TouchableOpacity>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: "center",
+    width: "100%",
+  },
+  square: {
+    width: "100%",
+    aspectRatio: 0.667,
+    backgroundColor: "#2d1b3d",
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+    overflow: "visible",
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+  },
+  emoji: {
+    fontSize: 75,
+    textAlign: "center",
+    includeFontPadding: false,
+    textAlignVertical: "center",
+  },
+  titleContainer: {
+    width: "100%",
+    minHeight: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#d4af37",
+    textAlign: "center",
+    paddingHorizontal: 4,
+    lineHeight: 20,
+  },
+});

@@ -32,6 +32,11 @@ const FEATURES = {
     feature: "Tarot Reading",
     initialMessage: "🔮 The cards are ready to reveal their wisdom. What question or situation would you like guidance on today?",
   },
+  "dream-insights": {
+    title: "Dream insights",
+    feature: "Dream Insights",
+    initialMessage: "💭 Dreams carry messages from your subconscious. Share your dream with me, and let's explore what it might be revealing about your inner world.",
+  },
 };
 
 export default function ExploreScreen() {
@@ -58,72 +63,64 @@ export default function ExploreScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Image 
-            source={require("../../assets/lunara.png")} 
-            style={styles.headerImage}
-            resizeMode="cover"
-          />
-        </View>
-
-        {/* Main Feature Card */}
-        <View style={styles.mainCardContainer}>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => handleFeaturePress("general")}
-            style={styles.mainCard}
-          >
-            <View style={styles.mainCardArt}>
-              <Image 
-                source={require("../../assets/feature1.png")} 
-                style={styles.mainCardImage}
-                resizeMode="contain"
-              />
-            </View>
-            <Text style={styles.mainCardTitle}>
-              ✨ What's weighing{"\n"}
-              {"    "}on you?
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.headerImageContainer}>
+            <Image 
+              source={require("../../assets/lunara.png")} 
+              style={styles.headerImage}
+              resizeMode="contain"
+            />
+          </View>
         </View>
 
         {/* Feature Grid */}
         <View style={styles.gridContainer}>
-          <View style={styles.gridRow}>
-            <View style={styles.gridItem}>
-              <FeatureCard
-                image={require("../../assets/feature2.png")}
-                title="Today's energy"
-                onPress={() => handleFeaturePress("todays-energy")}
-                variant="small"
-              />
-            </View>
-            <View style={styles.gridItem}>
-              <FeatureCard
-                image={require("../../assets/feature3.png")}
-                title="Someone on your mind?"
-                onPress={() => handleFeaturePress("someone-on-mind")}
-                variant="small"
-              />
-            </View>
+          <View style={styles.gridItem}>
+            <FeatureCard
+              image={require("../../assets/feature4.png")}
+              noBackground={true}
+              title="What's weighing on you?"
+              onPress={() => handleFeaturePress("general")}
+            />
           </View>
-
-          <View style={styles.gridRow}>
-            <View style={styles.gridItem}>
-              <FeatureCard
-                emoji="🤝"
-                title="Friend dynamics"
-                onPress={() => handleFeaturePress("friend-dynamics")}
-                variant="small"
-              />
-            </View>
-            <View style={styles.gridItem}>
-              <FeatureCard
-                emoji="🔮"
-                title="Tarot reading"
-                onPress={() => handleFeaturePress("tarot-reading")}
-                variant="small"
-              />
-            </View>
+          <View style={styles.gridItem}>
+            <FeatureCard
+              image={require("../../assets/feature5.png")}
+              noBackground={true}
+              title="Today's energy"
+              onPress={() => handleFeaturePress("todays-energy")}
+            />
+          </View>
+          <View style={styles.gridItem}>
+            <FeatureCard
+              image={require("../../assets/feature4.png")}
+              title="Someone on your mind?"
+              noBackground={true}
+              onPress={() => handleFeaturePress("someone-on-mind")}
+            />
+          </View>
+          <View style={styles.gridItem}>
+            <FeatureCard
+              image={require("../../assets/feature4.png")}
+              title="Friend dynamics"
+              noBackground={true}
+              onPress={() => handleFeaturePress("friend-dynamics")}
+            />
+          </View>
+          <View style={styles.gridItem}>
+            <FeatureCard
+              image={require("../../assets/feature5.png")}
+              title="Tarot reading"
+              noBackground={true}
+              onPress={() => handleFeaturePress("tarot-reading")}
+            />
+          </View>
+          <View style={styles.gridItem}>
+            <FeatureCard
+              image={require("../../assets/feature4.png")}  
+              title="Dream insights"
+              noBackground={true}
+              onPress={() => handleFeaturePress("dream-insights")}
+            />
           </View>
         </View>
       </ScrollView>
@@ -141,61 +138,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingTop: 8,
   },
+  headerImageContainer: {
+    width: "100%",
+    height: 120,
+    maxWidth: 400,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   headerImage: {
-    width: "100%",
-    height: 300,
-    maxWidth: 600,
-  },
-  mainCardContainer: {
-    marginBottom: 32,
-    alignItems: "center",
-  },
-  mainCard: {
-    backgroundColor: "#1a0d2e",
-    borderWidth: 2,
-    borderColor: "rgba(212, 175, 55, 0.4)",
-    borderRadius: 20,
-    padding: 28,
-    width: "100%",
-    minHeight: 180,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  mainCardArt: {
-    width: 100,
-    height: 100,
-    marginBottom: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-  },
-  mainCardImage: {
-    width: "100%",
+    width: "80%",
     height: "100%",
   },
-  mainCardTitle: {
-    fontSize: 20,
-    fontWeight: "500",
-    color: "#d4af37",
-    textAlign: "center",
-    letterSpacing: 0.5,
-    marginBottom: 8,
-    lineHeight: 28,
-  },
-  mainCardSubtitle: {
-    fontSize: 15,
-    color: "rgba(212, 175, 55, 0.7)",
-    textAlign: "center",
-    fontStyle: "italic",
-  },
   gridContainer: {
-    gap: 16,
-  },
-  gridRow: {
     flexDirection: "row",
-    gap: 16,
+    flexWrap: "wrap",
+    gap: 12,
+    rowGap: 30,
+    justifyContent: "space-between",
   },
   gridItem: {
-    flex: 1,
+    width: "30%",
   },
 });
