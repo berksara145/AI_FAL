@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Image, ImageSourcePropType, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Image, ImageSourcePropType, StyleSheet, Platform } from "react-native";
 
 type FeatureCardProps = {
   title: string;
@@ -79,9 +79,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#d4af37",
+    color: "#F7C354",
     textAlign: "center",
     paddingHorizontal: 4,
     lineHeight: 20,
+    letterSpacing: 1.5,
+    fontFamily: Platform.select({
+      ios: "Georgia",
+      android: "serif",
+      default: "serif",
+    }),
   },
 });

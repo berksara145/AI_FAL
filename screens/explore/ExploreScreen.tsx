@@ -78,7 +78,7 @@ export default function ExploreScreen() {
             <FeatureCard
               image={require("../../assets/feature4.png")}
               noBackground={true}
-              title="What's weighing on you?"
+              title="Talk with me"
               onPress={() => handleFeaturePress("general")}
             />
           </View>
@@ -93,7 +93,7 @@ export default function ExploreScreen() {
           <View style={styles.gridItem}>
             <FeatureCard
               image={require("../../assets/feature4.png")}
-              title="Someone on your mind?"
+              title="Love Insights"
               noBackground={true}
               onPress={() => handleFeaturePress("someone-on-mind")}
             />
@@ -136,7 +136,8 @@ const styles = StyleSheet.create({
   header: {
     alignItems: "center",
     marginBottom: 16,
-    paddingTop: 8,
+    paddingTop: 10,
+    paddingBottom: 10,
   },
   headerImageContainer: {
     width: "100%",

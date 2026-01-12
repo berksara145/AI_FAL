@@ -1,7 +1,7 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { TouchableOpacity, View, Text } from "react-native";
+import { TouchableOpacity, View, Text, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 // @expo/vector-icons is included with Expo, but if not available, use react-native-vector-icons
@@ -65,7 +65,12 @@ function InsightsHeaderTitle() {
         fontSize: 20,
         fontWeight: "400",
         color: "#d4af37",
-        letterSpacing: 2,
+        letterSpacing: 3.5,
+        fontFamily: Platform.select({
+          ios: "Georgia",
+          android: "serif",
+          default: "serif",
+        }),
       }}
     >
       Insights
