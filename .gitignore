@@ -11,7 +11,9 @@ npm-debug.*
 web-build/
 
 
-
+.plan.txt
+.plans.txt
+.plans.txt
 
 ios
 android

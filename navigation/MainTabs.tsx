@@ -9,13 +9,13 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 // Screens
 import ExploreScreen from "../screens/explore/ExploreScreen";
-import PersonsScreen from "../screens/persons/PersonsScreen";
+import OrbitScreen from "../screens/orbit/OrbitScreen";
 import SettingsScreen from "../screens/explore/SettingsScreen";
 import HistoryScreen from "../screens/explore/HistoryScreen";
 
 export type MainTabsParamList = {
   Insights: undefined;
-  Persons: undefined;
+  Orbit: undefined;
 };
 
 export type MainStackParamList = {
@@ -118,12 +118,12 @@ function BottomTabs() {
         }}
       />
       <Tab.Screen
-        name="Persons"
-        component={PersonsScreen}
+        name="Orbit"
+        component={OrbitScreen}
         options={{
-          tabBarLabel: "Persons",
+          tabBarLabel: "Orbit",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account-multiple-outline" size={size} color={color} />
+            <MaterialCommunityIcons name="orbit-variant" size={size} color={color} />
           ),
         }}
       />

@@ -150,10 +150,10 @@ export default function ChatSessionScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: "#1a0d2e" }} edges={["top"]}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: "#1a0d2e" }} edges={["top", "bottom"]}>
       <StatusBar barStyle="light-content" backgroundColor="#1a0d2e" />
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === "ios" ? "padding" : "padding"}
         className="flex-1"
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : StatusBar.currentHeight || 0}
       >
