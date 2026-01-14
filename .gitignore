@@ -18,6 +18,8 @@ web-build/
 ios
 android
 
+.env.d.ts
+
 # macOS
 .DS_Store
 

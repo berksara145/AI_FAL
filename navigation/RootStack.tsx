@@ -19,8 +19,9 @@ export type RootStackParamList = {
   ChatSession: {
     sessionId?: string;
     mode?: "interactive" | "readonly";
-    feature?: string; // e.g., "dailyHoroscope", "compatibility", "big3", etc.
+    feature?: string; // e.g., "dailyHoroscope", "compatibility", "big3", "birthMap", etc.
     initialMessage?: string; // Predetermined initial message from AI
+    birthDate?: string; // For birth map feature
   };
 };
 

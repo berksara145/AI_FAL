@@ -1,10 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
-import { View, KeyboardAvoidingView, Platform, ScrollView, StatusBar, Text } from "react-native";
+import React, { useState, useEffect } from "react";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/RootStack";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 // Database
 import {
@@ -12,23 +10,20 @@ import {
   getChatSession,
   getMessagesBySession,
   addMessage,
-  updateChatSessionTimestamp,
 } from "../../db/chat.repo";
 import type { Message } from "../../types/message";
 import type { ChatSession } from "../../types/chatSession";
 
 // Components
-import ChatHeader from "./components/ChatHeader";
-import MessageList from "./components/MessageList";
-import MessageInput from "./components/MessageInput";
-import TypingIndicator from "./components/TypingIndicator";
+import ChatSessionCore, { type ChatMessage } from "./components/ChatSessionCore";
+import BirthMapChatWrapper from "../../screens/orbit/BirthMapChatWrapper";
 
 type ChatSessionRouteProp = RouteProp<RootStackParamList, "ChatSession">;
 
 // Convert database Message to UI message format
-const messageToUI = (msg: Message) => ({
+const messageToUI = (msg: Message): ChatMessage => ({
   id: msg.id.toString(),
-  role: msg.role,
+  role: msg.role === "system" ? "assistant" : msg.role, // Convert system to assistant for UI
   content: msg.content,
   timestamp: new Date(msg.timestamp),
 });
@@ -36,13 +31,17 @@ const messageToUI = (msg: Message) => ({
 export default function ChatSessionScreen() {
   const route = useRoute<ChatSessionRouteProp>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const scrollViewRef = useRef<ScrollView>(null);
-  const insets = useSafeAreaInsets();
 
   const { sessionId, mode = "interactive", feature, initialMessage } = route.params || {};
+  
+  // If feature is birthMap, use the specialized wrapper
+  if (feature === "birthMap") {
+    return <BirthMapChatWrapper />;
+  }
+  
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(sessionId ? Number(sessionId) : null);
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -81,6 +80,7 @@ export default function ChatSessionScreen() {
         // Add initial message if provided
         if (initialMessage || feature) {
           const firstMessage = initialMessage || (feature ? `Welcome! Let's explore ${feature} together.` : "Hello! How can I help you today?");
+          
           const dbMessage = await addMessage({
             sessionId: session.id,
             role: "assistant",
@@ -150,44 +150,14 @@ export default function ChatSessionScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: "#1a0d2e" }} edges={["top", "bottom"]}>
-      <StatusBar barStyle="light-content" backgroundColor="#1a0d2e" />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "padding"}
-        className="flex-1"
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : StatusBar.currentHeight || 0}
-      >
-        <ChatHeader
-          title={currentSession?.title || feature || currentSession?.feature || "Chat"}
-          onClose={() => navigation.goBack()}
-          mode={mode}
-        />
-
-        <View className="flex-1" style={{ backgroundColor: "#1a0d2e" }}>
-          {isLoading ? (
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-              <Text style={{ color: "rgba(212, 175, 55, 0.6)", fontSize: 14 }}>
-                Loading...
-              </Text>
-            </View>
-          ) : (
-            <>
-              <MessageList
-                messages={messages}
-                scrollViewRef={scrollViewRef}
-              />
-              {isTyping && <TypingIndicator />}
-            </>
-          )}
-        </View>
-
-        {mode === "interactive" && (
-          <MessageInput
-            onSend={handleSendMessage}
-            disabled={isTyping}
-          />
-        )}
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    <ChatSessionCore
+      title={currentSession?.title || feature || currentSession?.feature || "Chat"}
+      messages={messages}
+      onSendMessage={handleSendMessage}
+      isLoading={isLoading}
+      isTyping={isTyping}
+      mode={mode}
+      onClose={() => navigation.goBack()}
+    />
   );
 }

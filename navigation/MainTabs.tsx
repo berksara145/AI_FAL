@@ -12,6 +12,7 @@ import ExploreScreen from "../screens/explore/ExploreScreen";
 import OrbitScreen from "../screens/orbit/OrbitScreen";
 import SettingsScreen from "../screens/explore/SettingsScreen";
 import HistoryScreen from "../screens/explore/HistoryScreen";
+import PersonDetailScreen from "../screens/orbit/PersonDetailScreen";
 
 export type MainTabsParamList = {
   Insights: undefined;
@@ -22,6 +23,12 @@ export type MainStackParamList = {
   MainTabs: undefined;
   Settings: undefined;
   History: undefined;
+  PersonDetail: {
+    name: string;
+    zodiac: string;
+    zodiacSymbol: string;
+    birthDate: string;
+  };
 };
 
 const Tab = createBottomTabNavigator<MainTabsParamList>();
@@ -165,6 +172,14 @@ export default function MainTabs() {
         options={{
           title: "History",
           headerShown: true,
+        }}
+      />
+      <Stack.Screen
+        name="PersonDetail"
+        component={PersonDetailScreen}
+        options={{
+          title: "",
+          headerShown: false,
         }}
       />
     </Stack.Navigator>

@@ -1,0 +1,104 @@
+import { StyleSheet, Platform } from "react-native";
+import { ORBIT_SIZE, CENTER_SIZE, OUTER_ORBIT_SIZE, SCREEN_HEIGHT } from "./constants";
+
+export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#050016",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    paddingTop: SCREEN_HEIGHT * 0.15, // Position closer to top but still centered-ish
+    overflow: "hidden",
+  },
+  backgroundImage: {
+    opacity: 0.9,
+  },
+  title: {
+    fontSize: 26,
+    letterSpacing: 4,
+    color: "#f7e3a5",
+    marginBottom: 24,
+    fontWeight: "400",
+    textTransform: "uppercase",
+  },
+  orbitWrapper: {
+    width: ORBIT_SIZE,
+    height: ORBIT_SIZE,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "visible",
+  },
+  outerOrbit: {
+    position: "absolute",
+    width: OUTER_ORBIT_SIZE,
+    height: OUTER_ORBIT_SIZE,
+    borderRadius: OUTER_ORBIT_SIZE / 2,
+    borderWidth: 1,
+    borderColor: "rgba(250, 218, 134, 0.6)",
+    left: (ORBIT_SIZE - OUTER_ORBIT_SIZE) / 2,
+    top: (ORBIT_SIZE - OUTER_ORBIT_SIZE) / 2,
+  },
+  innerOrbit: {
+    position: "absolute",
+    width: ORBIT_SIZE * 0.60,
+    height: ORBIT_SIZE * 0.60,
+    borderRadius: (ORBIT_SIZE * 0.60) / 2,
+    borderWidth: 1,
+    borderColor: "#FADA86",
+  },
+  /* ✨ CENTER GLOW SYSTEM */
+  centerWrapper: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  centerGlow: {
+    position: "absolute",
+    width: CENTER_SIZE * 1.15,
+    height: CENTER_SIZE * 1.15,
+    borderRadius: (CENTER_SIZE * 1.15) / 2,
+    borderWidth: 0,
+    borderColor: "rgba(250, 218, 134, 0.25)",
+    shadowColor: "#FADA86",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 25,
+    elevation: 25,
+    top: -20,
+  },
+  centerCircle: {
+    width: CENTER_SIZE,
+    height: CENTER_SIZE,
+    borderRadius: CENTER_SIZE / 2,
+    borderWidth: 8,
+    borderColor: "#FADA86",
+    backgroundColor: "transparent",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  centerLabel: {
+    color: "#E6CB8B",
+    fontSize: 22,
+    letterSpacing: 4,
+    fontFamily: Platform.select({
+      ios: "Georgia",
+      android: "serif",
+      default: "serif",
+    }),
+  },
+  legend: {
+    marginTop: 32,
+    paddingHorizontal: 32,
+  },
+  legendTitle: {
+    fontSize: 16,
+    letterSpacing: 1.5,
+    color: "#f7e3a5",
+    marginBottom: 8,
+  },
+  legendText: {
+    fontSize: 13,
+    color: "rgba(245, 234, 200, 0.85)",
+    textAlign: "center",
+    lineHeight: 18,
+  },
+});
