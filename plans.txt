@@ -99,3 +99,34 @@ It answers:
 What keeps coming up?
 
 What mattered enough to be remembered?
+
+
+
+
+
+
+
+
+the orbit must be added and added not 6 initial and the UI of that
+the birth map creation logic must be implemented both the data part and drawing part
+from chat user creation logic must be implemented 
+the minors bugs like caht place the color changing etc. 
+the AI minor integration to the gpt AI 
+chat memory logic that uses personal data
+google maps fix 
+
+
+
+// TODO (birth chart v2)
+// - remove filters for mobile performance
+// - cache png per user/style
+// - move generator into separate service
+// - add high-quality export mode later
+
+
+şimdi png yapıp file olarak kaydedip denice bide şu an yüklenmesi sürüyo :/ neyse hayat
+bir de kullanıcı olayını halletmek lazım yani orbit logic de hallolmalı file bittikten sonra
+
+file bitsin çalışsın sonra orbit direkt prod ready hale getiricem
+ilk başta olmicak eklendikçe gelcek fln
+sonra içine girerken kullanıcı dataıyla gircek adam akıllı olan

@@ -6,6 +6,12 @@ export interface User {
   birth_year: number | null;
   birth_month: number | null;
   birth_day: number | null;
+  birth_place_name: string | null;
+  birth_place_id: string | null;
+  birth_lat: number | null;
+  birth_lng: number | null;
+  birth_hour: number | null;
+  birth_minute: number | null;
   onboarding_completed: number; // 0 = false, 1 = true (SQLite doesn't have boolean)
   created_at: string;
   updated_at: string;
@@ -166,6 +172,57 @@ export const updateBirthDate = async (
     console.log("User birth date updated successfully");
   } catch (error) {
     console.error("Error updating birth date:", error);
+    throw error;
+  }
+};
+
+/**
+ * Update user's birth time (hour, minute)
+ * Automatically gets the user from database (there's only one user)
+ */
+export const updateBirthTime = async (hour: number, minute: number): Promise<void> => {
+  await ensureDatabaseInitialized();
+
+  try {
+    const user = await getOrCreateUser();
+    await executeSql(
+      "UPDATE users SET birth_hour = ?, birth_minute = ?, updated_at = datetime('now') WHERE id = ?",
+      [hour, minute, user.id]
+    );
+    const updated = await querySql<User>("SELECT * FROM users WHERE id = ?", [user.id]);
+    if (updated.length > 0) {
+      console.log("User birth time updated successfully. User:", updated[0]);
+    }
+  } catch (error) {
+    console.error("Error updating birth time:", error);
+    throw error;
+  }
+};
+
+/**
+ * Update user's birth location (place name, place id, lat, lng)
+ * Automatically gets the user from database (there's only one user)
+ */
+export const updateBirthLocation = async (location: {
+  placeName: string;
+  placeId: string;
+  lat: number;
+  lng: number;
+}): Promise<void> => {
+  await ensureDatabaseInitialized();
+
+  try {
+    const user = await getOrCreateUser();
+    await executeSql(
+      "UPDATE users SET birth_place_name = ?, birth_place_id = ?, birth_lat = ?, birth_lng = ?, updated_at = datetime('now') WHERE id = ?",
+      [location.placeName, location.placeId, location.lat, location.lng, user.id]
+    );
+    const updated = await querySql<User>("SELECT * FROM users WHERE id = ?", [user.id]);
+    if (updated.length > 0) {
+      console.log("User birth location updated successfully. User:", updated[0]);
+    }
+  } catch (error) {
+    console.error("Error updating birth location:", error);
     throw error;
   }
 };

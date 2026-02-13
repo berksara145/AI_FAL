@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Linking, Platform } from "react-native";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
-import { GOOGLE_PLACES_API_KEY } from "@env";
+const GOOGLE_PLACES_API_KEY = "AIzaSyAh7fHuXzW2sl7mItwWFFdIzzOZFOSCoSU";  
 
 type BirthLocation = {
   placeName: string;

@@ -47,6 +47,36 @@ export const initDatabase = (): Promise<void> => {
       } catch (e) {
         // Column already exists, ignore
       }
+      try {
+        db.execSync(`ALTER TABLE users ADD COLUMN birth_place_name TEXT;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
+      try {
+        db.execSync(`ALTER TABLE users ADD COLUMN birth_place_id TEXT;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
+      try {
+        db.execSync(`ALTER TABLE users ADD COLUMN birth_lat REAL;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
+      try {
+        db.execSync(`ALTER TABLE users ADD COLUMN birth_lng REAL;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
+      try {
+        db.execSync(`ALTER TABLE users ADD COLUMN birth_hour INTEGER;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
+      try {
+        db.execSync(`ALTER TABLE users ADD COLUMN birth_minute INTEGER;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
 
       // Chat sessions table
       db.execSync(`
@@ -107,6 +137,42 @@ export const initDatabase = (): Promise<void> => {
       } catch (e) {
         // Column already exists, ignore
       }
+
+      // Natal charts table - supports multiple charts per user (owner_user_id)
+      db.execSync(`
+        CREATE TABLE IF NOT EXISTS natal_charts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          owner_user_id INTEGER,
+          person_name TEXT,
+          birth_year INTEGER,
+          birth_month INTEGER,
+          birth_day INTEGER,
+          birth_hour INTEGER,
+          birth_minute INTEGER,
+          birth_place_name TEXT,
+          birth_place_id TEXT,
+          birth_lat REAL,
+          birth_lng REAL,
+          svg_content TEXT,
+          style TEXT,
+          generated_at TEXT,
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+          FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+      `);
+
+      // Index for faster queries by owner
+      try {
+        db.execSync(`CREATE INDEX IF NOT EXISTS idx_natal_charts_owner ON natal_charts(owner_user_id);`);
+      } catch (e) {
+        // ignore
+      }
+
+      // Backwards-compat: attempt to add columns if migrating existing DBs (safe no-op if exist)
+      try { db.execSync(`ALTER TABLE natal_charts ADD COLUMN svg_content TEXT;`); } catch (e) {}
+      try { db.execSync(`ALTER TABLE natal_charts ADD COLUMN style TEXT;`); } catch (e) {}
+      try { db.execSync(`ALTER TABLE natal_charts ADD COLUMN generated_at TEXT;`); } catch (e) {}
 
       console.log("Database initialized successfully");
       resolve();

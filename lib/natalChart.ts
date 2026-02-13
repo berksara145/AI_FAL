@@ -1,163 +1,482 @@
-// utils/natalChart.ts
-import * as Astronomy from "astronomy-engine";
-import { DateTime } from "luxon";
+import {
+  Body,
+  GeoVector,
+  Observer,
+  Ecliptic,
+  SiderealTime
+} from "astronomy-engine";
 
-const ZODIAC_SIGNS = [
-  "Aries",
-  "Taurus",
-  "Gemini",
-  "Cancer",
-  "Leo",
-  "Virgo",
-  "Libra",
-  "Scorpio",
-  "Sagittarius",
-  "Capricorn",
-  "Aquarius",
-  "Pisces",
-] as const;
+type BodyKey =
+  | "Sun" | "Moon" | "Mercury" | "Venus" | "Mars"
+  | "Jupiter" | "Saturn" | "Uranus" | "Neptune" | "Pluto";
 
-type ZodiacSign = (typeof ZODIAC_SIGNS)[number];
-
-export type Big3Data = {
-  ascendant: { absoluteDeg: number; sign: ZodiacSign; signDeg: number; label: "ASC" };
-  sun: { absoluteDeg: number; sign: ZodiacSign; signDeg: number; label: "Sun" };
-  moon: { absoluteDeg: number; sign: ZodiacSign; signDeg: number; label: "Moon" };
+const BODY_MAP: Record<BodyKey, Body> = {
+  Sun: Body.Sun,
+  Moon: Body.Moon,
+  Mercury: Body.Mercury,
+  Venus: Body.Venus,
+  Mars: Body.Mars,
+  Jupiter: Body.Jupiter,
+  Saturn: Body.Saturn,
+  Uranus: Body.Uranus,
+  Neptune: Body.Neptune,
+  Pluto: Body.Pluto,
 };
 
-export type NatalChartMeta = {
-  utcDatetime: string;
-  julianDayUT: number;
-  engine: "astronomy-engine";
-  version: 1;
-  timezone: string;
+function normalizeDeg(x: number) {
+  const r = x % 360;
+  return r < 0 ? r + 360 : r;
+}
+
+function smallestDeltaDeg(a: number, b: number): number {
+  const d = Math.abs(normalizeDeg(a) - normalizeDeg(b));
+  return d > 180 ? 360 - d : d; // 0..180
+}
+
+function houseOfLon(lon: number, cusps: number[]) {
+  for (let i = 0; i < 12; i++) {
+    const a = cusps[i];
+    const b = cusps[(i + 1) % 12];
+    if (a < b) {
+      if (lon >= a && lon < b) return i + 1;
+    } else {
+      if (lon >= a || lon < b) return i + 1;
+    }
+  }
+  return 12;
+}
+
+// -------- aspects (for inner lines) --------
+
+type AspectType = "Conjunction" | "Sextile" | "Square" | "Trine" | "Opposition";
+type AspectColor = "red" | "blue" | "gray";
+
+export type AspectLine = {
+  a: BodyKey;
+  b: BodyKey;
+  type: AspectType;
+  exact: number;     // 0/60/90/120/180
+  delta: number;     // 0..180 actual separation
+  orb: number;       // abs(delta - exact)
+  color: AspectColor;
 };
 
-export type NatalChartData = {
-  meta: NatalChartMeta;
-  big3: Big3Data;
-};
+const ASPECT_SPECS: Array<{
+  type: AspectType;
+  angle: number;
+  orb: number;       // max allowed orb
+  color: AspectColor;
+}> = [
+  { type: "Conjunction", angle: 0,   orb: 8, color: "gray" },
+  { type: "Sextile",     angle: 60,  orb: 4, color: "blue" },
+  { type: "Square",      angle: 90,  orb: 6, color: "red"  },
+  { type: "Trine",       angle: 120, orb: 6, color: "blue" },
+  { type: "Opposition",  angle: 180, orb: 8, color: "red"  },
+];
 
-function norm360(deg: number): number {
-  let x = deg % 360;
-  if (x < 0) x += 360;
-  return x;
-}
+function computeAspects(bodies: Array<{ key: BodyKey; lon: number }>): AspectLine[] {
+  const lines: AspectLine[] = [];
 
-function degreesToZodiac(absoluteDeg: number): { sign: ZodiacSign; signDeg: number } {
-  const normalized = norm360(absoluteDeg);
-  const signIndex = Math.floor(normalized / 30);
-  const signDeg = normalized % 30;
-  return { sign: ZODIAC_SIGNS[signIndex], signDeg };
-}
+  for (let i = 0; i < bodies.length; i++) {
+    for (let j = i + 1; j < bodies.length; j++) {
+      const A = bodies[i];
+      const B = bodies[j];
 
-function toRad(deg: number): number {
-  return (deg * Math.PI) / 180;
-}
+      const delta = smallestDeltaDeg(A.lon, B.lon);
 
-function toDeg(rad: number): number {
-  return (rad * 180) / Math.PI;
-}
+      let best: AspectLine | null = null;
 
-/**
- * Local Sidereal Time (degrees), longitude east-positive.
- *
- * astronomy-engine:
- *   AstroTime.SiderealTime() -> Greenwich apparent sidereal time in HOURS.
- */
-function localSiderealTimeDegrees(time: Astronomy.AstroTime, longitudeDeg: number): number {
-  const gastHours = time.SiderealTime(); // ✅ correct method
-  const lstHours = gastHours + longitudeDeg / 15.0;
+      for (const spec of ASPECT_SPECS) {
+        const orb = Math.abs(delta - spec.angle);
+        if (orb <= spec.orb) {
+          const candidate: AspectLine = {
+            a: A.key,
+            b: B.key,
+            type: spec.type,
+            exact: spec.angle,
+            delta,
+            orb,
+            color: spec.color,
+          };
+          if (!best || candidate.orb < best.orb) best = candidate;
+        }
+      }
 
-  // Convert hours -> degrees, normalize
-  return norm360((lstHours % 24) * 15.0);
-}
-
-/**
- * Ascendant (ecliptic longitude) in degrees [0..360).
- *
- * Uses:
- *  θ = local sidereal time
- *  φ = latitude
- *  ε = obliquity of the ecliptic
- */
-function calculateAscendant(
-  time: Astronomy.AstroTime,
-  latitudeDeg: number,
-  longitudeDeg: number
-): number {
-  const thetaDeg = localSiderealTimeDegrees(time, longitudeDeg);
-  const theta = toRad(thetaDeg);
-  const phi = toRad(latitudeDeg);
-
-  // ✅ Correct function name in astronomy-engine:
-  // Returns degrees.
-  const epsDeg = Astronomy.Obliquity(time);
-  const eps = toRad(epsDeg);
-
-  // λ = atan2( sinθ * cosε + tanφ * sinε, cosθ )
-  const y = Math.sin(theta) * Math.cos(eps) + Math.tan(phi) * Math.sin(eps);
-  const x = Math.cos(theta);
-
-  return norm360(toDeg(Math.atan2(y, x)));
-}
-
-function getEclipticLongitude(body: Astronomy.Body, time: Astronomy.AstroTime): number {
-  // ✅ Ecliptic() exists and returns {elon, elat}
-  const ecl = Astronomy.Ecliptic(body, time);
-  return norm360(ecl.elon);
-}
-
-export function calculateNatalChartBig3(params: {
-  birthDate: string; // "YYYY-MM-DD"
-  birthTime: { hour: number; minute: number };
-  timezone: string; // "Europe/Istanbul"
-  location: { lat: number; lng: number }; // lng east-positive
-}): NatalChartData {
-  const { birthDate, birthTime, timezone, location } = params;
-
-  // Build local time in the given IANA timezone
-  const local = DateTime.fromISO(birthDate, { zone: timezone }).set({
-    hour: birthTime.hour,
-    minute: birthTime.minute,
-    second: 0,
-    millisecond: 0,
-  });
-
-  if (!local.isValid) {
-    throw new Error(`Invalid datetime/timezone: ${local.invalidReason ?? "unknown"}`);
+      if (best) lines.push(best);
+    }
   }
 
-  // Convert to UTC for astronomy-engine
-  const utc = local.toUTC();
-  const utcDate = utc.toJSDate();
+  // nice for drawing: tight aspects first (or reverse if you want them on top)
+  return lines.sort((x, y) => x.orb - y.orb);
+}
 
-  const time = new Astronomy.AstroTime(utcDate);
+// -------- styling config --------
 
-  // JD(UT) = 2451545.0 + time.ut  (ut is days since J2000)
-  const julianDayUT = 2451545.0 + time.ut;
+export interface ChartStyle {
+  size?: number;
+  backgroundColor?: string;
+  starry?: boolean;
+  starCount?: number;
+  primaryRingColor?: string;
+  secondaryRingColor?: string;
+  accentColor?: string;
+  zodiacTextColor?: string;
+  bodyIconSize?: number;
+  useGradients?: boolean;
+  glowEffect?: boolean;
+}
 
-  const sunAbs = getEclipticLongitude(Astronomy.Body.Sun, time);
-  const moonAbs = getEclipticLongitude(Astronomy.Body.Moon, time);
-  const ascAbs = calculateAscendant(time, location.lat, location.lng);
+export const DEFAULT_STYLE: ChartStyle = {
+  size: 800,
+  backgroundColor: "#1a0033",
+  starry: true,
+  starCount: 300,
+  primaryRingColor: "#d4af37", // Golden
+  secondaryRingColor: "#8b6914", // Darker gold
+  accentColor: "#ff69b4", // Pink/magenta
+  zodiacTextColor: "#d4af37",
+  bodyIconSize: 18,
+  useGradients: true,
+  glowEffect: true,
+};
 
-  const sunZ = degreesToZodiac(sunAbs);
-  const moonZ = degreesToZodiac(moonAbs);
-  const ascZ = degreesToZodiac(ascAbs);
+// -------- main --------
+
+export function generateApproxChart({
+  datetime,
+  lat,
+  lng
+}: {
+  datetime: Date;
+  lat: number;
+  lng: number;
+}) {
+  const observer = new Observer(lat, lng, 0);
+  // observer is not used in this simplified ASC/MC logic (kept for later upgrades)
+
+  // --- MC (approx)
+  const sidereal = SiderealTime(datetime);
+  const mc = normalizeDeg(sidereal * 15); // hours -> degrees
+
+  // --- ASC (approx)
+  const asc = normalizeDeg(mc + 90);
+  const dsc = normalizeDeg(asc + 180);
+  const ic = normalizeDeg(mc + 180);
+
+  // --- equal houses (fast + stable for drawing)
+  const cusps = Array.from({ length: 12 }, (_, i) =>
+    normalizeDeg(asc + i * 30)
+  );
+
+  // --- planets
+  const bodies = Object.entries(BODY_MAP).map(([key, body]) => {
+    const vec = GeoVector(body, datetime, true);
+    const ecl = Ecliptic(vec);
+
+    const lon = normalizeDeg(ecl.elon);
+    const house = houseOfLon(lon, cusps);
+
+    return {
+      key: key as BodyKey,
+      lon,
+      house
+    };
+  });
+
+  // --- aspects (lines)
+  const aspects = computeAspects(bodies.map(b => ({ key: b.key, lon: b.lon })));
 
   return {
-    meta: {
-      utcDatetime:
-        utc.toISO({ suppressMilliseconds: true }) ?? utcDate.toISOString(),
-      julianDayUT,
-      engine: "astronomy-engine",
-      version: 1,
-      timezone,
-    },
-    big3: {
-      ascendant: { absoluteDeg: ascAbs, sign: ascZ.sign, signDeg: ascZ.signDeg, label: "ASC" },
-      sun: { absoluteDeg: sunAbs, sign: sunZ.sign, signDeg: sunZ.signDeg, label: "Sun" },
-      moon: { absoluteDeg: moonAbs, sign: moonZ.sign, signDeg: moonZ.signDeg, label: "Moon" },
-    },
+    angles: { asc, mc, dsc, ic },
+    houses: { cusps },
+    bodies,
+    aspects, // <-- draw lines using this
   };
+}
+
+// -------- Astrological Symbols --------
+
+const ZODIAC_SYMBOLS: Record<number, { name: string; symbol: string; emoji: string }> = {
+  0: { name: "Aries", symbol: "♈", emoji: "♈" },
+  1: { name: "Taurus", symbol: "♉", emoji: "♉" },
+  2: { name: "Gemini", symbol: "♊", emoji: "♊" },
+  3: { name: "Cancer", symbol: "♋", emoji: "♋" },
+  4: { name: "Leo", symbol: "♌", emoji: "♌" },
+  5: { name: "Virgo", symbol: "♍", emoji: "♍" },
+  6: { name: "Libra", symbol: "♎", emoji: "♎" },
+  7: { name: "Scorpio", symbol: "♏", emoji: "♏" },
+  8: { name: "Sagittarius", symbol: "♐", emoji: "♐" },
+  9: { name: "Capricorn", symbol: "♑", emoji: "♑" },
+  10: { name: "Aquarius", symbol: "♒", emoji: "♒" },
+  11: { name: "Pisces", symbol: "♓", emoji: "♓" },
+};
+
+const PLANET_SYMBOLS: Record<BodyKey, { symbol: string; shortName: string }> = {
+  Sun: { symbol: "☉", shortName: "Su" },
+  Moon: { symbol: "☽", shortName: "Mo" },
+  Mercury: { symbol: "☿", shortName: "Me" },
+  Venus: { symbol: "♀", shortName: "Ve" },
+  Mars: { symbol: "♂", shortName: "Ma" },
+  Jupiter: { symbol: "♃", shortName: "Ju" },
+  Saturn: { symbol: "♄", shortName: "Sa" },
+  Uranus: { symbol: "♅", shortName: "Ur" },
+  Neptune: { symbol: "♆", shortName: "Ne" },
+  Pluto: { symbol: "♇", shortName: "Pl" },
+};
+
+// -------- SVG Generation with Styling --------
+
+function polarToCartesian(cx: number, cy: number, r: number, deg: number) {
+  const rad = ((deg - 180) * Math.PI) / 180.0;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+function generateStarryBackground(size: number, starCount: number): string {
+  let stars = "";
+  for (let i = 0; i < starCount; i++) {
+    const x = Math.random() * size;
+    const y = Math.random() * size;
+    const radius = Math.random() * 1.5;
+    const opacity = Math.random() * 0.7 + 0.3;
+    stars += `<circle cx="${x}" cy="${y}" r="${radius}" fill="white" opacity="${opacity}" />`;
+  }
+  return stars;
+}
+
+function generateSVGDefs(style: ChartStyle): string {
+  return `
+    <defs>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+      <filter id="planetGlow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+        <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+      <linearGradient id="starGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#9932cc;stop-opacity:0.3" />
+        <stop offset="100%" style="stop-color:#ff1493;stop-opacity:0.3" />
+      </linearGradient>
+      <radialGradient id="centerGradient" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" style="stop-color:#8b008b;stop-opacity:0.2" />
+        <stop offset="100%" style="stop-color:${style.accentColor};stop-opacity:0.1" />
+      </radialGradient>
+    </defs>
+  `;
+}
+
+export function generateStyledChart(
+  chart: ReturnType<typeof generateApproxChart>,
+  style: ChartStyle = DEFAULT_STYLE
+): string {
+  const s = { ...DEFAULT_STYLE, ...style };
+
+  const size = s.size!;
+  const center = size / 2;
+
+  const zodiacOuter = size * 0.45;
+  const zodiacInner = size * 0.38;
+
+  const aspectInner = size * 0.28;
+  const aspectOuter = size * 0.32;
+
+  const offset = chart.angles.asc;
+
+  // Performance toggles (default to fast on mobile)
+  const perf = (s as any).performanceMode ?? true; // add to your ChartStyle if you want
+  const useFilters = !!s.glowEffect && !perf;
+  const useGradients = !!s.useGradients && !perf;
+  const useStarry = !!s.starry && !perf;
+
+  const planetGlowAttr = useFilters ? ` filter="url(#planetGlow)"` : "";
+  const glowAttr = useFilters ? ` filter="url(#glow)"` : "";
+
+  // Precompute constants
+  const tickMajorStart = zodiacInner - 15;
+  const tickMediumStart = zodiacOuter - 8;
+
+  // Build SVG
+  const svg: string[] = [];
+
+  svg.push(
+    `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="font-family: Arial, Helvetica, sans-serif;">`,
+    `<defs>`,
+    `<style>
+      .zodiac-label { font-size: 13px; font-weight: bold; fill: ${s.zodiacTextColor}; }
+      .house-num { font-size: 10px; fill: #999; }
+      .planet-text { font-size: 12px; font-weight: bold; fill: ${s.zodiacTextColor}; }
+      .planet-symbol { font-size: ${s.bodyIconSize}px; }
+    </style>`
+  );
+
+  // Only include heavy defs when needed
+  if (!perf) {
+    svg.push(generateSVGDefs(s).trim());
+  } else {
+    // Keep defs minimal (gradients/filters removed). You can add lightweight defs here if you want.
+  }
+
+  svg.push(`</defs>`);
+
+  // Background
+  svg.push(`<rect width="${size}" height="${size}" fill="${s.backgroundColor}"/>`);
+
+  if (useStarry) {
+    svg.push(generateStarryBackground(size, s.starCount!));
+  }
+
+  if (useGradients) {
+    svg.push(`<rect width="${size}" height="${size}" fill="url(#starGradient)"/>`);
+    svg.push(`<circle cx="${center}" cy="${center}" r="${aspectOuter * 1.5}" fill="url(#centerGradient)"/>`);
+  }
+
+  // --- ZODIAC RING ---
+  svg.push(`<!-- Zodiac Ring -->`);
+  svg.push(
+    `<circle cx="${center}" cy="${center}" r="${zodiacOuter}" fill="none" stroke="${s.primaryRingColor}" stroke-width="3" opacity="0.8"${glowAttr}/>`,
+    `<circle cx="${center}" cy="${center}" r="${zodiacOuter - 6}" fill="none" stroke="${s.secondaryRingColor}" stroke-width="1" opacity="0.5"/>`,
+    `<circle cx="${center}" cy="${center}" r="${zodiacInner}" fill="none" stroke="${s.primaryRingColor}" stroke-width="2" opacity="0.8"/>`
+  );
+
+  // --- TICKS ---
+  // Instead of looping 360 times, only draw medium+major ticks (every 5 degrees).
+  svg.push(`<!-- Ticks -->`);
+  for (let i = 0; i < 360; i += 5) {
+    const isMajor = i % 30 === 0;
+    const tickStart = isMajor ? tickMajorStart : tickMediumStart;
+    const p1 = polarToCartesian(center, center, tickStart, i - offset);
+    const p2 = polarToCartesian(center, center, zodiacOuter, i - offset);
+
+    svg.push(
+      `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="${s.primaryRingColor}" stroke-width="${
+        isMajor ? 2 : 0.8
+      }" opacity="${isMajor ? 1 : 0.6}"/>`
+    );
+  }
+
+  // --- ZODIAC LABELS (12) ---
+  svg.push(`<!-- Zodiac Labels -->`);
+  for (let i = 0; i < 12; i++) {
+    const symbolData = ZODIAC_SYMBOLS[i];
+    const midAngle = i * 30 + 15;
+
+    const labelPos = polarToCartesian(center, center, (zodiacOuter + zodiacInner) / 2, midAngle - offset);
+    svg.push(
+      `<text x="${labelPos.x}" y="${labelPos.y}" class="zodiac-label" text-anchor="middle" dominant-baseline="middle">${symbolData.symbol}</text>`
+    );
+
+    const namePos = polarToCartesian(center, center, zodiacOuter + 15, midAngle - offset);
+    svg.push(
+      `<text x="${namePos.x}" y="${namePos.y}" class="zodiac-label" text-anchor="middle" dominant-baseline="middle" font-size="10">${symbolData.name.substring(
+        0,
+        3
+      )}</text>`
+    );
+  }
+
+  // --- HOUSE CUSPS ---
+  svg.push(`<!-- House Cusps -->`);
+  // Only 12 cusps, fine as-is, but avoid filter unless enabled
+  for (let i = 0; i < chart.houses.cusps.length; i++) {
+    const cusp = chart.houses.cusps[i];
+    const isAngle = i === 0 || i === 3 || i === 6 || i === 9;
+
+    const p1 = polarToCartesian(center, center, aspectInner, cusp - offset);
+    const p2 = polarToCartesian(center, center, zodiacInner, cusp - offset);
+
+    svg.push(
+      `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="${
+        isAngle ? s.accentColor : s.secondaryRingColor
+      }" stroke-width="${isAngle ? 2 : 1}" opacity="${isAngle ? 0.9 : 0.5}"${
+        isAngle && useFilters ? ` filter="url(#glow)"` : ""
+      }/>`
+    );
+
+    const houseAngle = cusp + 15;
+    const numPos = polarToCartesian(center, center, aspectInner - 15, houseAngle - offset);
+    svg.push(
+      `<text x="${numPos.x}" y="${numPos.y}" class="house-num" text-anchor="middle" dominant-baseline="middle">${i + 1}</text>`
+    );
+  }
+
+  // --- ASPECT LINES ---
+  // Optimization: build a quick lookup for bodies by key (avoid find() inside loop)
+  const bodyByKey = new Map<string, { key: string; lon: number; house: number }>();
+  for (const b of chart.bodies) bodyByKey.set(b.key, b);
+
+  svg.push(`<!-- Aspect Lines -->`);
+  for (const aspect of chart.aspects) {
+    const b1 = bodyByKey.get(aspect.a);
+    const b2 = bodyByKey.get(aspect.b);
+    if (!b1 || !b2) continue;
+
+    const p1 = polarToCartesian(center, center, aspectInner - 15, b1.lon - offset);
+    const p2 = polarToCartesian(center, center, aspectInner - 15, b2.lon - offset);
+
+    const aspectColor =
+      aspect.color === "red" ? "#ff69b4" : aspect.color === "blue" ? "#87ceeb" : "#999";
+    const strokeWidth = aspect.orb < 1 ? 2.5 : aspect.orb < 3 ? 1.8 : 1;
+
+    svg.push(
+      `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="${aspectColor}" stroke-width="${strokeWidth}" opacity="0.7"${
+        useFilters ? ` filter="url(#glow)"` : ""
+      }/>`
+    );
+  }
+
+  // --- PLANETS/BODIES ---
+  svg.push(`<!-- Planets/Bodies -->`);
+  const bodyRadius = zodiacInner - 40;
+
+  for (const body of chart.bodies) {
+    const planetSym = PLANET_SYMBOLS[body.key];
+    const p = polarToCartesian(center, center, bodyRadius, body.lon - offset);
+
+    // Marker circle (no filter in perf mode)
+    svg.push(`<circle cx="${p.x}" cy="${p.y}" r="10" fill="${s.accentColor}" opacity="0.3"${planetGlowAttr}/>`);
+    // Symbol
+    svg.push(
+      `<text x="${p.x}" y="${p.y + 4}" class="planet-symbol" text-anchor="middle" dominant-baseline="middle" fill="${s.zodiacTextColor}"${planetGlowAttr}>${
+        planetSym.symbol
+      }</text>`
+    );
+
+    // Degree
+    const deg = Math.floor(body.lon % 30);
+    const degPos = polarToCartesian(center, center, bodyRadius + 20, body.lon - offset);
+    svg.push(
+      `<text x="${degPos.x}" y="${degPos.y}" class="planet-text" text-anchor="middle" font-size="8">${deg}°</text>`
+    );
+  }
+
+  // --- ANGLES LABELS ---
+  svg.push(`<!-- Angles -->`);
+  const angles = [
+    { name: "ASC", angle: 0 },
+    { name: "MC", angle: 90 },
+    { name: "DSC", angle: 180 },
+    { name: "IC", angle: 270 },
+  ];
+
+  for (const a of angles) {
+    const anglePos = polarToCartesian(center, center, zodiacOuter + 30, a.angle - offset);
+    svg.push(
+      `<text x="${anglePos.x}" y="${anglePos.y}" style="font-size: 14px; font-weight: bold; fill: ${s.accentColor};${
+        useFilters ? " filter: url(#glow);" : ""
+      }" text-anchor="middle" dominant-baseline="middle">${a.name}</text>`
+    );
+  }
+
+  // Center point
+  svg.push(`<circle cx="${center}" cy="${center}" r="3" fill="${s.primaryRingColor}"${planetGlowAttr}/>`);
+  svg.push(`</svg>`);
+
+  return svg.join("\n");
 }

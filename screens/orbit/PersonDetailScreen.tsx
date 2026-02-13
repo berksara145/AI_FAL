@@ -1,12 +1,16 @@
-import React from "react";
-import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Image } from "react-native";
+import React, { useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Image, InteractionManager } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
+import { SvgXml } from "react-native-svg";
 import type { MainStackParamList } from "../../navigation/MainTabs";
 import type { RootStackParamList } from "../../navigation/RootStack";
 import { getZodiacInfoFromBirthDate } from "./utils";
+import { getOrCreateUser } from "../../db/user.repo";
+import { querySql } from "../../db/database";
 
 type Props = NativeStackScreenProps<MainStackParamList, "PersonDetail">;
 
@@ -17,6 +21,70 @@ export default function PersonDetailScreen({ route }: Props) {
   console.log("birthDate", birthDate);  
   const zodiacInfo = getZodiacInfoFromBirthDate(birthDate) ?? null;
   const zodiacImageSource = zodiacInfo?.image ?? null;
+  const [loadingChart, setLoadingChart] = useState(true);
+  const [svgContent, setSvgContent] = useState<string | null>(null);
+  const [svgImageError, setSvgImageError] = useState(false);
+
+  // Reload chart whenever this screen gains focus (so going back will refresh)
+  useFocusEffect(
+    React.useCallback(() => {
+      let mounted = true;
+      setLoadingChart(true);
+
+      InteractionManager.runAfterInteractions(() => {
+        (async () => {
+          try {
+            const user = await getOrCreateUser();
+            const personName = user.name;
+
+            if (!personName) {
+              if (mounted) {
+                setSvgContent(null);
+                setLoadingChart(false);
+              }
+              return;
+            }
+
+            const rows = await querySql<any>(
+              "SELECT * FROM natal_charts WHERE person_name = ? ORDER BY created_at DESC LIMIT 1",
+              [personName]
+            );
+
+            if (!mounted) return;
+
+            if (rows && rows.length > 0 && rows[0].svg_content) {
+              // Slight delay to avoid blocking UI thread immediately
+              setTimeout(() => {
+                if (!mounted) return;
+                setSvgContent(rows[0].svg_content);
+                setLoadingChart(false);
+              }, 150);
+            } else {
+              if (mounted) {
+                setSvgContent(null);
+                setLoadingChart(false);
+              }
+            }
+          } catch (err) {
+            console.warn("Error loading natal chart:", err);
+            if (mounted) {
+              setSvgContent(null);
+              setLoadingChart(false);
+            }
+          }
+        })();
+      });
+
+      return () => {
+        mounted = false;
+      };
+    }, [])
+  );
+
+  // reset image error when svg content changes
+  useEffect(() => {
+    setSvgImageError(false);
+  }, [svgContent]);
 
   console.log("zodiacInfo", zodiacInfo);  
   return (
@@ -59,25 +127,57 @@ export default function PersonDetailScreen({ route }: Props) {
           </View>
         </View>
 
-        <Text style={styles.statusText}>Birth map not generated yet</Text>
+        <Text style={styles.statusText}>
+          {loadingChart
+            ? "Checking for saved birth map..."
+            : svgContent
+            ? "Birth map available"
+            : "Birth map not generated yet"}
+        </Text>
 
         <View style={styles.separator} />
 
-        {/* Generate Birth Map button */}
-        <TouchableOpacity
-          activeOpacity={0.9}
-          style={styles.ctaButton}
-          onPress={() => {
-            rootNavigation?.navigate("ChatSession", {
-              feature: "birthMap",
-              mode: "interactive",
-              birthDate,
-            });
-          }}
-        >
-          <View style={styles.ctaGlow} />
-          <Text style={styles.ctaText}>Generate Birth Map</Text>
-        </TouchableOpacity>
+        {/* If chart exists display it, otherwise show a button to open/generate it.
+            Only show the button after we've finished loading the check. */}
+        {!loadingChart ? (
+          svgContent && !svgImageError ? (
+            <View style={styles.chartImage}>
+              <SvgXml
+                xml={svgContent}
+                width="100%"
+                height="100%"
+                onError={(err) => {
+                  console.warn("SVG failed to render:", err);
+                  setSvgImageError(true);
+                }}
+              />
+            </View>
+          ) : (
+            <TouchableOpacity
+              activeOpacity={0.9}
+              style={styles.ctaButton}
+              onPress={() => {
+                console.log("[PersonDetailScreen] Open Birth Map pressed", { birthDate, svgContentPresent: !!svgContent, loadingChart });
+                if (rootNavigation) {
+                  rootNavigation.navigate("ChatSession", {
+                    feature: "birthMap",
+                    mode: "interactive",
+                    birthDate,
+                  });
+                } else {
+                  (navigation as any).navigate("ChatSession", {
+                    feature: "birthMap",
+                    mode: "interactive",
+                    birthDate,
+                  });
+                }
+              }}
+            >
+              <View style={styles.ctaGlow} />
+              <Text style={styles.ctaText}>Open Birth Map</Text>
+            </TouchableOpacity>
+          )
+        ) : null}
 
         <Text style={styles.ctaSubText}>Requires birth date, time, and location</Text>
       </View>
@@ -200,6 +300,14 @@ const styles = StyleSheet.create({
   ctaSubText: {
     fontSize: 12,
     color: "rgba(245, 234, 200, 0.9)",
+  }
+  ,
+  chartImage: {
+    width: 300,
+    height: 300,
+    marginTop: 16,
+    borderRadius: 12,
+    overflow: "hidden",
   }
 });
 

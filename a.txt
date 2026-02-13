@@ -1,0 +1,204 @@
+Generated Chart: {
+  "angles": {
+    "asc": 62.97060178665265,
+    "mc": 332.97060178665265,
+    "dsc": 242.97060178665265,
+    "ic": 152.97060178665265
+  },
+  "houses": {
+    "cusps": [
+      62.97060178665265,
+      92.97060178665265,
+      122.97060178665265,
+      152.97060178665265,
+      182.97060178665265,
+      212.97060178665265,
+      242.97060178665265,
+      272.97060178665265,
+      302.97060178665265,
+      332.97060178665265,
+      2.970601786652651,
+      32.97060178665265
+    ]
+  },
+  "bodies": [
+    {
+      "key": "Sun",
+      "lon": 230.20844637062692,
+      "house": 6
+    },
+    {
+      "key": "Moon",
+      "lon": 330.53680692638494,
+      "house": 9
+    },
+    {
+      "key": "Mercury",
+      "lon": 229.37021762573892,
+      "house": 6
+    },
+    {
+      "key": "Venus",
+      "lon": 211.540924178722,
+      "house": 5
+    },
+    {
+      "key": "Mars",
+      "lon": 197.92643704371542,
+      "house": 5
+    },
+    {
+      "key": "Jupiter",
+      "lon": 137.3482877573394,
+      "house": 3
+    },
+    {
+      "key": "Saturn",
+      "lon": 88.1575496658155,
+      "house": 1
+    },
+    {
+      "key": "Uranus",
+      "lon": 324.9377752184714,
+      "house": 9
+    },
+    {
+      "key": "Neptune",
+      "lon": 308.35122389491994,
+      "house": 9
+    },
+    {
+      "key": "Pluto",
+      "lon": 256.4412813659087,
+      "house": 7
+    }
+  ],
+  "aspects": [
+    {
+      "a": "Mars",
+      "b": "Jupiter",
+      "type": "Sextile",
+      "exact": 60,
+      "delta": 60.57814928637603,
+      "orb": 0.578149286376032,
+      "color": "blue"
+    },
+    {
+      "a": "Sun",
+      "b": "Mercury",
+      "type": "Conjunction",
+      "exact": 0,
+      "delta": 0.8382287448879993,
+      "orb": 0.8382287448879993,
+      "color": "gray"
+    },
+    {
+      "a": "Jupiter",
+      "b": "Pluto",
+      "type": "Trine",
+      "exact": 120,
+      "delta": 119.09299360856932,
+      "orb": 0.9070063914306843,
+      "color": "blue"
+    },
+    {
+      "a": "Moon",
+      "b": "Venus",
+      "type": "Trine",
+      "exact": 120,
+      "delta": 118.99588274766293,
+      "orb": 1.0041172523370676,
+      "color": "blue"
+    },
+    {
+      "a": "Mars",
+      "b": "Pluto",
+      "type": "Sextile",
+      "exact": 60,
+      "delta": 58.514844322193284,
+      "orb": 1.4851556778067163,
+      "color": "blue"
+    },
+    {
+      "a": "Mercury",
+      "b": "Jupiter",
+      "type": "Square",
+      "exact": 90,
+      "delta": 92.02192986839952,
+      "orb": 2.021929868399525,
+      "color": "red"
+    },
+    {
+      "a": "Moon",
+      "b": "Saturn",
+      "type": "Trine",
+      "exact": 120,
+      "delta": 117.62074273943057,
+      "orb": 2.3792572605694318,
+      "color": "blue"
+    },
+    {
+      "a": "Sun",
+      "b": "Jupiter",
+      "type": "Square",
+      "exact": 90,
+      "delta": 92.86015861328752,
+      "orb": 2.860158613287524,
+      "color": "red"
+    },
+    {
+      "a": "Saturn",
+      "b": "Uranus",
+      "type": "Trine",
+      "exact": 120,
+      "delta": 123.2197744473441,
+      "orb": 3.2197744473440935,
+      "color": "blue"
+    },
+    {
+      "a": "Venus",
+      "b": "Saturn",
+      "type": "Trine",
+      "exact": 120,
+      "delta": 123.38337451290651,
+      "orb": 3.3833745129065136,
+      "color": "blue"
+    },
+    {
+      "a": "Sun",
+      "b": "Uranus",
+      "type": "Square",
+      "exact": 90,
+      "delta": 94.7293288478445,
+      "orb": 4.729328847844499,
+      "color": "red"
+    },
+    {
+      "a": "Mercury",
+      "b": "Uranus",
+      "type": "Square",
+      "exact": 90,
+      "delta": 95.5675575927325,
+      "orb": 5.5675575927324985,
+      "color": "red"
+    },
+    {
+      "a": "Moon",
+      "b": "Uranus",
+      "type": "Conjunction",
+      "exact": 0,
+      "delta": 5.599031707913525,
+      "orb": 5.599031707913525,
+      "color": "gray"
+    },
+    {
+      "a": "Jupiter",
+      "b": "Uranus",
+      "type": "Opposition",
+      "exact": 180,
+      "delta": 172.41051253886798,
+      "orb": 7.589487461132023,
+      "color": "red"
+    }
+  ]
+}
