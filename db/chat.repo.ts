@@ -83,6 +83,26 @@ export const getAllChatSessions = async (): Promise<ChatSession[]> => {
 };
 
 /**
+ * Get the last N chat sessions (for history screen), ordered by most recent first
+ */
+export const getRecentChatSessions = async (
+  limit: number = 20
+): Promise<ChatSession[]> => {
+  await ensureDatabaseInitialized();
+
+  try {
+    const sessions = await querySql<ChatSession>(
+      "SELECT * FROM chat_sessions ORDER BY updated_at DESC LIMIT ?",
+      [limit]
+    );
+    return sessions;
+  } catch (error) {
+    console.error("Error getting recent chat sessions:", error);
+    return [];
+  }
+};
+
+/**
  * Get chat sessions by person ID
  * Note: Since this is a local single-user database, this is equivalent to getAllChatSessions
  * @deprecated Use getAllChatSessions() instead
