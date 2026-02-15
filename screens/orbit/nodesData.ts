@@ -6,6 +6,10 @@ export type NodeData = {
   zodiac: string;
   zodiacSymbol: string;
   birthDate: string;
+  // Optional explicit numeric fields for seeding DB
+  birthYear?: number;
+  birthMonth?: number;
+  birthDay?: number;
 };
 
 export const orbitNodes: NodeData[] = [
@@ -16,6 +20,9 @@ export const orbitNodes: NodeData[] = [
     zodiac: "Scorpio",
     zodiacSymbol: "♏",
     birthDate: "12 Nov 2001",
+    birthYear: 2001,
+    birthMonth: 11,
+    birthDay: 12,
   },
   {
     label: "Dr. Elara",
@@ -24,6 +31,9 @@ export const orbitNodes: NodeData[] = [
     zodiac: "Cancer",
     zodiacSymbol: "♋",
     birthDate: "03 Jul 1992",
+    birthYear: 1992,
+    birthMonth: 7,
+    birthDay: 3,
   },
   {
     label: "Helena",
@@ -32,6 +42,9 @@ export const orbitNodes: NodeData[] = [
     zodiac: "Leo",
     zodiacSymbol: "♌",
     birthDate: "21 Aug 1996",
+    birthYear: 1996,
+    birthMonth: 8,
+    birthDay: 21,
   },
   {
     label: "Kaan",
@@ -40,6 +53,9 @@ export const orbitNodes: NodeData[] = [
     zodiac: "Aquarius",
     zodiacSymbol: "♒",
     birthDate: "05 Feb 1998",
+    birthYear: 1998,
+    birthMonth: 2,
+    birthDay: 5,
   },
   {
     label: "Ahmet",
@@ -48,6 +64,9 @@ export const orbitNodes: NodeData[] = [
     zodiac: "Taurus",
     zodiacSymbol: "♉",
     birthDate: "14 May 1989",
+    birthYear: 1989,
+    birthMonth: 5,
+    birthDay: 14,
   },
   {
     label: "Betül",
@@ -56,5 +75,8 @@ export const orbitNodes: NodeData[] = [
     zodiac: "Virgo",
     zodiacSymbol: "♍",
     birthDate: "09 Sep 1997",
+    birthYear: 1997,
+    birthMonth: 9,
+    birthDay: 9,
   },
 ];

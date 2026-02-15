@@ -34,9 +34,14 @@ export default function ChatSessionScreen() {
 
   const { sessionId, mode = "interactive", feature, initialMessage } = route.params || {};
   
-  // If feature is birthMap, use the specialized wrapper
+  // If feature is birthMap, use the specialized wrapper and pass route params explicitly
   if (feature === "birthMap") {
-    return <BirthMapChatWrapper />;
+    return (
+      <BirthMapChatWrapper
+        personName={(route.params as any)?.personName}
+        birthDate={(route.params as any)?.birthDate}
+      />
+    );
   }
   
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(sessionId ? Number(sessionId) : null);

@@ -159,17 +159,40 @@ export const completeOnboarding = async (): Promise<void> => {
 export const updateBirthDate = async (
   year: number,
   month: number,
-  day: number
+  day: number,
+  personName?: string
 ): Promise<void> => {
   await ensureDatabaseInitialized();
 
   try {
     const user = await getOrCreateUser();
-    await executeSql(
-      "UPDATE users SET birth_year = ?, birth_month = ?, birth_day = ?, updated_at = datetime('now') WHERE id = ?",
-      [year, month, day, user.id]
-    );
-    console.log("User birth date updated successfully");
+    if (personName) {
+      // Update or insert into persons table for this owner + name
+      const existing = await querySql<any>("SELECT id FROM persons WHERE owner_user_id = ? AND name = ? LIMIT 1", [
+        user.id,
+        personName,
+      ]);
+      if (existing.length > 0) {
+        await executeSql(
+          "UPDATE persons SET birth_year = ?, birth_month = ?, birth_day = ?, updated_at = datetime('now') WHERE id = ?",
+          [year, month, day, existing[0].id]
+        );
+        console.log("Person birth date updated successfully for", personName);
+      } else {
+        await executeSql(
+          `INSERT INTO persons (owner_user_id, name, birth_year, birth_month, birth_day, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+          [user.id, personName, year, month, day]
+        );
+        console.log("Person record inserted with birth date for", personName);
+      }
+    } else {
+      await executeSql(
+        "UPDATE users SET birth_year = ?, birth_month = ?, birth_day = ?, updated_at = datetime('now') WHERE id = ?",
+        [year, month, day, user.id]
+      );
+      console.log("User birth date updated successfully");
+    }
   } catch (error) {
     console.error("Error updating birth date:", error);
     throw error;
@@ -180,18 +203,40 @@ export const updateBirthDate = async (
  * Update user's birth time (hour, minute)
  * Automatically gets the user from database (there's only one user)
  */
-export const updateBirthTime = async (hour: number, minute: number): Promise<void> => {
+export const updateBirthTime = async (hour: number, minute: number, personName?: string): Promise<void> => {
   await ensureDatabaseInitialized();
 
   try {
     const user = await getOrCreateUser();
-    await executeSql(
-      "UPDATE users SET birth_hour = ?, birth_minute = ?, updated_at = datetime('now') WHERE id = ?",
-      [hour, minute, user.id]
-    );
-    const updated = await querySql<User>("SELECT * FROM users WHERE id = ?", [user.id]);
-    if (updated.length > 0) {
-      console.log("User birth time updated successfully. User:", updated[0]);
+    // personName argument indicates updating a person entry instead of the user
+    if (personName) {
+      const existing = await querySql<any>("SELECT id FROM persons WHERE owner_user_id = ? AND name = ? LIMIT 1", [
+        user.id,
+        personName,
+      ]);
+      if (existing.length > 0) {
+        await executeSql(
+          "UPDATE persons SET birth_hour = ?, birth_minute = ?, updated_at = datetime('now') WHERE id = ?",
+          [hour, minute, existing[0].id]
+        );
+        console.log("Person birth time updated successfully for", personName);
+      } else {
+        await executeSql(
+          `INSERT INTO persons (owner_user_id, name, birth_hour, birth_minute, created_at, updated_at)
+           VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))`,
+          [user.id, personName, hour, minute]
+        );
+        console.log("Person record inserted with birth time for", personName);
+      }
+    } else {
+      await executeSql(
+        "UPDATE users SET birth_hour = ?, birth_minute = ?, updated_at = datetime('now') WHERE id = ?",
+        [hour, minute, user.id]
+      );
+      const updated = await querySql<User>("SELECT * FROM users WHERE id = ?", [user.id]);
+      if (updated.length > 0) {
+        console.log("User birth time updated successfully. User:", updated[0]);
+      }
     }
   } catch (error) {
     console.error("Error updating birth time:", error);
@@ -208,18 +253,41 @@ export const updateBirthLocation = async (location: {
   placeId: string;
   lat: number;
   lng: number;
-}): Promise<void> => {
+}, personName?: string): Promise<void> => {
   await ensureDatabaseInitialized();
 
   try {
     const user = await getOrCreateUser();
-    await executeSql(
-      "UPDATE users SET birth_place_name = ?, birth_place_id = ?, birth_lat = ?, birth_lng = ?, updated_at = datetime('now') WHERE id = ?",
-      [location.placeName, location.placeId, location.lat, location.lng, user.id]
-    );
-    const updated = await querySql<User>("SELECT * FROM users WHERE id = ?", [user.id]);
-    if (updated.length > 0) {
-      console.log("User birth location updated successfully. User:", updated[0]);
+    // personName argument indicates updating a person entry instead of the user
+
+    if (personName) {
+      const existing = await querySql<any>("SELECT id FROM persons WHERE owner_user_id = ? AND name = ? LIMIT 1", [
+        user.id,
+        personName,
+      ]);
+      if (existing.length > 0) {
+        await executeSql(
+          "UPDATE persons SET birth_place_name = ?, birth_place_id = ?, birth_lat = ?, birth_lng = ?, updated_at = datetime('now') WHERE id = ?",
+          [location.placeName, location.placeId, location.lat, location.lng, existing[0].id]
+        );
+        console.log("Person birth location updated successfully for", personName);
+      } else {
+        await executeSql(
+          `INSERT INTO persons (owner_user_id, name, birth_place_name, birth_place_id, birth_lat, birth_lng, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+          [user.id, personName, location.placeName, location.placeId || null, location.lat, location.lng]
+        );
+        console.log("Person record inserted with birth location for", personName);
+      }
+    } else {
+      await executeSql(
+        "UPDATE users SET birth_place_name = ?, birth_place_id = ?, birth_lat = ?, birth_lng = ?, updated_at = datetime('now') WHERE id = ?",
+        [location.placeName, location.placeId, location.lat, location.lng, user.id]
+      );
+      const updated = await querySql<User>("SELECT * FROM users WHERE id = ?", [user.id]);
+      if (updated.length > 0) {
+        console.log("User birth location updated successfully. User:", updated[0]);
+      }
     }
   } catch (error) {
     console.error("Error updating birth location:", error);

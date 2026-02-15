@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { View, StyleSheet } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/RootStack";
+import { SvgXml } from "react-native-svg";
+import ViewShot, { captureRef } from "react-native-view-shot";
 
 // Database
 import {
@@ -15,11 +18,12 @@ import { updateBirthLocation, updateBirthTime } from "../../db/user.repo";
 import type { Message } from "../../types/message";
 import type { ChatSession } from "../../types/chatSession";
 
-// Natal Chart Service
+// Natal Chart + Image
 import {
   generateAndSaveNatalChart,
   formatChartDataForDisplay,
 } from "../../lib/natalChartService";
+import { saveChartPngFromCapture } from "../../lib/chartImageService";
 import type { ChartStyleConfig, GeneratedChart } from "../../types/natalChart";
 
 // Components
@@ -43,11 +47,13 @@ const messageToUI = (msg: Message): ChatMessage => ({
   timestamp: new Date(msg.timestamp),
 });
 
-export default function BirthMapChatWrapper() {
+export default function BirthMapChatWrapper({ personName: incomingPersonName, birthDate: incomingBirthDate }: { personName?: string; birthDate?: string } = {}) {
   const route = useRoute<BirthMapRouteProp>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const { sessionId, birthDate } = route.params || {};
+  const { sessionId } = route.params || {};
+  const birthDate = incomingBirthDate ?? (route.params as any)?.birthDate;
+  const personName = incomingPersonName ?? (route.params as any)?.personName;
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(sessionId ? Number(sessionId) : null);
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -60,6 +66,11 @@ export default function BirthMapChatWrapper() {
   const [birthLocation, setBirthLocation] = useState<BirthLocation | undefined>(undefined);
   const [generatedChart, setGeneratedChart] = useState<GeneratedChart | null>(null);
   const [isGeneratingChart, setIsGeneratingChart] = useState(false);
+  const [pendingChartCapture, setPendingChartCapture] = useState<{ svgContent: string; personName: string } | null>(null);
+  const chartCaptureRef = useRef<ViewShot>(null);
+  const captureDoneRef = useRef(false);
+  const lastChartRef = useRef<GeneratedChart | null>(null);
+  const lastSessionIdRef = useRef<number | null>(null);
 
   // Initialize session and load messages
   useEffect(() => {
@@ -120,6 +131,55 @@ export default function BirthMapChatWrapper() {
     initializeSession();
   }, []); // Only run on mount
 
+  const finishChartFlow = async () => {
+    const sid = lastSessionIdRef.current;
+    if (sid == null) return;
+    const chartMessage = await addMessage({
+      sessionId: sid,
+      role: "assistant",
+      content: "✨ Your Natal Chart has been generated and saved!",
+    });
+    setMessages((prev) => [...prev, messageToUI(chartMessage)]);
+    try {
+      navigation.goBack();
+    } catch (e) {
+      console.error("[BirthMapChatWrapper] goBack error:", e);
+    }
+  };
+
+  // When we have pending capture: wait for ref, run view-shot, save PNG to cache + update person, then finish flow.
+  useEffect(() => {
+    if (!pendingChartCapture || captureDoneRef.current) return;
+    const { svgContent, personName } = pendingChartCapture;
+    let cancelled = false;
+    const run = async () => {
+      let attempts = 0;
+      while (!chartCaptureRef.current && attempts < 50 && !cancelled) {
+        await new Promise((r) => setTimeout(r, 50));
+        attempts++;
+      }
+      if (cancelled || !chartCaptureRef.current) return;
+      try {
+        const uri = await captureRef(chartCaptureRef.current, { format: "png", result: "tmpfile" });
+        if (cancelled) return;
+        const pngPath = await saveChartPngFromCapture(uri, svgContent, personName);
+        console.log("[BirthMapChatWrapper] ✅ Chart image saved, png_path:", pngPath);
+      } catch (e) {
+        console.error("[BirthMapChatWrapper] Chart capture/save error:", e);
+      } finally {
+        if (!cancelled) {
+          captureDoneRef.current = true;
+          setPendingChartCapture(null);
+          await finishChartFlow();
+        }
+      }
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [pendingChartCapture]);
+
   const handleSendMessage = async (text: string) => {
     // Don't allow sending messages when pickers are shown
     if (showTimePicker || showLocationSearch || !currentSessionId) {
@@ -156,10 +216,10 @@ export default function BirthMapChatWrapper() {
     const timeString = `${birthTime.hour.toString().padStart(2, "0")}:${birthTime.minute.toString().padStart(2, "0")}`;
     console.log("[BirthMapChatWrapper] Formatted time string:", timeString);
     
-    // Persist birth time to user record
+      // Persist birth time to user or person record
     try {
       console.log("[BirthMapChatWrapper] 💾 Saving birth time to database...");
-      await updateBirthTime(birthTime.hour, birthTime.minute);
+      await updateBirthTime(birthTime.hour, birthTime.minute, personName);
       console.log("[BirthMapChatWrapper] ✅ Birth time saved successfully");
     } catch (error) {
       console.error("[BirthMapChatWrapper] ❌ Error saving birth time:", error);
@@ -240,15 +300,18 @@ export default function BirthMapChatWrapper() {
     setShowLocationSearch(false);
     console.log("[BirthMapChatWrapper] ✅ Location search modal closed");
 
-    // Persist birth location to user record
+    // Persist birth location to user or person record
     try {
       console.log("[BirthMapChatWrapper] 💾 Saving birth location to database...");
-      await updateBirthLocation({
-        placeName: birthLocation.placeName,
-        placeId: birthLocation.placeId,
-        lat: birthLocation.lat,
-        lng: birthLocation.lng,
-      });
+      await updateBirthLocation(
+        {
+          placeName: birthLocation.placeName,
+          placeId: birthLocation.placeId,
+          lat: birthLocation.lat,
+          lng: birthLocation.lng,
+        },
+        personName
+      );
       console.log("[BirthMapChatWrapper] ✅ Birth location saved successfully");
     } catch (error) {
       console.error("[BirthMapChatWrapper] ❌ Error saving birth location:", error);
@@ -276,10 +339,24 @@ export default function BirthMapChatWrapper() {
 
   const generateNatalChart = async () => {
     console.log("[BirthMapChatWrapper] 🔴 generateNatalChart called");
-    console.log("[BirthMapChatWrapper] currentSessionId:", currentSessionId);
-    
+    console.log("[BirthMapChatWrapper] currentSessionId:", currentSessionId, "personName:", personName);
+
     if (!currentSessionId) {
       console.error("[BirthMapChatWrapper] ❌ No currentSessionId, aborting");
+      return;
+    }
+    if (!personName) {
+      console.error("[BirthMapChatWrapper] ❌ personName required for chart (use persons table)");
+      try {
+        const errMsg = await addMessage({
+          sessionId: currentSessionId,
+          role: "assistant",
+          content: "Please open Birth Map from a person's profile so we know whose chart to generate.",
+        });
+        setMessages((prev) => [...prev, messageToUI(errMsg)]);
+      } catch (e) {
+        console.error("[BirthMapChatWrapper] Failed to add error message:", e);
+      }
       return;
     }
 
@@ -303,40 +380,20 @@ export default function BirthMapChatWrapper() {
       };
       console.log("[BirthMapChatWrapper] ✅ Chart style defined");
 
-      // Generate and save the chart with filename "user_chart.svg"
-      console.log("[BirthMapChatWrapper] 📊 Calling generateAndSaveNatalChart...");
-      const chart = await generateAndSaveNatalChart(chartStyle, "user_chart.svg");
-      console.log("[BirthMapChatWrapper] ✅ generateAndSaveNatalChart returned successfully");
-      console.log("[BirthMapChatWrapper] Chart path:", chart.filePath);
-      
+      // 1) Generate chart and save SVG to DB (png_path stays null for now)
+      console.log("[BirthMapChatWrapper] 📊 Calling generateAndSaveNatalChart...", { personName });
+      const chart = await generateAndSaveNatalChart(chartStyle, undefined, personName);
+      console.log("[BirthMapChatWrapper] ✅ Chart + SVG saved to DB");
+
       setGeneratedChart(chart);
-      console.log("[BirthMapChatWrapper] ✅ Chart stored in state");
-
-      // Format display data
-      console.log("[BirthMapChatWrapper] 📝 Formatting chart data for display...");
-      const { summary, details } = formatChartDataForDisplay(chart);
-      console.log("[BirthMapChatWrapper] ✅ Chart data formatted");
-
-      // Save chart generation message
-      console.log("[BirthMapChatWrapper] 💬 Adding message to chat...");
-      const chartMessage = await addMessage({
-        sessionId: currentSessionId,
-        role: "assistant",
-        content: `✨ Your Natal Chart has been generated and saved!`,
-      });
-      console.log("[BirthMapChatWrapper] ✅ Message added to database");
-
-      setMessages((prev) => [...prev, messageToUI(chartMessage)]);
-      console.log("[BirthMapChatWrapper] ✅ Message displayed in chat");
-
-      console.log("[BirthMapChatWrapper] 🎉 COMPLETE - Natal chart generated and saved!");
-
-      // After successful generation, simply go back to the previous screen
-      try {
-        navigation.goBack();
-        console.log("[BirthMapChatWrapper] ✅ goBack() called after chart generation");
-      } catch (navErr) {
-        console.error("[BirthMapChatWrapper] ❌ Failed to go back after chart generation:", navErr);
+      lastChartRef.current = chart;
+      lastSessionIdRef.current = currentSessionId;
+      const nameForPerson = personName ?? chart.chartData.birthData.name ?? "";
+      if (nameForPerson && chart.svgContent) {
+        captureDoneRef.current = false;
+        setPendingChartCapture({ svgContent: chart.svgContent, personName: nameForPerson });
+      } else {
+        await finishChartFlow();
       }
     } catch (error) {
       console.error("[BirthMapChatWrapper] ❌ CRITICAL ERROR:", error);
@@ -365,7 +422,10 @@ export default function BirthMapChatWrapper() {
     }
   };
 
+  const CAPTURE_SIZE = 400;
+
   return (
+    <>
     <ChatSessionCore
       title="Generate Birth Map"
       messages={messages}
@@ -396,5 +456,27 @@ export default function BirthMapChatWrapper() {
         />
       )}
     </ChatSessionCore>
+
+    {/* Hidden view to capture chart as PNG after SVG is saved to DB */}
+    {pendingChartCapture && (
+      <View style={[StyleSheet.absoluteFill, styles.hiddenCapture]} pointerEvents="none">
+        <ViewShot
+          ref={chartCaptureRef}
+          options={{ format: "png", result: "tmpfile" }}
+          style={{ width: CAPTURE_SIZE, height: CAPTURE_SIZE }}
+        >
+          <SvgXml xml={pendingChartCapture.svgContent} width={CAPTURE_SIZE} height={CAPTURE_SIZE} />
+        </ViewShot>
+      </View>
+    )}
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  hiddenCapture: {
+    opacity: 0,
+    left: -9999,
+    top: 0,
+  },
+});

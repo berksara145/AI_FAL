@@ -6,7 +6,7 @@
 
 import { generateApproxChart, generateStyledChart, DEFAULT_STYLE, ChartStyle } from "../lib/natalChart";
 import { getOrCreateUser } from "../db/user.repo";
-import { executeSql } from "../db/database";
+import { upsertPersonWithChart, getPersonByName, Person } from "../db/person.repo";
 import type { User } from "../db/user.repo";
 import type {
   BirthData,
@@ -18,14 +18,6 @@ import type {
   ChartStyleConfig,
   GeneratedChart,
 } from "../types/natalChart";
-
-// Try to import Expo file system (available in React Native with Expo)
-let FileSystem: any = null;
-try {
-  FileSystem = require("expo-file-system");
-} catch (e) {
-  // Not in Expo environment, will fall back to Node.js fs
-}
 
 /**
  * Build BirthData object from User database record
@@ -95,6 +87,66 @@ export const buildBirthDataFromUser = (user: User): BirthData => {
 };
 
 /**
+ * Build BirthData object from a Person database record
+ */
+export const buildBirthDataFromPerson = (person: Person): BirthData => {
+  console.log("[buildBirthDataFromPerson] Validating person birth data fields...", person);
+
+  if (
+    !person.birth_year ||
+    !person.birth_month ||
+    !person.birth_day ||
+    person.birth_hour === null ||
+    person.birth_minute === null ||
+    !person.birth_lat ||
+    !person.birth_lng ||
+    !person.birth_place_name
+  ) {
+    const missing = [];
+    if (!person.birth_year) missing.push("birth_year");
+    if (!person.birth_month) missing.push("birth_month");
+    if (!person.birth_day) missing.push("birth_day");
+    if (person.birth_hour === null) missing.push("birth_hour");
+    if (person.birth_minute === null) missing.push("birth_minute");
+    if (!person.birth_lat) missing.push("birth_lat");
+    if (!person.birth_lng) missing.push("birth_lng");
+    if (!person.birth_place_name) missing.push("birth_place_name");
+
+    const errorMsg = `[buildBirthDataFromPerson] ❌ Incomplete person birth data. Missing: ${missing.join(", ")}`;
+    console.error(errorMsg);
+    throw new Error(errorMsg);
+  }
+
+  const birthDate = new Date(
+    person.birth_year!,
+    person.birth_month! - 1,
+    person.birth_day!,
+    person.birth_hour!,
+    person.birth_minute!,
+    0,
+    0
+  );
+
+  const birthData: BirthData = {
+    name: person.name || undefined,
+    birthDate,
+    birthTime: {
+      hour: person.birth_hour!,
+      minute: person.birth_minute!,
+    },
+    birthLocation: {
+      placeName: person.birth_place_name!,
+      placeId: person.birth_place_id || "",
+      latitude: person.birth_lat!,
+      longitude: person.birth_lng!,
+    },
+  };
+
+  console.log("[buildBirthDataFromPerson] ✅ BirthData created for person:", person.name);
+  return birthData;
+};
+
+/**
  * Convert raw astrological calculations to formatted PlanetPosition array
  */
 const formatPlanetPositions = (
@@ -160,30 +212,25 @@ const formatAspects = (
 /**
  * Generate natal chart from user's birth data stored in database
  */
-export const generateNatalChartFromUserData = async (): Promise<NatalChartData> => {
+export const generateNatalChartFromUserData = async (personName?: string): Promise<NatalChartData> => {
   try {
-    console.log("[natalChartService] 1️⃣ Starting generateNatalChartFromUserData...");
-    
-    // Get user data from database
-    console.log("[natalChartService] 2️⃣ Fetching user from database...");
-    const user = await getOrCreateUser();
-    console.log("[natalChartService] ✅ User fetched:", {
-      id: user.id,
-      name: user.name,
-      birth_year: user.birth_year,
-      birth_month: user.birth_month,
-      birth_day: user.birth_day,
-      birth_hour: user.birth_hour,
-      birth_minute: user.birth_minute,
-      birth_place_name: user.birth_place_name,
-      birth_lat: user.birth_lat,
-      birth_lng: user.birth_lng,
-    });
+    console.log("[natalChartService] 1️⃣ Starting generateNatalChartFromUserData...", { personName });
 
-    // Build birth data object
-    console.log("[natalChartService] 3️⃣ Building birth data...");
-    const birthData = buildBirthDataFromUser(user);
-    console.log("[natalChartService] ✅ Birth data built:", birthData);
+    let birthData;
+    if (personName) {
+      console.log("[natalChartService] 2️⃣ Fetching person from database:", personName);
+      const person = await getPersonByName(personName);
+      if (!person) {
+        throw new Error(`Person not found: ${personName}`);
+      }
+      birthData = buildBirthDataFromPerson(person);
+      console.log("[natalChartService] ✅ Person birth data built:", birthData);
+    } else {
+      // Enforce using persons table only
+      const errMsg = "[natalChartService] ❌ personName is required. This function only reads from the persons table.";
+      console.error(errMsg);
+      throw new Error("personName is required. Use getPersonByName / persons table for birth data.");
+    }
 
     // Generate astrological calculations
     console.log("[natalChartService] 4️⃣ Generating astrological calculations...");
@@ -270,14 +317,15 @@ const createStyledChart = (chartData: NatalChartData, style?: ChartStyleConfig):
  */
 export const generateAndSaveNatalChart = async (
   customStyle?: ChartStyleConfig,
-  outputPath?: string
+  outputPath?: string,
+  personName?: string
 ): Promise<GeneratedChart> => {
   try {
     console.log("[generateAndSaveNatalChart] 🚀 START - customStyle:", !!customStyle, "outputPath:", outputPath);
 
-    // Generate chart data
-    console.log("[generateAndSaveNatalChart] 📊 Calling generateNatalChartFromUserData()...");
-    const chartData = await generateNatalChartFromUserData();
+    // Generate chart data (optionally for a specific person)
+    console.log("[generateAndSaveNatalChart] 📊 Calling generateNatalChartFromUserData()...", { personName });
+    const chartData = await generateNatalChartFromUserData(personName);
     console.log("[generateAndSaveNatalChart] ✅ Chart data received");
 
     console.log("[generateAndSaveNatalChart] 📈 Chart stats:", {
@@ -292,64 +340,38 @@ export const generateAndSaveNatalChart = async (
     console.log("[generateAndSaveNatalChart] ✅ SVG created, size:", (svgContent.length / 1024).toFixed(2), "KB");
 
     
-    // Persist chart metadata and SVG into database (so users can have many charts)
+    // Persist chart metadata and SVG into persons table. PNG is generated later via capture + chartImageService.
+    const finalPersonName = personName ?? chartData.birthData.name ?? null;
+    if (!finalPersonName) {
+      console.warn("[generateAndSaveNatalChart] No person name; skipping DB upsert");
+    } else {
       try {
-        const user = await getOrCreateUser();
         const styleJson = JSON.stringify(customStyle || DEFAULT_STYLE);
         const generatedAtIso = new Date().toISOString();
-
-        // If a person name is provided, delete any existing charts for that owner + person_name
-        // This ensures we don't keep duplicate charts for the same person name
-        if (chartData.birthData.name) {
-          try {
-            await executeSql(
-              `DELETE FROM natal_charts WHERE owner_user_id = ? AND person_name = ?`,
-              [user.id, chartData.birthData.name]
-            );
-            console.log("[generateAndSaveNatalChart] ✅ Deleted existing charts for person_name:", chartData.birthData.name);
-          } catch (delErr) {
-            console.warn("[generateAndSaveNatalChart] ⚠️ Failed to delete existing charts for person_name:", chartData.birthData.name, delErr);
-          }
-        }
-
-        const result = await executeSql(
-          `INSERT INTO natal_charts (
-            owner_user_id, person_name, birth_year, birth_month, birth_day,
-            birth_hour, birth_minute, birth_place_name, birth_place_id, birth_lat,
-            birth_lng, svg_content,style, generated_at, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
-          [
-            user.id,
-            chartData.birthData.name || null,
-            chartData.birthData.birthDate.getFullYear(),
-            chartData.birthData.birthDate.getMonth() + 1,
-            chartData.birthData.birthDate.getDate(),
-            chartData.birthData.birthTime.hour,
-            chartData.birthData.birthTime.minute,
-            chartData.birthData.birthLocation.placeName,
-            chartData.birthData.birthLocation.placeId || null,
-            chartData.birthData.birthLocation.latitude,
-            chartData.birthData.birthLocation.longitude,
-            svgContent,
-            styleJson,
-            generatedAtIso,
-          ]
-        );
-
-      try {
-        // Some environments expose lastInsertRowId
-        const insertedId = (result && (result as any).lastInsertRowId) || null;
-        console.log("[generateAndSaveNatalChart] ✅ Saved chart to DB with id:", insertedId);
-      } catch (e) {
-        console.log("[generateAndSaveNatalChart] Saved chart to DB (no insert id available)");
+        await upsertPersonWithChart({
+          name: finalPersonName,
+          birth_year: chartData.birthData.birthDate.getFullYear(),
+          birth_month: chartData.birthData.birthDate.getMonth() + 1,
+          birth_day: chartData.birthData.birthDate.getDate(),
+          birth_hour: chartData.birthData.birthTime.hour,
+          birth_minute: chartData.birthData.birthTime.minute,
+          birth_place_name: chartData.birthData.birthLocation.placeName,
+          birth_place_id: chartData.birthData.birthLocation.placeId || null,
+          birth_lat: chartData.birthData.birthLocation.latitude,
+          birth_lng: chartData.birthData.birthLocation.longitude,
+          svg_content: svgContent,
+          png_path: null,
+          style: styleJson,
+          generated_at: generatedAtIso,
+        });
+        console.log("[generateAndSaveNatalChart] ✅ Saved SVG to persons table for", finalPersonName);
+      } catch (dbErr) {
+        console.error("[generateAndSaveNatalChart] ❌ Failed to save chart to persons table:", dbErr);
       }
-    } catch (dbErr) {
-      console.error("[generateAndSaveNatalChart] ❌ Failed to save chart metadata to DB:", dbErr);
     }
 
-    console.log("[generateAndSaveNatalChart] ✅ COMPLETE - returning GeneratedChart");
     return {
-      svgContent, 
+      svgContent,
       chartData,
       style: customStyle || DEFAULT_STYLE,
     };

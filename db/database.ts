@@ -138,12 +138,12 @@ export const initDatabase = (): Promise<void> => {
         // Column already exists, ignore
       }
 
-      // Natal charts table - supports multiple charts per user (owner_user_id)
+      // Persons table - stores people associated with the local user and their natal chart info
       db.execSync(`
-        CREATE TABLE IF NOT EXISTS natal_charts (
+        CREATE TABLE IF NOT EXISTS persons (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           owner_user_id INTEGER,
-          person_name TEXT,
+          name TEXT,
           birth_year INTEGER,
           birth_month INTEGER,
           birth_day INTEGER,
@@ -154,6 +154,7 @@ export const initDatabase = (): Promise<void> => {
           birth_lat REAL,
           birth_lng REAL,
           svg_content TEXT,
+          png_path TEXT,
           style TEXT,
           generated_at TEXT,
           created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -164,15 +165,65 @@ export const initDatabase = (): Promise<void> => {
 
       // Index for faster queries by owner
       try {
-        db.execSync(`CREATE INDEX IF NOT EXISTS idx_natal_charts_owner ON natal_charts(owner_user_id);`);
+        db.execSync(`CREATE INDEX IF NOT EXISTS idx_persons_owner ON persons(owner_user_id);`);
       } catch (e) {
         // ignore
       }
 
-      // Backwards-compat: attempt to add columns if migrating existing DBs (safe no-op if exist)
-      try { db.execSync(`ALTER TABLE natal_charts ADD COLUMN svg_content TEXT;`); } catch (e) {}
-      try { db.execSync(`ALTER TABLE natal_charts ADD COLUMN style TEXT;`); } catch (e) {}
-      try { db.execSync(`ALTER TABLE natal_charts ADD COLUMN generated_at TEXT;`); } catch (e) {}
+      // Add png_path column to persons if missing (for existing DBs)
+      try {
+        db.execSync(`ALTER TABLE persons ADD COLUMN png_path TEXT;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
+
+      // Seed mock persons from orbit nodes if table empty
+      try {
+        // Importing nodes data (mock) to seed initial persons for the app
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const nodesData = require("../screens/orbit/nodesData").orbitNodes;
+        // Ensure we have a user
+        const users: any = db.getAllSync("SELECT id FROM users LIMIT 1", []);
+        const ownerId = users && users.length > 0 ? users[0].id : null;
+        if (ownerId) {
+          // Wipe existing persons for this owner and re-seed from nodesData
+          try {
+            db.runSync("DELETE FROM persons WHERE owner_user_id = ?", [ownerId]);
+          } catch (delErr) {
+            console.warn("Failed to clear existing persons for owner:", delErr);
+          }
+
+          for (const node of nodesData) {
+            // Prefer explicit numeric fields if provided, otherwise parse birthDate string
+            const year = (node as any).birthYear ?? null;
+            const month = (node as any).birthMonth ?? null;
+            const day = (node as any).birthDay ?? null;
+
+            let y = year;
+            let m = month;
+            let d = day;
+
+            if (y === null || m === null || d === null) {
+              const parsed = new Date(node.birthDate);
+              if (!Number.isNaN(parsed.getTime())) {
+                y = y ?? parsed.getFullYear();
+                m = m ?? parsed.getMonth() + 1;
+                d = d ?? parsed.getDate();
+              }
+            }
+
+            db.runSync(
+              `INSERT INTO persons (owner_user_id, name, birth_year, birth_month, birth_day, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+              [ownerId, node.label, y, m, d]
+            );
+          }
+          console.log("Wiped and re-seeded persons table from nodesData");
+        }
+      } catch (e) {
+        // Non-fatal: seeding failed (maybe file not present in some environments)
+        console.warn("Persons seeding skipped or failed:", e);
+      }
 
       console.log("Database initialized successfully");
       resolve();

@@ -22,6 +22,7 @@ export type RootStackParamList = {
     feature?: string; // e.g., "dailyHoroscope", "compatibility", "big3", "birthMap", etc.
     initialMessage?: string; // Predetermined initial message from AI
     birthDate?: string; // For birth map feature
+    personName?: string; // Optional person name to operate on (for birthMap)
   };
 };
 

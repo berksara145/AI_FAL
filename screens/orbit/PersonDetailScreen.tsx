@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Image, InteractionManager } from "react-native";
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Image, InteractionManager, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-import { SvgXml } from "react-native-svg";
 import type { MainStackParamList } from "../../navigation/MainTabs";
 import type { RootStackParamList } from "../../navigation/RootStack";
 import { getZodiacInfoFromBirthDate } from "./utils";
-import { getOrCreateUser } from "../../db/user.repo";
-import { querySql } from "../../db/database";
+import { getPersonByName } from "../../db/person.repo";
 
 type Props = NativeStackScreenProps<MainStackParamList, "PersonDetail">;
 
@@ -19,11 +17,11 @@ export default function PersonDetailScreen({ route }: Props) {
   const rootNavigation = navigation.getParent<NativeStackNavigationProp<RootStackParamList>>();
   const { name, birthDate } = route.params;
   console.log("birthDate", birthDate);  
+  console.log("name: ", name);
   const zodiacInfo = getZodiacInfoFromBirthDate(birthDate) ?? null;
   const zodiacImageSource = zodiacInfo?.image ?? null;
   const [loadingChart, setLoadingChart] = useState(true);
-  const [svgContent, setSvgContent] = useState<string | null>(null);
-  const [svgImageError, setSvgImageError] = useState(false);
+  const [pngUri, setPngUri] = useState<string | null>(null);
 
   // Reload chart whenever this screen gains focus (so going back will refresh)
   useFocusEffect(
@@ -34,57 +32,56 @@ export default function PersonDetailScreen({ route }: Props) {
       InteractionManager.runAfterInteractions(() => {
         (async () => {
           try {
-            const user = await getOrCreateUser();
-            const personName = user.name;
+            const personName = name;
 
             if (!personName) {
               if (mounted) {
-                setSvgContent(null);
+                setPngUri(null);
                 setLoadingChart(false);
               }
               return;
             }
 
-            const rows = await querySql<any>(
-              "SELECT * FROM natal_charts WHERE person_name = ? ORDER BY created_at DESC LIMIT 1",
-              [personName]
-            );
+            const person = await getPersonByName(personName);
 
             if (!mounted) return;
 
-            if (rows && rows.length > 0 && rows[0].svg_content) {
-              // Slight delay to avoid blocking UI thread immediately
-              setTimeout(() => {
-                if (!mounted) return;
-                setSvgContent(rows[0].svg_content);
-                setLoadingChart(false);
-              }, 150);
+            if (person) {
+              // Fast path: if a cached PNG path exists, show it immediately (instant)
+              if (person.png_path) {
+                if (mounted) {
+                  setPngUri(person.png_path);
+                  setLoadingChart(false);
+                }
+              } else {
+                if (mounted) {
+                  setPngUri(null);
+                  setLoadingChart(false);
+                }
+              }
             } else {
               if (mounted) {
-                setSvgContent(null);
+                setPngUri(null);
                 setLoadingChart(false);
               }
             }
-          } catch (err) {
-            console.warn("Error loading natal chart:", err);
-            if (mounted) {
-              setSvgContent(null);
-              setLoadingChart(false);
+            } catch (err) {
+              console.warn("Error loading natal chart:", err);
+              if (mounted) {
+                setPngUri(null);
+                setLoadingChart(false);
+              }
             }
-          }
         })();
       });
 
       return () => {
         mounted = false;
       };
-    }, [])
+    }, [name])
   );
 
-  // reset image error when svg content changes
-  useEffect(() => {
-    setSvgImageError(false);
-  }, [svgContent]);
+  // No SVG rendering/capture on this screen — we only show cached PNGs.
 
   console.log("zodiacInfo", zodiacInfo);  
   return (
@@ -128,11 +125,7 @@ export default function PersonDetailScreen({ route }: Props) {
         </View>
 
         <Text style={styles.statusText}>
-          {loadingChart
-            ? "Checking for saved birth map..."
-            : svgContent
-            ? "Birth map available"
-            : "Birth map not generated yet"}
+          {loadingChart ? "Checking for saved birth map..." : pngUri ? "Birth map available" : "Birth map not generated yet"}
         </Text>
 
         <View style={styles.separator} />
@@ -140,36 +133,30 @@ export default function PersonDetailScreen({ route }: Props) {
         {/* If chart exists display it, otherwise show a button to open/generate it.
             Only show the button after we've finished loading the check. */}
         {!loadingChart ? (
-          svgContent && !svgImageError ? (
+          pngUri ? (
             <View style={styles.chartImage}>
-              <SvgXml
-                xml={svgContent}
-                width="100%"
-                height="100%"
-                onError={(err) => {
-                  console.warn("SVG failed to render:", err);
-                  setSvgImageError(true);
-                }}
-              />
+              <Image source={{ uri: pngUri }} style={StyleSheet.absoluteFill} resizeMode="contain" />
             </View>
           ) : (
             <TouchableOpacity
               activeOpacity={0.9}
               style={styles.ctaButton}
               onPress={() => {
-                console.log("[PersonDetailScreen] Open Birth Map pressed", { birthDate, svgContentPresent: !!svgContent, loadingChart });
+                console.log("[PersonDetailScreen] Open Birth Map pressed", { birthDate, loadingChart });
                 if (rootNavigation) {
                   rootNavigation.navigate("ChatSession", {
                     feature: "birthMap",
                     mode: "interactive",
                     birthDate,
-                  });
+                    personName: name,
+                  } as any);
                 } else {
                   (navigation as any).navigate("ChatSession", {
                     feature: "birthMap",
                     mode: "interactive",
                     birthDate,
-                  });
+                    personName: name,
+                  } as any);
                 }
               }}
             >
