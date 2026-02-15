@@ -24,7 +24,7 @@ type OrbitNodeItem =
 
 function personToBirthDate(p: Person): string {
   if (p.birth_year == null || p.birth_month == null || p.birth_day == null) return "";
-  const monthStr = new Date(2000, p.birth_month - 1, 1).toLocaleString("en-US", { month: "short" }).slice(0, 3);
+  const monthStr = new Date(2000, p.birth_month, 1).toLocaleString("en-US", { month: "short" }).slice(0, 3);
   return `${p.birth_day.toString().padStart(2, "0")} ${monthStr} ${p.birth_year}`;
 }
 

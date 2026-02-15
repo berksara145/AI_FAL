@@ -4,7 +4,8 @@
  * Integrates astrological calculations with the application database
  */
 
-import { generateApproxChart, generateStyledChart, DEFAULT_STYLE, ChartStyle } from "../lib/natalChart";
+import { generateApproxChart, generateStyledChart, generateChartForGpt, DEFAULT_STYLE, ChartStyle } from "../lib/natalChart";
+import { birthPlaceLocalToUTC } from "../lib/birthTimeUtils";
 import { getOrCreateUser } from "../db/user.repo";
 import { upsertPersonWithChart, getPersonByName, Person } from "../db/person.repo";
 import type { User } from "../db/user.repo";
@@ -55,17 +56,19 @@ export const buildBirthDataFromUser = (user: User): BirthData => {
     throw new Error(errorMsg);
   }
 
-  console.log("[buildBirthDataFromUser] ✅ All fields present, creating Date object...");
-  const birthDate = new Date(
-    user.birth_year,
-    user.birth_month - 1, // JavaScript months are 0-indexed
-    user.birth_day,
-    user.birth_hour,
-    user.birth_minute,
-    0,
-    0
-  );
-  console.log("[buildBirthDataFromUser] ✅ Birth date created:", birthDate.toISOString());
+  if (user.birth_month! < 1 || user.birth_month! > 12) {
+    throw new Error(`[buildBirthDataFromUser] Invalid birth_month (must be 1-12): ${user.birth_month}`);
+  }
+  console.log("[buildBirthDataFromUser] ✅ All fields present, creating UTC Date from birth-place local time...");
+  const birthDate = birthPlaceLocalToUTC({
+    year: user.birth_year,
+    month: user.birth_month,
+    day: user.birth_day,
+    hour: user.birth_hour,
+    minute: user.birth_minute,
+    longitude: user.birth_lng,
+  });
+  console.log("[buildBirthDataFromUser] ✅ Birth date (UTC):", birthDate.toISOString());
 
   const birthData: BirthData = {
     name: user.name || undefined,
@@ -117,15 +120,17 @@ export const buildBirthDataFromPerson = (person: Person): BirthData => {
     throw new Error(errorMsg);
   }
 
-  const birthDate = new Date(
-    person.birth_year!,
-    person.birth_month! - 1,
-    person.birth_day!,
-    person.birth_hour!,
-    person.birth_minute!,
-    0,
-    0
-  );
+  if (person.birth_month! < 1 || person.birth_month! > 12) {
+    throw new Error(`[buildBirthDataFromPerson] Invalid birth_month (must be 1-12): ${person.birth_month}`);
+  }
+  const birthDate = birthPlaceLocalToUTC({
+    year: person.birth_year!,
+    month: person.birth_month!,
+    day: person.birth_day!,
+    hour: person.birth_hour!,
+    minute: person.birth_minute!,
+    longitude: person.birth_lng!,
+  });
 
   const birthData: BirthData = {
     name: person.name || undefined,
@@ -266,6 +271,7 @@ export const generateNatalChartFromUserData = async (personName?: string): Promi
       planets,
       aspects,
       generatedAt: new Date(),
+      rawChart,
     };
     console.log("[natalChartService] ✅ NatalChartData created successfully");
 
@@ -340,21 +346,32 @@ export const generateAndSaveNatalChart = async (
     console.log("[generateAndSaveNatalChart] ✅ SVG created, size:", (svgContent.length / 1024).toFixed(2), "KB");
 
     
-    // Persist chart metadata and SVG into persons table. PNG is generated later via capture + chartImageService.
+    // Build GPT-friendly natal chart JSON and print once in pipeline
+    const rawChart = (chartData as NatalChartData & { rawChart?: ReturnType<typeof generateApproxChart> }).rawChart;
+    let chartGptJson: string | null = null;
+    if (rawChart) {
+      const gptFormat = generateChartForGpt(rawChart, chartData.birthData.birthLocation.placeName);
+      chartGptJson = JSON.stringify(gptFormat, null, 2);
+      console.log("[generateAndSaveNatalChart] Natal chart (GPT format):", chartGptJson);
+    }
+
+    // Persist chart metadata and SVG into persons table. Use stored birth date (ISO triple 1-12) so we never overwrite with UTC components.
     const finalPersonName = personName ?? chartData.birthData.name ?? null;
     if (!finalPersonName) {
       console.warn("[generateAndSaveNatalChart] No person name; skipping DB upsert");
     } else {
       try {
+        const person = await getPersonByName(finalPersonName);
+        if (!person) throw new Error(`Person not found: ${finalPersonName}`);
         const styleJson = JSON.stringify(customStyle || DEFAULT_STYLE);
         const generatedAtIso = new Date().toISOString();
         await upsertPersonWithChart({
           name: finalPersonName,
-          birth_year: chartData.birthData.birthDate.getFullYear(),
-          birth_month: chartData.birthData.birthDate.getMonth() + 1,
-          birth_day: chartData.birthData.birthDate.getDate(),
-          birth_hour: chartData.birthData.birthTime.hour,
-          birth_minute: chartData.birthData.birthTime.minute,
+          birth_year: person.birth_year!,
+          birth_month: person.birth_month!,
+          birth_day: person.birth_day!,
+          birth_hour: person.birth_hour!,
+          birth_minute: person.birth_minute!,
           birth_place_name: chartData.birthData.birthLocation.placeName,
           birth_place_id: chartData.birthData.birthLocation.placeId || null,
           birth_lat: chartData.birthData.birthLocation.latitude,
@@ -362,9 +379,10 @@ export const generateAndSaveNatalChart = async (
           svg_content: svgContent,
           png_path: null,
           style: styleJson,
+          chart_gpt_json: chartGptJson,
           generated_at: generatedAtIso,
         });
-        console.log("[generateAndSaveNatalChart] ✅ Saved SVG to persons table for", finalPersonName);
+        console.log("[generateAndSaveNatalChart] ✅ Saved SVG and chart_gpt_json to persons table for", finalPersonName);
       } catch (dbErr) {
         console.error("[generateAndSaveNatalChart] ❌ Failed to save chart to persons table:", dbErr);
       }

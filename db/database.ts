@@ -156,6 +156,7 @@ export const initDatabase = (): Promise<void> => {
           svg_content TEXT,
           png_path TEXT,
           style TEXT,
+          chart_gpt_json TEXT,
           generated_at TEXT,
           created_at TEXT NOT NULL DEFAULT (datetime('now')),
           updated_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -173,6 +174,11 @@ export const initDatabase = (): Promise<void> => {
       // Add png_path column to persons if missing (for existing DBs)
       try {
         db.execSync(`ALTER TABLE persons ADD COLUMN png_path TEXT;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
+      try {
+        db.execSync(`ALTER TABLE persons ADD COLUMN chart_gpt_json TEXT;`);
       } catch (e) {
         // Column already exists, ignore
       }

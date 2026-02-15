@@ -17,6 +17,7 @@ export type Person = {
   svg_content: string | null;
   png_path: string | null;
   style: string | null;
+  chart_gpt_json: string | null;
   generated_at: string | null;
   created_at: string;
   updated_at: string;
@@ -63,8 +64,8 @@ export const createPersonMinimal = async (params: {
     `INSERT INTO persons (
       owner_user_id, name, birth_year, birth_month, birth_day,
       birth_hour, birth_minute, birth_place_name, birth_place_id, birth_lat,
-      birth_lng, svg_content, png_path, style, generated_at, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, datetime('now'), datetime('now'))`,
+      birth_lng, svg_content, png_path, style, chart_gpt_json, generated_at, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, datetime('now'), datetime('now'))`,
     [user.id, name, birth_year, birth_month, birth_day]
   );
 };
@@ -86,6 +87,7 @@ export const upsertPersonWithChart = async (person: {
   svg_content?: string | null;
   png_path?: string | null;
   style: string | null;
+  chart_gpt_json?: string | null;
   generated_at: string;
 }): Promise<void> => {
   const user = await getOrCreateUser();
@@ -98,7 +100,7 @@ export const upsertPersonWithChart = async (person: {
           birth_year = ?, birth_month = ?, birth_day = ?,
           birth_hour = ?, birth_minute = ?,
           birth_place_name = ?, birth_place_id = ?, birth_lat = ?, birth_lng = ?,
-          svg_content = ?, png_path = ?, style = ?, generated_at = ?, updated_at = datetime('now')
+          svg_content = ?, png_path = ?, style = ?, chart_gpt_json = ?, generated_at = ?, updated_at = datetime('now')
          WHERE id = ?`,
         [
           person.birth_year,
@@ -113,6 +115,7 @@ export const upsertPersonWithChart = async (person: {
           person.svg_content || null,
           person.png_path || null,
           person.style,
+          person.chart_gpt_json ?? null,
           person.generated_at,
           existing[0].id,
         ]
@@ -126,8 +129,8 @@ export const upsertPersonWithChart = async (person: {
     `INSERT INTO persons (
       owner_user_id, name, birth_year, birth_month, birth_day,
       birth_hour, birth_minute, birth_place_name, birth_place_id, birth_lat,
-      birth_lng, svg_content, png_path, style, generated_at, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+      birth_lng, svg_content, png_path, style, chart_gpt_json, generated_at, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
     [
       user.id,
       person.name || null,
@@ -143,6 +146,7 @@ export const upsertPersonWithChart = async (person: {
       person.svg_content || null,
       person.png_path || null,
       person.style,
+      person.chart_gpt_json ?? null,
       person.generated_at,
     ]
   );

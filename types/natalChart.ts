@@ -4,9 +4,10 @@
  */
 
 export interface BirthData {
-  // Basic birth information
   name?: string;
+  /** UTC instant used for chart calculation; hour/minute match birthTime when input is treated as UTC. */
   birthDate: Date;
+  /** User-entered hour/minute (same as birthDate’s UTC hour/minute until we add timezone lookup). */
   birthTime: {
     hour: number;
     minute: number;
