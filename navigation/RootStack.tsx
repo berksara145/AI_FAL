@@ -21,6 +21,8 @@ export type RootStackParamList = {
     mode?: "interactive" | "readonly";
     feature?: string; // e.g., "dailyHoroscope", "compatibility", "big3", "birthMap", etc.
     initialMessage?: string; // Predetermined initial message from AI
+    /** Explore classes: system prompt / agenda for this conversation (from ExploreScreen) */
+    agenda?: string;
     birthDate?: string; // For birth map feature
     personName?: string; // Optional person name to operate on (for birthMap)
   };

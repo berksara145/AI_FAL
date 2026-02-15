@@ -67,6 +67,8 @@ export interface ChartStyleConfig {
   accentColor?: string;
   zodiacTextColor?: string;
   bodyIconSize?: number;
+  /** Optional URIs for zodiac sign images (12 items, index 0=Aries..11=Pisces). */
+  zodiacImageUrls?: string[];
   useGradients?: boolean;
   glowEffect?: boolean;
 }

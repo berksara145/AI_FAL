@@ -122,6 +122,8 @@ export interface ChartStyle {
   accentColor?: string;
   zodiacTextColor?: string;
   bodyIconSize?: number;
+  /** Optional URIs for zodiac sign images (12 items, index 0=Aries..11=Pisces). When set, chart uses these instead of Unicode symbols. */
+  zodiacImageUrls?: string[];
   useGradients?: boolean;
   glowEffect?: boolean;
 }
@@ -135,7 +137,7 @@ export const DEFAULT_STYLE: ChartStyle = {
   secondaryRingColor: "#8b6914", // Darker gold
   accentColor: "#ff69b4", // Pink/magenta
   zodiacTextColor: "#d4af37",
-  bodyIconSize: 18,
+  bodyIconSize: 32,
   useGradients: true,
   glowEffect: true,
 };
@@ -196,19 +198,19 @@ export function generateApproxChart({
 
 // -------- Astrological Symbols --------
 
-const ZODIAC_SYMBOLS: Record<number, { name: string; symbol: string; emoji: string }> = {
-  0: { name: "Aries", symbol: "♈", emoji: "♈" },
-  1: { name: "Taurus", symbol: "♉", emoji: "♉" },
-  2: { name: "Gemini", symbol: "♊", emoji: "♊" },
-  3: { name: "Cancer", symbol: "♋", emoji: "♋" },
-  4: { name: "Leo", symbol: "♌", emoji: "♌" },
-  5: { name: "Virgo", symbol: "♍", emoji: "♍" },
-  6: { name: "Libra", symbol: "♎", emoji: "♎" },
-  7: { name: "Scorpio", symbol: "♏", emoji: "♏" },
-  8: { name: "Sagittarius", symbol: "♐", emoji: "♐" },
-  9: { name: "Capricorn", symbol: "♑", emoji: "♑" },
-  10: { name: "Aquarius", symbol: "♒", emoji: "♒" },
-  11: { name: "Pisces", symbol: "♓", emoji: "♓" },
+const ZODIAC_SYMBOLS: Record<number, { name: string; symbol: string }> = {
+  0: { name: "Aries", symbol: "♈" },
+  1: { name: "Taurus", symbol: "♉" },
+  2: { name: "Gemini", symbol: "♊" },
+  3: { name: "Cancer", symbol: "♋" },
+  4: { name: "Leo", symbol: "♌" },
+  5: { name: "Virgo", symbol: "♍" },
+  6: { name: "Libra", symbol: "♎" },
+  7: { name: "Scorpio", symbol: "♏" },
+  8: { name: "Sagittarius", symbol: "♐" },
+  9: { name: "Capricorn", symbol: "♑" },
+  10: { name: "Aquarius", symbol: "♒" },
+  11: { name: "Pisces", symbol: "♓" },
 };
 
 const PLANET_SYMBOLS: Record<BodyKey, { symbol: string; shortName: string }> = {
@@ -280,9 +282,20 @@ export function generateStyledChart(
 
   const size = s.size!;
   const center = size / 2;
-
-  const zodiacOuter = size * 0.45;
-  const zodiacInner = size * 0.38;
+  // zodiac ring: choose inner/outer so images fit but remain inside the canvas.
+  // Keep a safe margin from the SVG edge so images/filters aren't clipped.
+  const zodiacInner = size * 0.36; // moved slightly inward to make room
+  const zodiacBandWidth = size * 0.12; // band width == zodiac image size (fits)
+  const zodiacOuter = zodiacInner + zodiacBandWidth; // ~0.48 of size (keeps inside center)
+  const planetSymbolSize = s.bodyIconSize!;
+  const zodiacSymbolSize = Math.round(planetSymbolSize * 1.4);
+  const planetMarkerR = Math.max(8, Math.round(planetSymbolSize * 0.6));
+  const degFontSize = Math.max(10, Math.round(planetSymbolSize * 0.5));
+  const zodiacNameFontSize = Math.max(10, Math.round(zodiacSymbolSize * 0.55));
+  // Use images only when we have all 12 valid (non-empty) URIs; otherwise no fallback to emoji
+  const hasZodiacUrls = Array.isArray(s.zodiacImageUrls) && s.zodiacImageUrls.length >= 12;
+  const useZodiacImages = hasZodiacUrls && s.zodiacImageUrls!.every((u) => typeof u === "string" && u.length > 0);
+  const zodiacImageSize = useZodiacImages ? Math.round(size * 0.105) : 0;
 
   const aspectInner = size * 0.28;
   const aspectOuter = size * 0.32;
@@ -306,13 +319,19 @@ export function generateStyledChart(
   const svg: string[] = [];
 
   svg.push(
-    `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="font-family: Arial, Helvetica, sans-serif;">`,
+    `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="font-family: Arial, Helvetica, sans-serif;">`,
     `<defs>`,
+    // circular clip so exported image becomes a circle
+    // set clip radius slightly larger than the outer zodiac ring so images/filters aren't clipped
+    (() => {
+      const clipR = Math.min(zodiacOuter * 1.08, center - 1);
+      return `<clipPath id="circleClip"><circle cx="${center}" cy="${center}" r="${clipR}" /></clipPath>`;
+    })(),
     `<style>
-      .zodiac-label { font-size: 13px; font-weight: bold; fill: ${s.zodiacTextColor}; }
+      .zodiac-label { font-size: ${zodiacSymbolSize}px; font-weight: bold; fill: ${s.zodiacTextColor}; }
       .house-num { font-size: 10px; fill: #999; }
-      .planet-text { font-size: 12px; font-weight: bold; fill: ${s.zodiacTextColor}; }
-      .planet-symbol { font-size: ${s.bodyIconSize}px; }
+      .planet-text { font-size: ${Math.max(10, degFontSize)}px; font-weight: bold; fill: ${s.zodiacTextColor}; }
+      .planet-symbol { font-size: ${planetSymbolSize}px; }
     </style>`
   );
 
@@ -324,8 +343,9 @@ export function generateStyledChart(
   }
 
   svg.push(`</defs>`);
-
-  // Background
+  // Start clipped group so final image is circular
+  svg.push(`<g clip-path="url(#circleClip)">`);
+  // Background (will be clipped)
   svg.push(`<rect width="${size}" height="${size}" fill="${s.backgroundColor}"/>`);
 
   if (useStarry) {
@@ -368,17 +388,21 @@ export function generateStyledChart(
     const midAngle = i * 30 + 15;
 
     const labelPos = polarToCartesian(center, center, (zodiacOuter + zodiacInner) / 2, midAngle - offset);
-    svg.push(
-      `<text x="${labelPos.x}" y="${labelPos.y}" class="zodiac-label" text-anchor="middle" dominant-baseline="middle">${symbolData.symbol}</text>`
-    );
 
-    const namePos = polarToCartesian(center, center, zodiacOuter + 15, midAngle - offset);
-    svg.push(
-      `<text x="${namePos.x}" y="${namePos.y}" class="zodiac-label" text-anchor="middle" dominant-baseline="middle" font-size="10">${symbolData.name.substring(
-        0,
-        3
-      )}</text>`
-    );
+    if (useZodiacImages) {
+      const imgW = zodiacImageSize;
+      const imgH = zodiacImageSize;
+      const imgX = labelPos.x - imgW / 2;
+      const imgY = labelPos.y - imgH / 2;
+      const uri = s.zodiacImageUrls![i];
+      svg.push(
+        `<image href="${uri}" xlink:href="${uri}" x="${imgX}" y="${imgY}" width="${imgW}" height="${imgH}" preserveAspectRatio="xMidYMid meet"/>`
+      );
+    } else {
+      svg.push(
+        `<text x="${labelPos.x}" y="${labelPos.y}" class="zodiac-label" font-size="${zodiacSymbolSize}" text-anchor="middle" dominant-baseline="middle" fill="${s.zodiacTextColor}">${symbolData.symbol}</text>`
+      );
+    }
   }
 
   // --- HOUSE CUSPS ---
@@ -439,20 +463,16 @@ export function generateStyledChart(
     const planetSym = PLANET_SYMBOLS[body.key];
     const p = polarToCartesian(center, center, bodyRadius, body.lon - offset);
 
-    // Marker circle (no filter in perf mode)
-    svg.push(`<circle cx="${p.x}" cy="${p.y}" r="10" fill="${s.accentColor}" opacity="0.3"${planetGlowAttr}/>`);
-    // Symbol
+    svg.push(`<circle cx="${p.x}" cy="${p.y}" r="${planetMarkerR}" fill="${s.accentColor}" opacity="0.3"${planetGlowAttr}/>`);
     svg.push(
-      `<text x="${p.x}" y="${p.y + 4}" class="planet-symbol" text-anchor="middle" dominant-baseline="middle" fill="${s.zodiacTextColor}"${planetGlowAttr}>${
-        planetSym.symbol
-      }</text>`
+      `<text x="${p.x}" y="${p.y + 3}" class="planet-symbol" font-size="${planetSymbolSize}" font-weight="bold" text-anchor="middle" dominant-baseline="middle" fill="${s.zodiacTextColor}"${planetGlowAttr}>${planetSym.symbol}</text>`
     );
 
-    // Degree
+    // Degree (clearly visible next to planet)
     const deg = Math.floor(body.lon % 30);
-    const degPos = polarToCartesian(center, center, bodyRadius + 20, body.lon - offset);
+    const degPos = polarToCartesian(center, center, bodyRadius + 22, body.lon - offset);
     svg.push(
-      `<text x="${degPos.x}" y="${degPos.y}" class="planet-text" text-anchor="middle" font-size="8">${deg}°</text>`
+      `<text x="${degPos.x}" y="${degPos.y}" class="planet-text" text-anchor="middle" dominant-baseline="middle" font-size="${degFontSize}" font-weight="bold" fill="${s.zodiacTextColor}">${deg}°</text>`
     );
   }
 
@@ -476,6 +496,10 @@ export function generateStyledChart(
 
   // Center point
   svg.push(`<circle cx="${center}" cy="${center}" r="3" fill="${s.primaryRingColor}"${planetGlowAttr}/>`);
+  // end clipped group
+  svg.push(`</g>`);
+  // outer circle border for the picture
+  svg.push(`<circle cx="${center}" cy="${center}" r="${zodiacOuter * 1.05}" fill="none" stroke="${s.primaryRingColor}" stroke-width="3" opacity="0.9"/>`);
   svg.push(`</svg>`);
 
   return svg.join("\n");

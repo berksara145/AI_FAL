@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Image, InteractionManager, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Image, InteractionManager, Dimensions, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -83,7 +83,9 @@ export default function PersonDetailScreen({ route }: Props) {
 
   // No SVG rendering/capture on this screen — we only show cached PNGs.
 
-  console.log("zodiacInfo", zodiacInfo);  
+  const { width: screenWidth } = Dimensions.get("window");
+  const chartSize = Math.min(screenWidth - 48, 400);
+
   return (
     <ImageBackground
       source={require("../../assets/personDetailBg.png")}
@@ -124,18 +126,18 @@ export default function PersonDetailScreen({ route }: Props) {
           </View>
         </View>
 
-        <Text style={styles.statusText}>
-          {loadingChart ? "Checking for saved birth map..." : pngUri ? "Birth map available" : "Birth map not generated yet"}
-        </Text>
-
         <View style={styles.separator} />
 
         {/* If chart exists display it, otherwise show a button to open/generate it.
             Only show the button after we've finished loading the check. */}
         {!loadingChart ? (
           pngUri ? (
-            <View style={styles.chartImage}>
-              <Image source={{ uri: pngUri }} style={StyleSheet.absoluteFill} resizeMode="contain" />
+            <View style={[styles.chartImage, { width: chartSize, height: chartSize }]}>
+              <Image
+                source={{ uri: pngUri }}
+                style={StyleSheet.absoluteFill}
+                resizeMode="cover"
+              />
             </View>
           ) : (
             <TouchableOpacity
@@ -252,14 +254,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#f7e3a5",
   },
-  statusText: {
-    marginTop: 8,
-    fontSize: 16,
-    color: "#f5e8c5",
-  },
   separator: {
-    marginTop: 40,
-    marginBottom: 32,
+    marginTop: 24,
+    marginBottom: 20,
     width: "70%",
     height: StyleSheet.hairlineWidth,
     backgroundColor: "rgba(250, 218, 134, 0.5)",
@@ -287,14 +284,23 @@ const styles = StyleSheet.create({
   ctaSubText: {
     fontSize: 12,
     color: "rgba(245, 234, 200, 0.9)",
-  }
-  ,
+  },
   chartImage: {
-    width: 300,
-    height: 300,
-    marginTop: 16,
-    borderRadius: 12,
+    marginTop: 8,
+    borderRadius: 999,
     overflow: "hidden",
-  }
+    alignSelf: "center",
+    borderWidth: 3,
+    borderColor: "rgba(250, 218, 134, 0.9)",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: { elevation: 8 },
+    }),
+  },
 });
 

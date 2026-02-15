@@ -4,6 +4,9 @@ import type { RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/RootStack";
 
+const apiKey = "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";
+          
+
 // Database
 import {
   createChatSession,
@@ -17,6 +20,7 @@ import type { ChatSession } from "../../types/chatSession";
 // Components
 import ChatSessionCore, { type ChatMessage } from "./components/ChatSessionCore";
 import BirthMapChatWrapper from "../../screens/orbit/BirthMapChatWrapper";
+import { sendChatToOpenAI, type ChatMsg } from "../../lib/gptClient";
 
 type ChatSessionRouteProp = RouteProp<RootStackParamList, "ChatSession">;
 
@@ -32,7 +36,7 @@ export default function ChatSessionScreen() {
   const route = useRoute<ChatSessionRouteProp>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const { sessionId, mode = "interactive", feature, initialMessage } = route.params || {};
+  const { sessionId, mode = "interactive", feature, initialMessage, agenda } = route.params || {};
   
   // If feature is birthMap, use the specialized wrapper and pass route params explicitly
   if (feature === "birthMap") {
@@ -49,6 +53,8 @@ export default function ChatSessionScreen() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  /** Agenda from ExploreScreen: system prompt for this conversation class (used when calling GPT) */
+  const [sessionAgenda] = useState<string | undefined>(agenda);
 
   // Initialize session and load messages
   useEffect(() => {
@@ -127,27 +133,36 @@ export default function ChatSessionScreen() {
       setMessages((prev) => [...prev, userMessage]);
       setIsTyping(true);
 
-      // TODO: Send message to AI and get response
-      // Simulate AI response
-      setTimeout(async () => {
+      (async () => {
         try {
-          const aiResponse = "This is a placeholder response. AI integration coming soon!";
-          
-          // Save AI response to database
+          const buildMessages = (): ChatMsg[] => {
+            const system = sessionAgenda || "You are a warm, supportive assistant. Keep responses concise and helpful.";
+            const history: ChatMsg[] = messages
+              .filter((m) => m.role === "user" || m.role === "assistant")
+              .slice(-12)
+              .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+            return [{ role: "system", content: system }, ...history, { role: "user", content: text.trim() }];
+          };
+          const aiResponse = await sendChatToOpenAI(buildMessages(), apiKey);
+
           const aiDbMessage = await addMessage({
             sessionId: currentSessionId,
             role: "assistant",
             content: aiResponse,
           });
-
-          const aiMessage = messageToUI(aiDbMessage);
-          setMessages((prev) => [...prev, aiMessage]);
+          setMessages((prev) => [...prev, messageToUI(aiDbMessage)]);
         } catch (error) {
-          console.error("Error saving AI message:", error);
+          console.error("Error calling AI or saving message:", error);
+          const fallback = await addMessage({
+            sessionId: currentSessionId,
+            role: "assistant",
+            content: "I couldn't reach the AI right now. Please try again or check your connection.",
+          });
+          setMessages((prev) => [...prev, messageToUI(fallback)]);
         } finally {
           setIsTyping(false);
         }
-      }, 1500);
+      })();
     } catch (error) {
       console.error("Error sending message:", error);
       setIsTyping(false);

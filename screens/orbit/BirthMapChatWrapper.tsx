@@ -25,6 +25,7 @@ import {
   formatChartDataForDisplay,
 } from "../../lib/natalChartService";
 import { saveChartPngFromCapture } from "../../lib/chartImageService";
+import { getZodiacImageDataUris } from "../../lib/zodiacImageLoader";
 import type { ChartStyleConfig, GeneratedChart } from "../../types/natalChart";
 
 // Components
@@ -413,7 +414,9 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
       setIsGeneratingChart(true);
       console.log("[BirthMapChatWrapper] 🚀 isGeneratingChart set to true");
 
-      // Define custom chart style
+      // Load zodiac images as data URIs so they render inside SVG and in captured PNG
+      const zodiacImageUrls = await getZodiacImageDataUris();
+
       const chartStyle: ChartStyleConfig = {
         size: 1000,
         backgroundColor: "#0a0015",
@@ -423,7 +426,8 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
         secondaryRingColor: "#8b6914",
         accentColor: "#ff1493",
         zodiacTextColor: "#ffd700",
-        bodyIconSize: 20,
+        bodyIconSize: 28,
+        zodiacImageUrls,
         useGradients: true,
         glowEffect: true,
       };
