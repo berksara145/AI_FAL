@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export type OrbitNodeProps = {
   label: string;
@@ -8,9 +9,11 @@ export type OrbitNodeProps = {
   icon?: React.ReactNode | string;
   imageSource?: any;
   onPress?: () => void;
+  /** When true, show a + in the circle and use as "add person" slot */
+  isAddButton?: boolean;
 };
 
-export function OrbitNode({ label, subtitle, style, icon, imageSource, onPress }: OrbitNodeProps) {
+export function OrbitNode({ label, subtitle, style, icon, imageSource, onPress, isAddButton }: OrbitNodeProps) {
   return (
     <TouchableOpacity
       activeOpacity={0.8}
@@ -23,7 +26,9 @@ export function OrbitNode({ label, subtitle, style, icon, imageSource, onPress }
         <View style={styles.nodeCircleMiddle}>
           {/* Inner fill */}
           <View style={styles.nodeCircleInner}>
-            {imageSource ? (
+            {isAddButton ? (
+              <MaterialCommunityIcons name="plus" size={32} color="#FADA86" />
+            ) : imageSource ? (
               <Image source={imageSource} style={styles.nodeImage} resizeMode="contain" />
             ) : typeof icon === "string" ? (
               <Text style={styles.nodeIconText}>{icon}</Text>
@@ -33,8 +38,8 @@ export function OrbitNode({ label, subtitle, style, icon, imageSource, onPress }
           </View>
         </View>
       </View>
-      <Text style={styles.nodeLabel}>{label}</Text>
-      {subtitle ? <Text style={styles.nodeSubtitle}>{subtitle}</Text> : null}
+      <Text style={styles.nodeLabel}>{isAddButton ? "Add" : label}</Text>
+      {!isAddButton && subtitle ? <Text style={styles.nodeSubtitle}>{subtitle}</Text> : null}
     </TouchableOpacity>
   );
 }

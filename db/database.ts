@@ -177,53 +177,15 @@ export const initDatabase = (): Promise<void> => {
         // Column already exists, ignore
       }
 
-      // Seed mock persons from orbit nodes if table empty
+      // One-time reset: clear persons table so app starts with 0 people (remove this block when no longer needed)
       try {
-        // Importing nodes data (mock) to seed initial persons for the app
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const nodesData = require("../screens/orbit/nodesData").orbitNodes;
-        // Ensure we have a user
-        const users: any = db.getAllSync("SELECT id FROM users LIMIT 1", []);
-        const ownerId = users && users.length > 0 ? users[0].id : null;
-        if (ownerId) {
-          // Wipe existing persons for this owner and re-seed from nodesData
-          try {
-            db.runSync("DELETE FROM persons WHERE owner_user_id = ?", [ownerId]);
-          } catch (delErr) {
-            console.warn("Failed to clear existing persons for owner:", delErr);
-          }
-
-          for (const node of nodesData) {
-            // Prefer explicit numeric fields if provided, otherwise parse birthDate string
-            const year = (node as any).birthYear ?? null;
-            const month = (node as any).birthMonth ?? null;
-            const day = (node as any).birthDay ?? null;
-
-            let y = year;
-            let m = month;
-            let d = day;
-
-            if (y === null || m === null || d === null) {
-              const parsed = new Date(node.birthDate);
-              if (!Number.isNaN(parsed.getTime())) {
-                y = y ?? parsed.getFullYear();
-                m = m ?? parsed.getMonth() + 1;
-                d = d ?? parsed.getDate();
-              }
-            }
-
-            db.runSync(
-              `INSERT INTO persons (owner_user_id, name, birth_year, birth_month, birth_day, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
-              [ownerId, node.label, y, m, d]
-            );
-          }
-          console.log("Wiped and re-seeded persons table from nodesData");
-        }
+        db.runSync("DELETE FROM persons", []);
+        console.log("Persons table cleared (one-time reset)");
       } catch (e) {
-        // Non-fatal: seeding failed (maybe file not present in some environments)
-        console.warn("Persons seeding skipped or failed:", e);
+        console.warn("Persons table clear skipped:", e);
       }
+
+      // No mock seeding: persons table starts empty; users add people via Orbit + button.
 
       console.log("Database initialized successfully");
       resolve();

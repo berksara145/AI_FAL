@@ -40,6 +40,36 @@ export const getPersonByName = async (name: string): Promise<Person | null> => {
 };
 
 /**
+ * Create a person with only name and birth date (for "add person" flow).
+ * Time, location, and chart are filled later via birth map chat.
+ */
+export const createPersonMinimal = async (params: {
+  name: string;
+  birth_year: number;
+  birth_month: number;
+  birth_day: number;
+}): Promise<void> => {
+  const user = await getOrCreateUser();
+  const { name, birth_year, birth_month, birth_day } = params;
+  const existing = await querySql<Person>("SELECT id FROM persons WHERE owner_user_id = ? AND name = ? LIMIT 1", [user.id, name]);
+  if (existing.length > 0) {
+    await executeSql(
+      "UPDATE persons SET birth_year = ?, birth_month = ?, birth_day = ?, updated_at = datetime('now') WHERE id = ?",
+      [birth_year, birth_month, birth_day, existing[0].id]
+    );
+    return;
+  }
+  await executeSql(
+    `INSERT INTO persons (
+      owner_user_id, name, birth_year, birth_month, birth_day,
+      birth_hour, birth_minute, birth_place_name, birth_place_id, birth_lat,
+      birth_lng, svg_content, png_path, style, generated_at, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, datetime('now'), datetime('now'))`,
+    [user.id, name, birth_year, birth_month, birth_day]
+  );
+};
+
+/**
  * Upsert person record for the current user. If a person with same name exists, update; otherwise insert.
  */
 export const upsertPersonWithChart = async (person: {

@@ -15,6 +15,7 @@ import {
   addMessage,
 } from "../../db/chat.repo";
 import { updateBirthLocation, updateBirthTime } from "../../db/user.repo";
+import { createPersonMinimal } from "../../db/person.repo";
 import type { Message } from "../../types/message";
 import type { ChatSession } from "../../types/chatSession";
 
@@ -30,6 +31,8 @@ import type { ChartStyleConfig, GeneratedChart } from "../../types/natalChart";
 import ChatSessionCore, { type ChatMessage } from "../chat/components/ChatSessionCore";
 import TimePicker from "./components/TimePicker";
 import LocationSearch from "./components/LocationSearch";
+import BirthDatePicker from "../onboarding/components/BirthDatePicker";
+import type { BirthDateState } from "../onboarding/hooks/useOnboardingState";
 
 type BirthMapRouteProp = RouteProp<RootStackParamList, "ChatSession">;
 type BirthLocation = {
@@ -38,6 +41,8 @@ type BirthLocation = {
   lat: number;
   lng: number;
 };
+
+type AddPersonStep = "name" | "birthDate";
 
 // Convert database Message to UI message format
 const messageToUI = (msg: Message): ChatMessage => ({
@@ -53,13 +58,26 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
 
   const { sessionId } = route.params || {};
   const birthDate = incomingBirthDate ?? (route.params as any)?.birthDate;
-  const personName = incomingPersonName ?? (route.params as any)?.personName;
+  const personNameFromParams = incomingPersonName ?? (route.params as any)?.personName;
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(sessionId ? Number(sessionId) : null);
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Birth map flow state
+
+  // Add-person wizard: only name + birth date wheel, then create person and go back
+  const [addPersonStep, setAddPersonStep] = useState<AddPersonStep>("name");
+  const [collectedName, setCollectedName] = useState<string | null>(null);
+  const [createdPersonName, setCreatedPersonName] = useState<string | null>(null);
+  const [showBirthDatePicker, setShowBirthDatePicker] = useState(false);
+  const defaultYear = new Date().getFullYear() - 25;
+  const [addPersonBirthDateState, setAddPersonBirthDateState] = useState<BirthDateState>({
+    year: defaultYear,
+    month: 1,
+    day: 1,
+  });
+  const effectivePersonName = personNameFromParams ?? createdPersonName;
+
+  // Birth map flow state (time, location, chart — only when opened from PersonDetail with personName)
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [birthTime, setBirthTime] = useState({ hour: 12, minute: 0 });
@@ -98,27 +116,29 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
           }
         }
 
-        // Create new session for birth map
-        console.log("[BirthMapChatWrapper] Creating new birth map session...");
+        // Create new session for birth map (different initial message for add-person vs existing person)
+        const isAddPersonFlow = !personNameFromParams;
+        const firstMessage = isAddPersonFlow
+          ? "Let's add someone to your orbit. What's their name?"
+          : "To generate your birth map, I'll need a few details. First, what time were you born? Please provide the hour and minute.";
+        console.log("[BirthMapChatWrapper] Creating new birth map session...", { isAddPersonFlow });
         session = await createChatSession({
           mode: "interactive",
           feature: "birthMap",
-          initialMessage: "To generate your birth map, I'll need a few details. First, what time were you born? Please provide the hour and minute.",
+          initialMessage: firstMessage,
         });
 
         setCurrentSessionId(session.id);
         setCurrentSession(session);
         console.log("[BirthMapChatWrapper] ✅ New session created with ID:", session.id);
 
-        // Add initial message with streaming flag
-        const firstMessage = "To generate your birth map, I'll need a few details. First, what time were you born? Please provide the hour and minute.";
         const dbMessage = await addMessage({
           sessionId: session.id,
           role: "assistant",
           content: firstMessage,
         });
         const initialMessage = messageToUI(dbMessage);
-        initialMessage.isStreaming = true; // Mark as streaming
+        initialMessage.isStreaming = true;
         setMessages([initialMessage]);
         console.log("[BirthMapChatWrapper] ✅ Initial message added");
       } catch (error) {
@@ -181,24 +201,64 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
   }, [pendingChartCapture]);
 
   const handleSendMessage = async (text: string) => {
-    // Don't allow sending messages when pickers are shown
-    if (showTimePicker || showLocationSearch || !currentSessionId) {
-      return;
-    }
+    if (showTimePicker || showLocationSearch || showBirthDatePicker || !currentSessionId) return;
+
+    const isAddPersonFlow = !personNameFromParams;
 
     try {
-      // Save user message to database
+      // Add-person wizard: intercept name and birth date before normal flow
+      if (isAddPersonFlow && addPersonStep === "name") {
+        const name = text.trim();
+        if (!name) return;
+        const userDbMessage = await addMessage({
+          sessionId: currentSessionId,
+          role: "user",
+          content: text,
+        });
+        setMessages((prev) => [...prev, messageToUI(userDbMessage)]);
+        setCollectedName(name);
+        setAddPersonStep("birthDate");
+        const reply = await addMessage({
+          sessionId: currentSessionId,
+          role: "assistant",
+          content: `Great! Select ${name}'s birth date below:`,
+        });
+        const replyMsg = messageToUI(reply);
+        replyMsg.isStreaming = true;
+        setMessages((prev) => [...prev, replyMsg]);
+        setShowBirthDatePicker(true);
+        return;
+      }
+
+      // birthDate step is handled by BirthDatePicker wheel (no text input)
+
+      // Normal: just save user message
       const userDbMessage = await addMessage({
         sessionId: currentSessionId,
         role: "user",
         content: text,
       });
-
-      const userMessage = messageToUI(userDbMessage);
-      setMessages((prev) => [...prev, userMessage]);
+      setMessages((prev) => [...prev, messageToUI(userDbMessage)]);
     } catch (error) {
       console.error("Error sending message:", error);
     }
+  };
+
+  const handleBirthDateConfirm = async () => {
+    if (!currentSessionId || !collectedName) return;
+    const y = addPersonBirthDateState.year ?? new Date().getFullYear();
+    const m = addPersonBirthDateState.month ?? 1;
+    const d = addPersonBirthDateState.day ?? 1;
+    setShowBirthDatePicker(false);
+    await createPersonMinimal({ name: collectedName, birth_year: y, birth_month: m, birth_day: d });
+    setCreatedPersonName(collectedName);
+    const reply = await addMessage({
+      sessionId: currentSessionId,
+      role: "assistant",
+      content: `Added ${collectedName} to your orbit! ✨`,
+    });
+    setMessages((prev) => [...prev, messageToUI(reply)]);
+    navigation.goBack();
   };
 
   const handleTimeConfirm = async () => {
@@ -219,7 +279,7 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
       // Persist birth time to user or person record
     try {
       console.log("[BirthMapChatWrapper] 💾 Saving birth time to database...");
-      await updateBirthTime(birthTime.hour, birthTime.minute, personName);
+      await updateBirthTime(birthTime.hour, birthTime.minute, effectivePersonName ?? undefined);
       console.log("[BirthMapChatWrapper] ✅ Birth time saved successfully");
     } catch (error) {
       console.error("[BirthMapChatWrapper] ❌ Error saving birth time:", error);
@@ -258,27 +318,16 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
   };
 
   const handleStreamingComplete = (messageId: string) => {
-    // Mark message as done streaming and check content
     setMessages((prev) => {
       const updated = prev.map((msg) => {
         if (msg.id === messageId) {
-          // Check content before updating
-          const content = msg.content;
-          
-          // If it's the initial message asking for time, show time picker
-          if (content.includes("what time were you born")) {
-            setTimeout(() => {
-              setShowTimePicker(true);
-            }, 300);
+          const content = msg.content.toLowerCase();
+          if (content.includes("what time were you born") || content.includes("what time was ") && content.includes(" born")) {
+            setTimeout(() => setShowTimePicker(true), 300);
           }
-          
-          // If it's the message asking for location, show location search
-          if (content.includes("location where you were born")) {
-            setTimeout(() => {
-              setShowLocationSearch(true);
-            }, 300);
+          if (content.includes("location where you were born") || content.includes("location where") && content.includes("born")) {
+            setTimeout(() => setShowLocationSearch(true), 300);
           }
-          
           return { ...msg, isStreaming: false };
         }
         return msg;
@@ -310,7 +359,7 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
           lat: birthLocation.lat,
           lng: birthLocation.lng,
         },
-        personName
+        effectivePersonName ?? undefined
       );
       console.log("[BirthMapChatWrapper] ✅ Birth location saved successfully");
     } catch (error) {
@@ -339,19 +388,19 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
 
   const generateNatalChart = async () => {
     console.log("[BirthMapChatWrapper] 🔴 generateNatalChart called");
-    console.log("[BirthMapChatWrapper] currentSessionId:", currentSessionId, "personName:", personName);
+    console.log("[BirthMapChatWrapper] currentSessionId:", currentSessionId, "effectivePersonName:", effectivePersonName);
 
     if (!currentSessionId) {
       console.error("[BirthMapChatWrapper] ❌ No currentSessionId, aborting");
       return;
     }
-    if (!personName) {
+    if (!effectivePersonName) {
       console.error("[BirthMapChatWrapper] ❌ personName required for chart (use persons table)");
       try {
         const errMsg = await addMessage({
           sessionId: currentSessionId,
           role: "assistant",
-          content: "Please open Birth Map from a person's profile so we know whose chart to generate.",
+          content: "Please tell me the person's name and birth date first, or open Birth Map from a person's profile.",
         });
         setMessages((prev) => [...prev, messageToUI(errMsg)]);
       } catch (e) {
@@ -381,14 +430,14 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
       console.log("[BirthMapChatWrapper] ✅ Chart style defined");
 
       // 1) Generate chart and save SVG to DB (png_path stays null for now)
-      console.log("[BirthMapChatWrapper] 📊 Calling generateAndSaveNatalChart...", { personName });
-      const chart = await generateAndSaveNatalChart(chartStyle, undefined, personName);
+      console.log("[BirthMapChatWrapper] 📊 Calling generateAndSaveNatalChart...", { personName: effectivePersonName });
+      const chart = await generateAndSaveNatalChart(chartStyle, undefined, effectivePersonName);
       console.log("[BirthMapChatWrapper] ✅ Chart + SVG saved to DB");
 
       setGeneratedChart(chart);
       lastChartRef.current = chart;
       lastSessionIdRef.current = currentSessionId;
-      const nameForPerson = personName ?? chart.chartData.birthData.name ?? "";
+      const nameForPerson = effectivePersonName ?? chart.chartData.birthData.name ?? "";
       if (nameForPerson && chart.svgContent) {
         captureDoneRef.current = false;
         setPendingChartCapture({ svgContent: chart.svgContent, personName: nameForPerson });
@@ -432,10 +481,22 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
       onSendMessage={handleSendMessage}
       isLoading={isLoading || isGeneratingChart}
       mode="interactive"
-      disabled={showTimePicker || showLocationSearch || isGeneratingChart}
+      disabled={showTimePicker || showLocationSearch || showBirthDatePicker || isGeneratingChart}
       onClose={() => navigation.goBack()}
       onStreamingComplete={handleStreamingComplete}
     >
+      {/* Add-person: birth date wheel (same as onboarding) */}
+      {showBirthDatePicker && (
+        <BirthDatePicker
+          birthDateState={addPersonBirthDateState}
+          onDateChange={(updates) =>
+            setAddPersonBirthDateState((prev) => ({ ...prev, ...updates }))
+          }
+          onConfirm={handleBirthDateConfirm}
+          title="Select their birth date"
+        />
+      )}
+
       {/* Birth Map Time Picker */}
       {showTimePicker && (
         <TimePicker

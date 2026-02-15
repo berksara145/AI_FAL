@@ -9,12 +9,15 @@ interface BirthDatePickerProps {
   birthDateState: BirthDateState;
   onDateChange: (updates: Partial<BirthDateState>) => void;
   onConfirm: () => void;
+  /** Optional title (e.g. "Select their birth date" for add-person flow) */
+  title?: string;
 }
 
 export default function BirthDatePicker({
   birthDateState,
   onDateChange,
   onConfirm,
+  title = "Select Your Birth Date",
 }: BirthDatePickerProps) {
   const currentYear = new Date().getFullYear();
   const currentMonth = birthDateState.month || 1;
@@ -43,7 +46,7 @@ export default function BirthDatePicker({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Select Your Birth Date</Text>
+        <Text style={styles.title}>{title}</Text>
       </View>
 
       <View style={styles.row}>
