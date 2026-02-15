@@ -7,10 +7,10 @@ import {
   Pressable,
   ActivityIndicator,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { RootStackParamList } from "../../navigation/RootStack";
-import { getRecentChatSessions } from "../../db/chat.repo";
+import {
+  getRecentChatSessions,
+  getFirstUserMessageContent,
+} from "../../db/chat.repo";
 import type { ChatSession } from "../../types/chatSession";
 
 function formatDate(iso: string): string {
@@ -41,8 +41,10 @@ function sessionLabel(session: ChatSession): string {
 }
 
 export default function HistoryScreen() {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [firstUserMessageBySessionId, setFirstUserMessageBySessionId] = useState<
+    Record<number, string | null>
+  >({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -52,9 +54,24 @@ export default function HistoryScreen() {
       try {
         const list = await getRecentChatSessions(20);
         if (!cancelled) setSessions(list);
+        if (cancelled || list.length === 0) {
+          if (!cancelled) setFirstUserMessageBySessionId({});
+          return;
+        }
+        const map: Record<number, string | null> = {};
+        await Promise.all(
+          list.map(async (s) => {
+            const content = await getFirstUserMessageContent(s.id);
+            if (!cancelled) map[s.id] = content;
+          })
+        );
+        if (!cancelled) setFirstUserMessageBySessionId(map);
       } catch (e) {
         console.warn("HistoryScreen: failed to load sessions", e);
-        if (!cancelled) setSessions([]);
+        if (!cancelled) {
+          setSessions([]);
+          setFirstUserMessageBySessionId({});
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -63,10 +80,6 @@ export default function HistoryScreen() {
       cancelled = true;
     };
   }, []);
-
-  const openSession = (session: ChatSession) => {
-    navigation.navigate("ChatSession", { sessionId: String(session.id) });
-  };
 
   return (
     <View style={styles.container}>
@@ -80,27 +93,38 @@ export default function HistoryScreen() {
 
         {loading ? (
           <View style={styles.loadingWrap}>
-            <ActivityIndicator size="large" color="#c9b4d4" />
+            <ActivityIndicator size="large" color="#e6b422" />
           </View>
         ) : sessions.length === 0 ? (
           <Text style={styles.empty}>No conversations yet</Text>
         ) : (
           sessions.map((session) => (
-            <Pressable
-              key={session.id}
-              style={({ pressed }) => [
-                styles.box,
-                pressed && styles.boxPressed,
-              ]}
-              onPress={() => openSession(session)}
-            >
-              <Text style={styles.boxTitle} numberOfLines={1}>
-                {sessionLabel(session)}
-              </Text>
-              <Text style={styles.boxDate}>
+            <View key={session.id} style={styles.itemWrap}>
+              <View style={styles.rectangle}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.rectangleInner,
+                    pressed && styles.rectanglePressed,
+                  ]}
+                  onPress={() => {
+                    // TODO: open chat
+                  }}
+                >
+                  <Text style={styles.rectangleTitle} numberOfLines={1}>
+                    {sessionLabel(session)}
+                  </Text>
+                  <Text
+                    style={styles.firstUserMessage}
+                    numberOfLines={2}
+                  >
+                    {firstUserMessageBySessionId[session.id] ?? "—"}
+                  </Text>
+                </Pressable>
+              </View>
+              <Text style={styles.dateBelow}>
                 {formatDate(session.updated_at || session.created_at)}
               </Text>
-            </Pressable>
+            </View>
           ))
         )}
       </ScrollView>
@@ -129,7 +153,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: "rgba(255,255,255,0.6)",
-    marginBottom: 20,
+    marginBottom: 24,
   },
   loadingWrap: {
     paddingVertical: 40,
@@ -138,29 +162,47 @@ const styles = StyleSheet.create({
   empty: {
     fontSize: 16,
     color: "rgba(255,255,255,0.5)",
-    marginTop: 12,
-  },
-  box: {
-    width: "100%",
+    marginTop: 20,
     paddingVertical: 16,
-    paddingHorizontal: 18,
-    marginBottom: 12,
-    backgroundColor: "rgba(201, 180, 212, 0.15)",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "rgba(201, 180, 212, 0.25)",
   },
-  boxPressed: {
+  itemWrap: {
+    marginBottom: 20,
+  },
+  rectangle: {
+    width: "100%",
+    marginBottom: 8,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: "rgba(230, 180, 34, 0.5)",
+    backgroundColor: "#1a0d2e",
+    overflow: "hidden",
+    paddingVertical: 6, // extra up/down padding on the outer rectangle
+  },
+  rectangleInner: {
+    paddingVertical: 28, // increased vertical padding
+    paddingHorizontal: 24,
+    paddingLeft: 28,
+  },
+  rectanglePressed: {
     opacity: 0.85,
   },
-  boxTitle: {
+  rectangleTitle: {
     fontSize: 17,
     fontWeight: "600",
-    color: "#fff",
-    marginBottom: 4,
+    color: "rgba(220, 205, 150, 0.95)",
+    paddingLeft: 12,
+    paddingTop: 4,
   },
-  boxDate: {
-    fontSize: 13,
-    color: "rgba(255,255,255,0.55)",
+  firstUserMessage: {
+    fontSize: 14,
+    color: "rgba(210, 190, 120, 0.85)",
+    paddingLeft: 12,
+    paddingTop: 6,
+    lineHeight: 20,
+  },
+  dateBelow: {
+    fontSize: 12,
+    color: "rgba(210, 190, 120, 0.75)",
+    paddingLeft: 4,
   },
 });

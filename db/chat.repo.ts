@@ -219,6 +219,26 @@ export const getMessagesBySession = async (sessionId: number): Promise<Message[]
 };
 
 /**
+ * Get the first user message content for a session (for history preview).
+ */
+export const getFirstUserMessageContent = async (
+  sessionId: number
+): Promise<string | null> => {
+  await ensureDatabaseInitialized();
+
+  try {
+    const rows = await querySql<{ content: string }>(
+      "SELECT content FROM messages WHERE session_id = ? AND role = 'user' ORDER BY timestamp ASC LIMIT 1",
+      [sessionId]
+    );
+    return rows.length > 0 ? rows[0].content : null;
+  } catch (error) {
+    console.error("Error getting first user message:", error);
+    return null;
+  }
+};
+
+/**
  * Get the last N messages for a chat session
  */
 export const getLastMessages = async (
