@@ -10,7 +10,7 @@ export type ExploreClassId =
   | "someone-on-mind"
   | "friend-dynamics"
   | "tarot-reading"
-  | "dream-insights";
+  | "natal-chart-analysis";
 
 export interface ExploreClass {
   id: ExploreClassId;
@@ -78,13 +78,13 @@ export const EXPLORE_CLASSES: ExploreClass[] = [
     imageKey: "feature5",
   },
   {
-    id: "dream-insights",
-    title: "Dream insights",
-    feature: "Dream Insights",
+    id: "natal-chart-analysis",
+    title: "Natal Chart Analysis",
+    feature: "Natal Chart Analysis",
     agenda:
-      "You help the user explore their dreams as messages from the subconscious. Listen to their dream, reflect on symbols and feelings, and offer gentle insights about what it might be revealing about their inner world. Be curious and non-dogmatic.",
+      "You are a skilled astrologer. The opening message lists whose natal charts are available. When the user sends a message with one or more of those names, the system attaches the corresponding chart data (JSON) below their message. Use only that attached chart data to give a clear, insightful natal chart analysis — placements, aspects, elements, and what they might mean. If no chart data is attached or they mention someone not in the list, remind them to type one or more names from the list. Be warm and insightful, not prescriptive.",
     initialMessage:
-      "💭 Dreams carry messages from your subconscious. Share your dream with me, and let's explore what it might be revealing about your inner world.",
-    imageKey: "feature4",
+      "🪐 Natal chart analysis — list and names will appear when you open this chat.",
+    imageKey: "feature5",
   },
 ];

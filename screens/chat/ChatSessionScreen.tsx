@@ -11,7 +11,7 @@ import BirthDatePicker from "../onboarding/components/BirthDatePicker";
 import type { BirthDateState } from "../onboarding/hooks/useOnboardingState";
 import { ChatSessionService, type ChatSessionMessage } from "../../lib/chatSessionService";
 import { addMessage } from "../../db/chat.repo";
-import { createPersonMinimal } from "../../db/person.repo";
+import { createPersonMinimal, getPersonsWithChartData, type Person } from "../../db/person.repo";
 
 type ChatSessionRouteProp = RouteProp<RootStackParamList, "ChatSession">;
 
@@ -25,6 +25,7 @@ function toCoreMessage(m: ChatSessionMessage): ChatMessage {
 }
 
 const FEATURE_SOMEONE_ON_MIND = "Someone on your mind?";
+const FEATURE_NATAL_CHART_ANALYSIS = "Natal Chart Analysis";
 
 export default function ChatSessionScreen() {
   const route = useRoute<ChatSessionRouteProp>();
@@ -42,6 +43,8 @@ export default function ChatSessionScreen() {
   }
 
   const serviceRef = useRef<ChatSessionService | null>(null);
+  /** Persons with chart data, for Natal Chart Analysis: list names and inject JSON on send */
+  const chartPersonsRef = useRef<Person[]>([]);
   const [sessionTitle, setSessionTitle] = useState<string>("Chat");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -59,10 +62,28 @@ export default function ChatSessionScreen() {
 
   useEffect(() => {
     const run = async () => {
+      let effectiveInitialMessage = initialMessage;
+      if (feature === FEATURE_NATAL_CHART_ANALYSIS) {
+        const personsWithCharts = await getPersonsWithChartData();
+        chartPersonsRef.current = personsWithCharts;
+        const names = personsWithCharts.map((p) => p.name ?? "").filter(Boolean);
+        if (names.length > 0) {
+          effectiveInitialMessage =
+            "🪐 I have natal charts for: " +
+            names.join(", ") +
+            ". Type one or more of these names (e.g. " +
+            names[0] +
+            ") and I'll analyze their chart.";
+        } else {
+          effectiveInitialMessage =
+            "🪐 You don't have any natal charts yet. Add people in Orbit and generate their birth charts there — then come back here to get an analysis.";
+        }
+      }
+
       const service = new ChatSessionService({
         agenda: agenda ?? "You are a warm, supportive assistant. Keep responses concise and helpful.",
         feature,
-        initialMessage,
+        initialMessage: effectiveInitialMessage,
         mode,
         enableSavePersonHint: feature === FEATURE_SOMEONE_ON_MIND,
       });
@@ -89,9 +110,27 @@ export default function ChatSessionScreen() {
     const service = serviceRef.current;
     if (!service || !text.trim()) return;
 
+    let messageToSend = text.trim();
+    if (feature === FEATURE_NATAL_CHART_ANALYSIS && chartPersonsRef.current.length > 0) {
+      const lower = messageToSend.toLowerCase();
+      const matched = chartPersonsRef.current.filter(
+        (p) => p.name && lower.includes((p.name ?? "").toLowerCase())
+      );
+      if (matched.length > 0) {
+        const parts: string[] = [
+          "[Attached chart data for analysis — use only these when answering]",
+        ];
+        for (const p of matched) {
+          if (p.chart_gpt_json)
+            parts.push(`--- ${p.name} ---\n${p.chart_gpt_json}`);
+        }
+        messageToSend = messageToSend + "\n\n" + parts.join("\n\n");
+      }
+    }
+
     setIsTyping(true);
     try {
-      const result = await service.sendMessage(text);
+      const result = await service.sendMessage(messageToSend);
       const msgs = await service.getMessages();
       setMessages(msgs.map(toCoreMessage));
       if (result.suggestedSavePerson != null) {
