@@ -11,7 +11,7 @@ import BirthDatePicker from "../onboarding/components/BirthDatePicker";
 import type { BirthDateState } from "../onboarding/hooks/useOnboardingState";
 import { ChatSessionService, type ChatSessionMessage } from "../../lib/chatSessionService";
 import { addMessage } from "../../db/chat.repo";
-import { createPersonMinimal, getPersonsWithChartData, type Person } from "../../db/person.repo";
+import { createPersonMinimal, getPersonsWithChartData, isPersonNameTaken, type Person } from "../../db/person.repo";
 
 type ChatSessionRouteProp = RouteProp<RootStackParamList, "ChatSession">;
 
@@ -53,6 +53,7 @@ export default function ChatSessionScreen() {
   // Inline save-person flow (same chat, no new session): name + birth date (day/month/year) like Orbit
   const [pendingSavePerson, setPendingSavePerson] = useState<string | null>(null);
   const [savePersonName, setSavePersonName] = useState("");
+  const [savePersonError, setSavePersonError] = useState<string | null>(null);
   const defaultYear = new Date().getFullYear() - 25;
   const [savePersonBirthDate, setSavePersonBirthDate] = useState<BirthDateState>({
     year: defaultYear,
@@ -151,6 +152,12 @@ export default function ChatSessionScreen() {
     const sid = service?.getSessionId();
     if (sid == null) return;
     const name = (savePersonName || pendingSavePerson || "").trim() || "Unknown";
+    const taken = await isPersonNameTaken(name);
+    if (taken) {
+      setSavePersonError("This name is already in your orbit. Please choose a unique name.");
+      return;
+    }
+    setSavePersonError(null);
     const y = savePersonBirthDate.year ?? new Date().getFullYear();
     const m = savePersonBirthDate.month ?? 1;
     const d = savePersonBirthDate.day ?? 1;
@@ -172,6 +179,7 @@ export default function ChatSessionScreen() {
   const handleSavePersonCancel = () => {
     setPendingSavePerson(null);
     setSavePersonName("");
+    setSavePersonError(null);
   };
 
   return (
@@ -196,9 +204,15 @@ export default function ChatSessionScreen() {
             placeholder="Name"
             placeholderTextColor="rgba(255,255,255,0.4)"
             value={savePersonName}
-            onChangeText={setSavePersonName}
+            onChangeText={(t) => {
+              setSavePersonName(t);
+              if (savePersonError) setSavePersonError(null);
+            }}
             editable={true}
           />
+          {savePersonError != null ? (
+            <Text style={styles.savePersonErrorText}>{savePersonError}</Text>
+          ) : null}
           <BirthDatePicker
             birthDateState={savePersonBirthDate}
             onDateChange={(updates) =>
@@ -246,6 +260,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 16,
     color: "#fff",
+    marginBottom: 12,
+  },
+  savePersonErrorText: {
+    fontSize: 13,
+    color: "#e57373",
     marginBottom: 12,
   },
   cancelButton: {

@@ -53,6 +53,19 @@ export const getPersonByName = async (name: string): Promise<Person | null> => {
 };
 
 /**
+ * Check if a person with this name already exists for the current user (case-insensitive).
+ * Use before creating a new person to enforce unique names.
+ */
+export const isPersonNameTaken = async (name: string): Promise<boolean> => {
+  const trimmed = name.trim();
+  if (!trimmed) return false;
+  const all = await getAllPersons();
+  return all.some(
+    (p) => p.name != null && p.name.trim().toLowerCase() === trimmed.toLowerCase()
+  );
+};
+
+/**
  * Get the "self" person — the one representing the current user (created in onboarding).
  * Tries by name first (case-insensitive), then by matching the user's birth date so we always find the onboarding-created record.
  */
@@ -120,6 +133,7 @@ export const upsertSelfPersonFromCurrentUser = async (): Promise<void> => {
 /**
  * Create a person with only name and birth date (for "add person" flow).
  * Time, location, and chart are filled later via birth map chat.
+ * Requires a unique name; use isPersonNameTaken() first and re-ask if true.
  */
 export const createPersonMinimal = async (params: {
   name: string;
@@ -129,13 +143,9 @@ export const createPersonMinimal = async (params: {
 }): Promise<void> => {
   const user = await getOrCreateUser();
   const { name, birth_year, birth_month, birth_day } = params;
-  const existing = await querySql<Person>("SELECT id FROM persons WHERE owner_user_id = ? AND name = ? LIMIT 1", [user.id, name]);
-  if (existing.length > 0) {
-    await executeSql(
-      "UPDATE persons SET birth_year = ?, birth_month = ?, birth_day = ?, updated_at = datetime('now') WHERE id = ?",
-      [birth_year, birth_month, birth_day, existing[0].id]
-    );
-    return;
+  const taken = await isPersonNameTaken(name);
+  if (taken) {
+    throw new Error("PERSON_NAME_EXISTS");
   }
   await executeSql(
     `INSERT INTO persons (

@@ -227,7 +227,7 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
         const replyMsg = messageToUI(reply);
         replyMsg.isStreaming = true;
         setMessages((prev) => [...prev, replyMsg]);
-        setShowBirthDatePicker(true);
+        // Birth date picker opens in handleStreamingComplete after this message finishes streaming
         return;
       }
 
@@ -323,11 +323,15 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
       const updated = prev.map((msg) => {
         if (msg.id === messageId) {
           const content = msg.content.toLowerCase();
-          if (content.includes("what time were you born") || content.includes("what time was ") && content.includes(" born")) {
-            setTimeout(() => setShowTimePicker(true), 300);
+          // Add-person: open birth date picker only after "Select X's birth date below" finishes streaming
+          if (addPersonStep === "birthDate" && content.includes("birth date") && content.includes("below")) {
+            setTimeout(() => setShowBirthDatePicker(true), 500);
           }
-          if (content.includes("location where you were born") || content.includes("location where") && content.includes("born")) {
-            setTimeout(() => setShowLocationSearch(true), 300);
+          if (content.includes("what time were you born") || (content.includes("what time was ") && content.includes(" born"))) {
+            setTimeout(() => setShowTimePicker(true), 500);
+          }
+          if (content.includes("location where you were born") || (content.includes("location where") && content.includes("born"))) {
+            setTimeout(() => setShowLocationSearch(true), 500);
           }
           return { ...msg, isStreaming: false };
         }
