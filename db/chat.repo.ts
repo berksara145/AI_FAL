@@ -1,16 +1,7 @@
-import { executeSql, querySql, initDatabase } from "./database";
+import { executeSql, querySql } from "./database";
 import type { ChatSession, CreateChatSessionParams } from "../types/chatSession";
 import type { Message, CreateMessageParams } from "../types/message";
 
-// Initialize database on first import
-let dbInitialized = false;
-
-const ensureDatabaseInitialized = async (): Promise<void> => {
-  if (!dbInitialized) {
-    await initDatabase();
-    dbInitialized = true;
-  }
-};
 
 /**
  * Create a new chat session
@@ -18,7 +9,6 @@ const ensureDatabaseInitialized = async (): Promise<void> => {
 export const createChatSession = async (
   params: CreateChatSessionParams
 ): Promise<ChatSession> => {
-  await ensureDatabaseInitialized();
 
   try {
     const { title, mode = "interactive", feature, initialMessage } = params;
@@ -51,7 +41,6 @@ export const createChatSession = async (
  * Get a chat session by ID
  */
 export const getChatSession = async (sessionId: number): Promise<ChatSession | null> => {
-  await ensureDatabaseInitialized();
 
   try {
     const sessions = await querySql<ChatSession>(
@@ -69,7 +58,6 @@ export const getChatSession = async (sessionId: number): Promise<ChatSession | n
  * Get all chat sessions, ordered by most recent first
  */
 export const getAllChatSessions = async (): Promise<ChatSession[]> => {
-  await ensureDatabaseInitialized();
 
   try {
     const sessions = await querySql<ChatSession>(
@@ -88,7 +76,6 @@ export const getAllChatSessions = async (): Promise<ChatSession[]> => {
 export const getRecentChatSessions = async (
   limit: number = 20
 ): Promise<ChatSession[]> => {
-  await ensureDatabaseInitialized();
 
   try {
     const sessions = await querySql<ChatSession>(
@@ -116,7 +103,6 @@ export const getChatSessionsByPerson = async (personId: number): Promise<ChatSes
  * Update chat session's updated_at timestamp
  */
 export const updateChatSessionTimestamp = async (sessionId: number): Promise<void> => {
-  await ensureDatabaseInitialized();
 
   try {
     await executeSql(
@@ -136,7 +122,6 @@ export const updateChatSessionTitle = async (
   sessionId: number,
   title: string
 ): Promise<void> => {
-  await ensureDatabaseInitialized();
 
   try {
     await executeSql(
@@ -153,7 +138,6 @@ export const updateChatSessionTitle = async (
  * Delete a chat session (cascades to messages)
  */
 export const deleteChatSession = async (sessionId: number): Promise<void> => {
-  await ensureDatabaseInitialized();
 
   try {
     await executeSql("DELETE FROM chat_sessions WHERE id = ?", [sessionId]);
@@ -168,7 +152,6 @@ export const deleteChatSession = async (sessionId: number): Promise<void> => {
  * Add a message to a chat session
  */
 export const addMessage = async (params: CreateMessageParams): Promise<Message> => {
-  await ensureDatabaseInitialized();
 
   try {
     const { sessionId, role, content, timestamp } = params;
@@ -204,7 +187,6 @@ export const addMessage = async (params: CreateMessageParams): Promise<Message> 
  * Get all messages for a chat session, ordered by timestamp
  */
 export const getMessagesBySession = async (sessionId: number): Promise<Message[]> => {
-  await ensureDatabaseInitialized();
 
   try {
     const messages = await querySql<Message>(
@@ -224,8 +206,6 @@ export const getMessagesBySession = async (sessionId: number): Promise<Message[]
 export const getFirstUserMessageContent = async (
   sessionId: number
 ): Promise<string | null> => {
-  await ensureDatabaseInitialized();
-
   try {
     const rows = await querySql<{ content: string }>(
       "SELECT content FROM messages WHERE session_id = ? AND role = 'user' ORDER BY timestamp ASC LIMIT 1",
@@ -245,7 +225,6 @@ export const getLastMessages = async (
   sessionId: number,
   limit: number = 10
 ): Promise<Message[]> => {
-  await ensureDatabaseInitialized();
 
   try {
     const messages = await querySql<Message>(
@@ -263,7 +242,6 @@ export const getLastMessages = async (
  * Delete a message
  */
 export const deleteMessage = async (messageId: number): Promise<void> => {
-  await ensureDatabaseInitialized();
 
   try {
     await executeSql("DELETE FROM messages WHERE id = ?", [messageId]);

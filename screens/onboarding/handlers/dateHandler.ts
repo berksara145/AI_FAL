@@ -1,7 +1,8 @@
 import type { ChatMessage } from "../../../components/BasicChatUI";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../navigation/RootStack";
-import { updateBirthDate} from "../../../db/user.repo";
+import { updateBirthDate, completeOnboarding } from "../../../db/user.repo";
+import { upsertSelfPersonFromCurrentUser } from "../../../db/person.repo";
 import { isValidDate } from "../utils";
 import { MESSAGES, MONTH_NAMES_FULL } from "../constants";
 import type { BirthDateState } from "../hooks/useOnboardingState";
@@ -70,14 +71,24 @@ export const handleDateConfirmation = async ({
 
     // Set up action to navigate when streaming completes (mark onboarding done, sync self to persons, then navigate)
     setPendingAction(aiMessageId, () => {
+      (async () => {
+        try {
+          // Mark onboarding completed and ensure a matching self person row exists.
+          await completeOnboarding();
+          await upsertSelfPersonFromCurrentUser();
+        } catch (error) {
+          console.error("Error finalizing onboarding (user/person sync):", error);
+        }
+
         setTimeout(() => {
           try {
             navigation.replace("MainApp");
           } catch (error) {
-            console.error("Error completing onboarding:", error);
+            console.error("Error navigating to MainApp after onboarding:", error);
             navigation.replace("MainApp");
           }
         }, 1000);
+      })();
     });
 
     return true;

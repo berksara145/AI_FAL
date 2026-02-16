@@ -60,23 +60,20 @@ export const getSelfPerson = async (): Promise<Person | null> => {
   const user = await getOrCreateUser();
   const name = user.name?.trim() || "You";
   const byName = await getPersonByName(name);
-  if (byName) return byName;
+  if (byName) {
+    console.log('getSelfPerson return name1:', byName.name);
+    return byName;
+  }
   // Case-insensitive name match (e.g. "berj" vs "Berj" from onboarding)
   const all = await getAllPersons();
   const byNameCaseInsensitive = all.find(
     (p) => p.name != null && p.name.trim().toLowerCase() === name.toLowerCase()
   );
-  if (byNameCaseInsensitive) return byNameCaseInsensitive;
-  // Fallback: person created in onboarding has same birth date as user
-  if (user.birth_year != null && user.birth_month != null && user.birth_day != null) {
-    const match = all.find(
-      (p) =>
-        p.birth_year === user.birth_year &&
-        p.birth_month === user.birth_month &&
-        p.birth_day === user.birth_day
-    );
-    return match ?? null;
+  if (byNameCaseInsensitive) {
+    console.log('getSelfPerson return name2:', byNameCaseInsensitive.name);
+    return byNameCaseInsensitive;
   }
+ 
   return null;
 };
 
