@@ -1,7 +1,7 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { TouchableOpacity, View, Text, Platform } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 // @expo/vector-icons is included with Expo, but if not available, use react-native-vector-icons
@@ -64,27 +64,6 @@ function HeaderRight() {
   );
 }
 
-// Custom header title for Insights
-function InsightsHeaderTitle() {
-  return (
-    <Text
-      style={{
-        fontSize: 20,
-        fontWeight: "400",
-        color: "#d4af37",
-        letterSpacing: 3.5,
-        fontFamily: Platform.select({
-          ios: "Georgia",
-          android: "serif",
-          default: "serif",
-        }),
-      }}
-    >
-      Insights
-    </Text>
-  );
-}
-
 // Bottom tabs component
 function BottomTabs() {
   return (
@@ -118,7 +97,7 @@ function BottomTabs() {
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="compass-outline" size={size} color={color} />
           ),
-          headerTitle: () => <InsightsHeaderTitle />,
+          headerTitle: "",
           headerTitleAlign: "center",
           headerLeft: () => <HeaderLeft />,
           headerRight: () => <HeaderRight />,

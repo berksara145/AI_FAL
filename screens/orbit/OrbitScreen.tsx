@@ -7,7 +7,7 @@ import type { RootStackParamList } from "../../navigation/RootStack";
 import { OrbitNode } from "./OrbitNode";
 import { getNodePosition, getZodiacInfoForMonthDay } from "./utils";
 import { styles } from "./styles";
-import { getAllPersons, getSelfPerson } from "../../db/person.repo";
+import { getAllPersons, getSelfPerson, MAX_PERSONS } from "../../db/person.repo";
 import type { Person } from "../../db/person.repo";
 
 // Placeholder avatars for orbit nodes (same set as former nodesData)
@@ -16,6 +16,10 @@ const NODE_IMAGES = [
   require("../../assets/persons/woman1.png"),
   require("../../assets/persons/woman2.png"),
   require("../../assets/persons/men2.png"),
+  require("../../assets/persons/men3.png"),
+  require("../../assets/persons/woman3.png"),
+  require("../../assets/persons/woman4.png"),
+  require("../../assets/persons/men4.png"),
 ];
 
 type OrbitNodeItem =
@@ -26,6 +30,11 @@ function personToBirthDate(p: Person): string {
   if (p.birth_year == null || p.birth_month == null || p.birth_day == null) return "";
   const monthStr = new Date(2000, p.birth_month, 1).toLocaleString("en-US", { month: "short" }).slice(0, 3);
   return `${p.birth_day.toString().padStart(2, "0")} ${monthStr} ${p.birth_year}`;
+}
+
+function getNodeImageForPerson(p: Person): (typeof NODE_IMAGES)[number] {
+  const index = p.orbit_avatar_index != null ? p.orbit_avatar_index % NODE_IMAGES.length : p.id % NODE_IMAGES.length;
+  return NODE_IMAGES[index];
 }
 
 export default function OrbitScreen() {
@@ -52,7 +61,8 @@ export default function OrbitScreen() {
         setNodes([]);
         return;
       }
-      const count = personsWithoutSelf.length + 1; // +1 for add button
+      const canAddMore = persons.length < MAX_PERSONS;
+      const count = personsWithoutSelf.length + (canAddMore ? 1 : 0); // +1 for add button when under limit
       const step = 360 / count;
       const items: OrbitNodeItem[] = [];
 
@@ -68,11 +78,13 @@ export default function OrbitScreen() {
           zodiac: zodiac?.name ?? "",
           zodiacSymbol: zodiac?.symbol ?? "",
           birthDate: personToBirthDate(p),
-          imageSource: NODE_IMAGES[i % NODE_IMAGES.length],
+          imageSource: getNodeImageForPerson(p),
         });
       });
 
-      items.push({ type: "add", id: "add", angle: step * personsWithoutSelf.length });
+      if (canAddMore) {
+        items.push({ type: "add", id: "add", angle: step * personsWithoutSelf.length });
+      }
       setNodes(items);
     } catch (e) {
       console.warn("Failed to load persons for orbit:", e);

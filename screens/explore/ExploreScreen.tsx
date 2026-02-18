@@ -4,7 +4,17 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/RootStack";
 import FeatureCard from "./components/FeatureCard";
-import { EXPLORE_CLASSES, type ExploreClassId } from "./exploreClasses";
+import { EXPLORE_CLASSES, type ExploreClass, type ExploreClassId } from "./exploreClasses";
+
+const EXPLORE_IMAGES: Record<ExploreClass["imageKey"], number> = {
+  feature4: require("../../assets/feature4.png"),
+  feature5: require("../../assets/feature5.png"),
+  feature7: require("../../assets/feature7.png"),
+  feature8: require("../../assets/feature8.png"),
+  feature9: require("../../assets/feature9.png"),
+  feature10: require("../../assets/feature10.png"),
+  feature11: require("../../assets/feature11.png"),
+};
 
 export default function ExploreScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -46,11 +56,7 @@ export default function ExploreScreen() {
           {EXPLORE_CLASSES.map((exploreClass) => (
             <View key={exploreClass.id} style={styles.gridItem}>
               <FeatureCard
-                image={
-                  exploreClass.imageKey === "feature5"
-                    ? require("../../assets/feature5.png")
-                    : require("../../assets/feature4.png")
-                }
+                image={EXPLORE_IMAGES[exploreClass.imageKey]}
                 noBackground={true}
                 title={exploreClass.title}
                 onPress={() => handleClassPress(exploreClass.id)}

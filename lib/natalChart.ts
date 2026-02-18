@@ -304,19 +304,19 @@ export function generateChartForGpt(
 
 // -------- Astrological Symbols --------
 
-const ZODIAC_SYMBOLS: Record<number, { name: string; symbol: string }> = {
-  0: { name: "Aries", symbol: "♈" },
-  1: { name: "Taurus", symbol: "♉" },
-  2: { name: "Gemini", symbol: "♊" },
-  3: { name: "Cancer", symbol: "♋" },
-  4: { name: "Leo", symbol: "♌" },
-  5: { name: "Virgo", symbol: "♍" },
-  6: { name: "Libra", symbol: "♎" },
-  7: { name: "Scorpio", symbol: "♏" },
-  8: { name: "Sagittarius", symbol: "♐" },
-  9: { name: "Capricorn", symbol: "♑" },
-  10: { name: "Aquarius", symbol: "♒" },
-  11: { name: "Pisces", symbol: "♓" },
+const ZODIAC_SYMBOLS: Record<number, { name: string; image: any }> = {
+  0: { name: "Aries", image: require("../assets/zodiacs/zodiacSign1.png") },
+  1: { name: "Taurus", image: require("../assets/zodiacs/zodiacSign2.png") },
+  2: { name: "Gemini", image: require("../assets/zodiacs/zodiacSign3.png") },
+  3: { name: "Cancer", image: require("../assets/zodiacs/zodiacSign4.png") },
+  4: { name: "Leo", image: require("../assets/zodiacs/zodiacSign5.png") },
+  5: { name: "Virgo", image: require("../assets/zodiacs/zodiacSign6.png") },
+  6: { name: "Libra", image: require("../assets/zodiacs/zodiacSign7.png") },
+  7: { name: "Scorpio", image: require("../assets/zodiacs/zodiacSign8.png") },
+  8: { name: "Sagittarius", image: require("../assets/zodiacs/zodiacSign9.png") },
+  9: { name: "Capricorn", image: require("../assets/zodiacs/zodiacSign10.png") },
+  10: { name: "Aquarius", image: require("../assets/zodiacs/zodiacSign11.png") },
+  11: { name: "Pisces", image: require("../assets/zodiacs/zodiacSign12.png") },
 };
 
 const PLANET_SYMBOLS: Record<BodyKey, { symbol: string; shortName: string }> = {
@@ -506,7 +506,7 @@ export function generateStyledChart(
       );
     } else {
       svg.push(
-        `<text x="${labelPos.x}" y="${labelPos.y}" class="zodiac-label" font-size="${zodiacSymbolSize}" text-anchor="middle" dominant-baseline="middle" fill="${s.zodiacTextColor}">${symbolData.symbol}</text>`
+        `<image href="${symbolData.image}" xlink:href="${symbolData.image}" x="${labelPos.x}" y="${labelPos.y}" width="${zodiacSymbolSize}" height="${zodiacSymbolSize}" preserveAspectRatio="xMidYMid meet"/>`
       );
     }
   }

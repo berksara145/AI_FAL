@@ -15,7 +15,7 @@ import {
   addMessage,
 } from "../../db/chat.repo";
 import { updateBirthLocation, updateBirthTime } from "../../db/user.repo";
-import { createPersonMinimal } from "../../db/person.repo";
+import { createPersonMinimal, MAX_PERSONS } from "../../db/person.repo";
 import type { Message } from "../../types/message";
 import type { ChatSession } from "../../types/chatSession";
 
@@ -251,7 +251,20 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
     const m = addPersonBirthDateState.month ?? 1;
     const d = addPersonBirthDateState.day ?? 1;
     setShowBirthDatePicker(false);
-    await createPersonMinimal({ name: collectedName, birth_year: y, birth_month: m, birth_day: d });
+    try {
+      await createPersonMinimal({ name: collectedName, birth_year: y, birth_month: m, birth_day: d });
+    } catch (e: any) {
+      if (e?.message === "PERSON_LIMIT_REACHED") {
+        const reply = await addMessage({
+          sessionId: currentSessionId,
+          role: "assistant",
+          content: `You've reached the maximum of ${MAX_PERSONS} people in your orbit. Remove someone to add a new person.`,
+        });
+        setMessages((prev) => [...prev, messageToUI(reply)]);
+        return;
+      }
+      throw e;
+    }
     setCreatedPersonName(collectedName);
     const reply = await addMessage({
       sessionId: currentSessionId,
@@ -325,13 +338,13 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
           const content = msg.content.toLowerCase();
           // Add-person: open birth date picker only after "Select X's birth date below" finishes streaming
           if (addPersonStep === "birthDate" && content.includes("birth date") && content.includes("below")) {
-            setTimeout(() => setShowBirthDatePicker(true), 500);
+            setTimeout(() => setShowBirthDatePicker(true), 100);
           }
           if (content.includes("what time were you born") || (content.includes("what time was ") && content.includes(" born"))) {
-            setTimeout(() => setShowTimePicker(true), 500);
+            setTimeout(() => setShowTimePicker(true), 100);
           }
           if (content.includes("location where you were born") || (content.includes("location where") && content.includes("born"))) {
-            setTimeout(() => setShowLocationSearch(true), 500);
+            setTimeout(() => setShowLocationSearch(true), 100);
           }
           return { ...msg, isStreaming: false };
         }

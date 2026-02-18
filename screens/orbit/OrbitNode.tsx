@@ -85,6 +85,7 @@ const styles = StyleSheet.create({
   nodeImage: {
     width: 40,
     height: 40,
+    tintColor: "#FADA86",
   },
   nodeLabel: {
     color: "#FADA86",

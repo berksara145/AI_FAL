@@ -1,6 +1,13 @@
 import React, { useRef } from "react";
-import { View, KeyboardAvoidingView, Platform, ScrollView, StatusBar, Text } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StatusBar,
+  Text,
+} from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
@@ -24,7 +31,7 @@ type ChatSessionCoreProps = {
   mode?: "interactive" | "readonly";
   onClose?: () => void;
   onStreamingComplete?: (messageId: string) => void;
-  children?: React.ReactNode; // For additional UI like pickers, search bars, etc.
+  children?: React.ReactNode;
 };
 
 export default function ChatSessionCore({
@@ -40,50 +47,56 @@ export default function ChatSessionCore({
   children,
 }: ChatSessionCoreProps) {
   const scrollViewRef = useRef<ScrollView>(null);
+  const insets = useSafeAreaInsets();
+
+  const content = (
+    <>
+      <ChatHeader title={title} onClose={onClose || (() => {})} mode={mode} />
+
+      <View style={{ flex: 1, backgroundColor: "#1a0d2e" }}>
+        {isLoading ? (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Text style={{ color: "rgba(212, 175, 55, 0.6)", fontSize: 14 }}>
+              Loading...
+            </Text>
+          </View>
+        ) : (
+          <>
+            <MessageList
+              messages={messages}
+              scrollViewRef={scrollViewRef}
+              onStreamingComplete={onStreamingComplete || undefined}
+            />
+            {isTyping && <TypingIndicator />}
+          </>
+        )}
+      </View>
+
+      {mode === "interactive" && (
+        <View style={{ paddingBottom: insets.bottom }}>
+          <MessageInput onSend={onSendMessage} disabled={disabled || isTyping} />
+        </View>
+      )}
+
+      {children}
+    </>
+  );
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: "#1a0d2e" }} edges={["top", "bottom"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#1a0d2e" }} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor="#1a0d2e" />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "padding"}
-        className="flex-1"
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : StatusBar.currentHeight || 0}
-      >
-        <ChatHeader
-          title={title}
-          onClose={onClose || (() => {})}
-          mode={mode}
-        />
 
-        <View className="flex-1" style={{ backgroundColor: "#1a0d2e" }}>
-          {isLoading ? (
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-              <Text style={{ color: "rgba(212, 175, 55, 0.6)", fontSize: 14 }}>
-                Loading...
-              </Text>
-            </View>
-          ) : (
-            <>
-              <MessageList
-                messages={messages}
-                scrollViewRef={scrollViewRef}
-                onStreamingComplete={onStreamingComplete || undefined}
-              />
-              {isTyping && <TypingIndicator />}
-            </>
-          )}
-        </View>
-
-        {mode === "interactive" && (
-          <MessageInput
-            onSend={onSendMessage}
-            disabled={disabled || isTyping}
-          />
-        )}
-
-        {/* Additional UI components (pickers, search bars, etc.) */}
-        {children}
-      </KeyboardAvoidingView>
+      {Platform.OS === "ios" ? (
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior="padding"
+          keyboardVerticalOffset={0}
+        >
+          {content}
+        </KeyboardAvoidingView>
+      ) : (
+        <View style={{ flex: 1 }}>{content}</View>
+      )}
     </SafeAreaView>
   );
 }

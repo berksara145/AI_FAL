@@ -182,6 +182,17 @@ export const initDatabase = (): Promise<void> => {
       } catch (e) {
         // Column already exists, ignore
       }
+      try {
+        db.execSync(`ALTER TABLE persons ADD COLUMN orbit_avatar_index INTEGER;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
+      // Backfill orbit_avatar_index for existing persons (stable per person by id)
+      try {
+        db.execSync(`UPDATE persons SET orbit_avatar_index = id % 8 WHERE orbit_avatar_index IS NULL;`);
+      } catch (e) {
+        // ignore
+      }
 
       // One-time reset: clear persons table so app starts with 0 people (remove this block when no longer needed)
       try {

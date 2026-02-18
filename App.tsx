@@ -2,34 +2,22 @@ import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import * as NavigationBar from "expo-navigation-bar";
-import { Platform, AppState } from "react-native";
+import { Platform } from "react-native";
 
 import RootStack from "./navigation/RootStack";
 import "./global.css";
 
-const setNavigationBarStyle = () => {
-  if (Platform.OS === "android") {
-    NavigationBar.setButtonStyleAsync("light").catch(() => {
-      // Silently fail if not supported
-    });
-  }
-};
-
 export default function App() {
   useEffect(() => {
-    // Set navigation bar immediately on mount
-    setNavigationBarStyle();
-
-    // Also set it when app comes to foreground (resume from background)
-    const subscription = AppState.addEventListener("change", (nextAppState) => {
-      if (nextAppState === "active") {
-        setNavigationBarStyle();
-      }
-    });
-
-    return () => {
-      subscription.remove();
-    };
+    // Set navigation bar button style for Android
+    // Note: Custom native code requires a development build (not Expo Go)
+    // For Expo Go, only setButtonStyleAsync works, but background color won't apply
+    if (Platform.OS === "android") {
+      // Try to set button style (works in Expo Go)
+      NavigationBar.setButtonStyleAsync("light").catch(() => {
+        // Silently fail if not supported
+      });
+    }
   }, []);
 
   return (

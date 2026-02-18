@@ -1,0 +1,163 @@
+Natal chart (GPT format): {
+  "meta": {
+    "zodiac": "tropical",
+    "houseSystem": "whole_sign",
+    "location": "Ankara, Türkiye",
+    "note": "All degrees are ecliptic longitude converted to signs."
+  },
+  "angles": {
+    "asc": {
+      "sign": "Aquarius",
+      "deg": 26.08,
+      "degStr": "26°05'"
+    },
+    "mc": {
+      "sign": "Scorpio",
+      "deg": 26.08,
+      "degStr": "26°05'"
+    }
+  },
+  "placements": [
+    {
+      "body": "Sun",
+      "sign": "Capricorn",
+      "deg": 11.02,
+      "degStr": "11°01'",
+      "house": 11
+    },
+    {
+      "body": "Moon",
+      "sign": "Pisces",
+      "deg": 23.25,
+      "degStr": "23°15'",
+      "house": 1
+    },
+    {
+      "body": "Mercury",
+      "sign": "Capricorn",
+      "deg": 14.88,
+      "degStr": "14°53'",
+      "house": 11
+    },
+    {
+      "body": "Venus",
+      "sign": "Aquarius",
+      "deg": 27.38,
+      "degStr": "27°23'",
+      "house": 1
+    },
+    {
+      "body": "Mars",
+      "sign": "Scorpio",
+      "deg": 5.16,
+      "degStr": "5°09'",
+      "house": 9
+    },
+    {
+      "body": "Jupiter",
+      "sign": "Gemini",
+      "deg": 2.16,
+      "degStr": "2°10'",
+      "house": 4
+    },
+    {
+      "body": "Saturn",
+      "sign": "Taurus",
+      "deg": 24.58,
+      "degStr": "24°35'",
+      "house": 3
+    },
+    {
+      "body": "Uranus",
+      "sign": "Aquarius",
+      "deg": 18.67,
+      "degStr": "18°40'",
+      "house": 12
+    },
+    {
+      "body": "Neptune",
+      "sign": "Aquarius",
+      "deg": 5.34,
+      "degStr": "5°21'",
+      "house": 12
+    },
+    {
+      "body": "Pluto",
+      "sign": "Sagittarius",
+      "deg": 13.78,
+      "degStr": "13°47'",
+      "house": 10
+    }
+  ],
+  "aspects": [
+    {
+      "a": "Mars",
+      "b": "Neptune",
+      "type": "square",
+      "orb": 0.19,
+      "strength": "tight"
+    },
+    {
+      "a": "Moon",
+      "b": "Saturn",
+      "type": "sextile",
+      "orb": 1.32,
+      "strength": "medium"
+    },
+    {
+      "a": "Venus",
+      "b": "Saturn",
+      "type": "square",
+      "orb": 2.8,
+      "strength": "medium"
+    },
+    {
+      "a": "Jupiter",
+      "b": "Neptune",
+      "type": "trine",
+      "orb": 3.18,
+      "strength": "loose"
+    },
+    {
+      "a": "Sun",
+      "b": "Mercury",
+      "type": "conjunction",
+      "orb": 3.87,
+      "strength": "loose"
+    },
+    {
+      "a": "Venus",
+      "b": "Jupiter",
+      "type": "square",
+      "orb": 4.78,
+      "strength": "loose"
+    },
+    {
+      "a": "Saturn",
+      "b": "Uranus",
+      "type": "square",
+      "orb": 5.91,
+      "strength": "loose"
+    },
+    {
+      "a": "Jupiter",
+      "b": "Saturn",
+      "type": "conjunction",
+      "orb": 7.58,
+      "strength": "loose"
+    }
+  ],
+  "emphasis": {
+    "elements": {
+      "fire": 1,
+      "earth": 3,
+      "air": 4,
+      "water": 2
+    },
+    "modalities": {
+      "cardinal": 2,
+      "fixed": 5,
+      "mutable": 3
+    }
+  }
+}

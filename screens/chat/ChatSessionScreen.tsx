@@ -11,7 +11,7 @@ import BirthDatePicker from "../onboarding/components/BirthDatePicker";
 import type { BirthDateState } from "../onboarding/hooks/useOnboardingState";
 import { ChatSessionService, type ChatSessionMessage } from "../../lib/chatSessionService";
 import { addMessage } from "../../db/chat.repo";
-import { createPersonMinimal, getPersonsWithChartData, isPersonNameTaken, type Person } from "../../db/person.repo";
+import { createPersonMinimal, getPersonCount, getPersonsWithChartData, isPersonNameTaken, MAX_PERSONS, type Person } from "../../db/person.repo";
 
 type ChatSessionRouteProp = RouteProp<RootStackParamList, "ChatSession">;
 
@@ -152,6 +152,11 @@ export default function ChatSessionScreen() {
     const sid = service?.getSessionId();
     if (sid == null) return;
     const name = (savePersonName || pendingSavePerson || "").trim() || "Unknown";
+    const count = await getPersonCount();
+    if (count >= MAX_PERSONS) {
+      setSavePersonError(`You've reached the maximum of ${MAX_PERSONS} people in your orbit.`);
+      return;
+    }
     const taken = await isPersonNameTaken(name);
     if (taken) {
       setSavePersonError("This name is already in your orbit. Please choose a unique name.");
@@ -166,7 +171,15 @@ export default function ChatSessionScreen() {
     setSavePersonName("");
     setSavePersonBirthDate({ year: defaultYear, month: 1, day: 1 });
 
-    await createPersonMinimal({ name, birth_year: y, birth_month: m, birth_day: d });
+    try {
+      await createPersonMinimal({ name, birth_year: y, birth_month: m, birth_day: d });
+    } catch (e: any) {
+      if (e?.message === "PERSON_LIMIT_REACHED") {
+        setSavePersonError(`You've reached the maximum of ${MAX_PERSONS} people in your orbit.`);
+        return;
+      }
+      throw e;
+    }
     await addMessage({
       sessionId: sid,
       role: "assistant",

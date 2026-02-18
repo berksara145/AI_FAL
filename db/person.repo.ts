@@ -1,6 +1,8 @@
 import { executeSql, querySql } from "./database";
 import { getOrCreateUser } from "./user.repo";
 
+export const MAX_PERSONS = 9;
+
 export type Person = {
   id: number;
   owner_user_id: number;
@@ -19,6 +21,7 @@ export type Person = {
   style: string | null;
   chart_gpt_json: string | null;
   generated_at: string | null;
+  orbit_avatar_index: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -29,6 +32,40 @@ export type Person = {
 export const getAllPersons = async (): Promise<Person[]> => {
   const user = await getOrCreateUser();
   return await querySql<Person>("SELECT * FROM persons WHERE owner_user_id = ? ORDER BY created_at DESC", [user.id]);
+};
+
+/**
+ * Get total person count for the current user (for 8-person limit).
+ */
+export const getPersonCount = async (): Promise<number> => {
+  const user = await getOrCreateUser();
+  const rows = await querySql<{ count: number }>(
+    "SELECT COUNT(*) as count FROM persons WHERE owner_user_id = ?",
+    [user.id]
+  );
+  return rows[0]?.count ?? 0;
+};
+
+/**
+ * Get next available orbit avatar index (0–7) for a new person.
+ * Picks the first index not yet used by any person.
+ */
+export const getNextAvatarIndex = async (): Promise<number> => {
+  const user = await getOrCreateUser();
+  const rows = await querySql<{ orbit_avatar_index: number | null }>(
+    "SELECT orbit_avatar_index FROM persons WHERE owner_user_id = ?",
+    [user.id]
+  );
+  const used = new Set(
+    rows
+      .map((r) => r.orbit_avatar_index)
+      .filter((n): n is number => n != null)
+      .map((n) => n % MAX_PERSONS)
+  );
+  for (let i = 0; i < MAX_PERSONS; i++) {
+    if (!used.has(i)) return i;
+  }
+  return 0;
 };
 
 /**
@@ -120,13 +157,14 @@ export const upsertSelfPersonFromCurrentUser = async (): Promise<void> => {
     );
     return;
   }
+  const avatarIndex = await getNextAvatarIndex();
   await executeSql(
     `INSERT INTO persons (
       owner_user_id, name, birth_year, birth_month, birth_day,
       birth_hour, birth_minute, birth_place_name, birth_place_id, birth_lat,
-      birth_lng, svg_content, png_path, style, chart_gpt_json, generated_at, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, datetime('now'), datetime('now'))`,
-    [user.id, name, birthYear, birthMonth, birthDay, birthHour, birthMinute, placeName, placeId, lat, lng]
+      birth_lng, svg_content, png_path, style, chart_gpt_json, generated_at, orbit_avatar_index, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, ?, datetime('now'), datetime('now'))`,
+    [user.id, name, birthYear, birthMonth, birthDay, birthHour, birthMinute, placeName, placeId, lat, lng, avatarIndex]
   );
 };
 
@@ -134,6 +172,7 @@ export const upsertSelfPersonFromCurrentUser = async (): Promise<void> => {
  * Create a person with only name and birth date (for "add person" flow).
  * Time, location, and chart are filled later via birth map chat.
  * Requires a unique name; use isPersonNameTaken() first and re-ask if true.
+ * Throws PERSON_LIMIT_REACHED when user already has MAX_PERSONS (8).
  */
 export const createPersonMinimal = async (params: {
   name: string;
@@ -143,17 +182,22 @@ export const createPersonMinimal = async (params: {
 }): Promise<void> => {
   const user = await getOrCreateUser();
   const { name, birth_year, birth_month, birth_day } = params;
+  const count = await getPersonCount();
+  if (count >= MAX_PERSONS) {
+    throw new Error("PERSON_LIMIT_REACHED");
+  }
   const taken = await isPersonNameTaken(name);
   if (taken) {
     throw new Error("PERSON_NAME_EXISTS");
   }
+  const avatarIndex = await getNextAvatarIndex();
   await executeSql(
     `INSERT INTO persons (
       owner_user_id, name, birth_year, birth_month, birth_day,
       birth_hour, birth_minute, birth_place_name, birth_place_id, birth_lat,
-      birth_lng, svg_content, png_path, style, chart_gpt_json, generated_at, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, datetime('now'), datetime('now'))`,
-    [user.id, name, birth_year, birth_month, birth_day]
+      birth_lng, svg_content, png_path, style, chart_gpt_json, generated_at, orbit_avatar_index, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, ?, datetime('now'), datetime('now'))`,
+    [user.id, name, birth_year, birth_month, birth_day, avatarIndex]
   );
 };
 
@@ -211,13 +255,14 @@ export const upsertPersonWithChart = async (person: {
     }
   }
 
-  // Insert new person record
+  // Insert new person record (assign next avatar index; limit not enforced here—caller should check)
+  const avatarIndex = await getNextAvatarIndex();
   await executeSql(
     `INSERT INTO persons (
       owner_user_id, name, birth_year, birth_month, birth_day,
       birth_hour, birth_minute, birth_place_name, birth_place_id, birth_lat,
-      birth_lng, svg_content, png_path, style, chart_gpt_json, generated_at, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+      birth_lng, svg_content, png_path, style, chart_gpt_json, generated_at, orbit_avatar_index, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
     [
       user.id,
       person.name || null,
@@ -235,6 +280,7 @@ export const upsertPersonWithChart = async (person: {
       person.style,
       person.chart_gpt_json ?? null,
       person.generated_at,
+      avatarIndex,
     ]
   );
 };
