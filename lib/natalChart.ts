@@ -398,9 +398,13 @@ export function generateStyledChart(
   const planetMarkerR = Math.max(8, Math.round(planetSymbolSize * 0.6));
   const degFontSize = Math.max(10, Math.round(planetSymbolSize * 0.5));
   const zodiacNameFontSize = Math.max(10, Math.round(zodiacSymbolSize * 0.55));
-  // Use images only when we have all 12 valid (non-empty) URIs; otherwise no fallback to emoji
+  // Use images only when we have all 12 valid data-URI strings (data:image/...)
   const hasZodiacUrls = Array.isArray(s.zodiacImageUrls) && s.zodiacImageUrls.length >= 12;
-  const useZodiacImages = hasZodiacUrls && s.zodiacImageUrls!.every((u) => typeof u === "string" && u.length > 0);
+  const useZodiacImages =
+    hasZodiacUrls &&
+    s.zodiacImageUrls!.every(
+      (u) => typeof u === "string" && u.startsWith("data:image/")
+    );
   const zodiacImageSize = useZodiacImages ? Math.round(size * 0.105) : 0;
 
   const aspectInner = size * 0.28;
@@ -425,7 +429,7 @@ export function generateStyledChart(
   const svg: string[] = [];
 
   svg.push(
-    `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="font-family: Arial, Helvetica, sans-serif;">`,
+    `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="font-family: Arial, Helvetica, sans-serif;">`,
     `<defs>`,
     // circular clip so exported image becomes a circle
     // set clip radius slightly larger than the outer zodiac ring so images/filters aren't clipped
@@ -490,7 +494,6 @@ export function generateStyledChart(
   // --- ZODIAC LABELS (12) ---
   svg.push(`<!-- Zodiac Labels -->`);
   for (let i = 0; i < 12; i++) {
-    const symbolData = ZODIAC_SYMBOLS[i];
     const midAngle = i * 30 + 15;
 
     const labelPos = polarToCartesian(center, center, (zodiacOuter + zodiacInner) / 2, midAngle - offset);
@@ -502,11 +505,12 @@ export function generateStyledChart(
       const imgY = labelPos.y - imgH / 2;
       const uri = s.zodiacImageUrls![i];
       svg.push(
-        `<image href="${uri}" xlink:href="${uri}" x="${imgX}" y="${imgY}" width="${imgW}" height="${imgH}" preserveAspectRatio="xMidYMid meet"/>`
+        `<image href="${uri}" x="${imgX}" y="${imgY}" width="${imgW}" height="${imgH}" preserveAspectRatio="xMidYMid meet"/>`
       );
     } else {
+      const name = ZODIAC_SYMBOLS[i].name;
       svg.push(
-        `<image href="${symbolData.image}" xlink:href="${symbolData.image}" x="${labelPos.x}" y="${labelPos.y}" width="${zodiacSymbolSize}" height="${zodiacSymbolSize}" preserveAspectRatio="xMidYMid meet"/>`
+        `<text x="${labelPos.x}" y="${labelPos.y}" class="zodiac-label" text-anchor="middle" dominant-baseline="middle">${name}</text>`
       );
     }
   }

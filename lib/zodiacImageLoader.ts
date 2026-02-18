@@ -1,9 +1,3 @@
-/**
- * Load zodiac sign images from assets and return as data URIs
- * so they render inside SVG (SvgXml) and in captured PNG.
- * Order: Aries..Pisces = zodiacSign1..12.
- */
-
 const ZODIAC_ASSETS = [
   require("../assets/zodiacs/zodiacSign1.png"),
   require("../assets/zodiacs/zodiacSign2.png"),
@@ -21,45 +15,56 @@ const ZODIAC_ASSETS = [
 
 let _cached: string[] | null = null;
 
+function getLegacyFileSystem() {
+  try {
+    return require("expo-file-system/legacy"); // ✅ SDK 50+
+  } catch {
+    return require("expo-file-system");        // fallback
+  }
+}
+
 export async function getZodiacImageDataUris(): Promise<string[]> {
-  if (_cached && _cached.length === 12 && _cached.every((u) => u.length > 0)) return _cached;
+  if (_cached?.length === 12 && _cached.every(Boolean)) return _cached;
 
   try {
     const { Asset } = require("expo-asset");
-    const FileSystem = require("expo-file-system/legacy") || require("expo-file-system");
+    const FileSystem = getLegacyFileSystem();
     const EncodingType = (FileSystem as any).EncodingType ?? { Base64: "base64" };
 
     const assets = ZODIAC_ASSETS.map((src: number) => Asset.fromModule(src));
-    await Asset.loadAsync(assets);
+
+    // ✅ IMPORTANT: actually download each asset so localUri exists in Expo Go
+    for (const a of assets) {
+      await a.downloadAsync();
+    }
 
     const uris: string[] = [];
+
     for (let i = 0; i < assets.length; i++) {
       const a = assets[i];
-      const localUri = a.localUri ?? a.uri;
-      if (!localUri || typeof localUri !== "string") {
-        if (typeof __DEV__ !== "undefined" && __DEV__) console.warn("[zodiacImageLoader] No localUri for asset", i + 1);
+      const uri: string | undefined = a.localUri ?? a.uri;
+
+      if (!uri) {
+        console.warn("[zodiacImageLoader] missing uri for", i + 1, a);
         uris.push("");
         continue;
       }
+
       try {
-        let base64 = await FileSystem.readAsStringAsync(localUri, {
+        const base64 = await FileSystem.readAsStringAsync(uri, {
           encoding: EncodingType.Base64 || "base64",
         });
-        if (!base64 && localUri.startsWith("file://")) {
-          const pathWithoutScheme = localUri.replace(/^file:\/\//, "");
-          base64 = await FileSystem.readAsStringAsync(pathWithoutScheme, {
-            encoding: EncodingType.Base64 || "base64",
-          });
-        }
-        uris.push(base64 && base64.length > 0 ? `data:image/png;base64,${base64}` : "");
+
+        uris.push(base64 ? `data:image/png;base64,${base64}` : "");
       } catch (err) {
-        if (typeof __DEV__ !== "undefined" && __DEV__) console.warn("[zodiacImageLoader] read failed for", i + 1, err);
+        console.warn("[zodiacImageLoader] read failed for", i + 1, uri, err);
         uris.push("");
       }
     }
-    const allOk = uris.length === 12 && uris.every((u) => u.length > 0);
+
+    const allOk = uris.length === 12 && uris.every(Boolean);
     if (allOk) _cached = uris;
-    else if (typeof __DEV__ !== "undefined" && __DEV__) console.warn("[zodiacImageLoader] Only", uris.filter((u) => u.length > 0).length, "/ 12 images loaded");
+
     return uris;
   } catch (e) {
     console.warn("[zodiacImageLoader] getZodiacImageDataUris failed:", e);

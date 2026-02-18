@@ -434,6 +434,10 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
       // Load zodiac images as data URIs so they render inside SVG and in captured PNG
       const zodiacImageUrls = await getZodiacImageDataUris();
 
+      const preview = (s?: string) =>
+        !s ? "EMPTY" : `${s.slice(0, 35)}...${s.slice(-10)} (len=${s.length})`;
+
+
       const chartStyle: ChartStyleConfig = {
         size: 1000,
         backgroundColor: "#0a0015",
@@ -554,7 +558,6 @@ export default function BirthMapChatWrapper({ personName: incomingPersonName, bi
     </>
   );
 }
-
 const styles = StyleSheet.create({
   hiddenCapture: {
     opacity: 0,
@@ -562,3 +565,4 @@ const styles = StyleSheet.create({
     top: 0,
   },
 });
+
