@@ -9,6 +9,7 @@ import type { MainStackParamList } from "../../navigation/MainTabs";
 import type { RootStackParamList } from "../../navigation/RootStack";
 import { getZodiacInfoFromBirthDate } from "./utils";
 import { getPersonByName } from "../../db/person.repo";
+import { Colors } from "../../utils/theme";
 
 type Props = NativeStackScreenProps<MainStackParamList, "PersonDetail">;
 
@@ -174,10 +175,11 @@ export default function PersonDetailScreen({ route }: Props) {
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#050016",
+    backgroundColor: Colors.bgDark,
   },
   backgroundImage: {
     opacity: 0.9,
@@ -199,7 +201,7 @@ const styles = StyleSheet.create({
     height: 140,
     borderRadius: 70,
     borderWidth: 2,
-    borderColor: "rgba(250, 218, 134, 0.7)",
+    borderColor: Colors.borderGoldMid,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -208,7 +210,7 @@ const styles = StyleSheet.create({
     height: 110,
     borderRadius: 55,
     borderWidth: 2,
-    borderColor: "rgba(250, 218, 134, 0.9)",
+    borderColor: Colors.borderGoldStrong,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "transparent",
@@ -219,7 +221,7 @@ const styles = StyleSheet.create({
   },
   nameText: {
     fontSize: 30,
-    color: "#f7e3a5",
+    color: Colors.goldPale,
     marginBottom: 20,
     letterSpacing: 1.5,
   },
@@ -237,12 +239,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "rgba(250, 218, 134, 0.9)",
+    borderColor: Colors.borderGoldStrong,
     backgroundColor: "transparent",
   },
   pillIcon: {
     fontSize: 16,
-    color: "#FADA86",
+    color: Colors.goldLight,
     marginRight: 6,
   },
   pillIconImage: {
@@ -252,7 +254,7 @@ const styles = StyleSheet.create({
   },
   pillText: {
     fontSize: 14,
-    color: "#f7e3a5",
+    color: Colors.goldPale,
   },
   separator: {
     marginTop: 24,
@@ -266,7 +268,7 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 32,
     borderWidth: 1.5,
-    borderColor: "rgba(250, 218, 134, 0.9)",
+    borderColor: Colors.borderGoldStrong,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
@@ -278,7 +280,7 @@ const styles = StyleSheet.create({
   },
   ctaText: {
     fontSize: 18,
-    color: "#fdf4c8",
+    color: Colors.goldCream,
     letterSpacing: 1.5,
   },
   ctaSubText: {
@@ -291,7 +293,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     alignSelf: "center",
     borderWidth: 3,
-    borderColor: "rgba(250, 218, 134, 0.9)",
+    borderColor: Colors.borderGoldStrong,
     ...Platform.select({
       ios: {
         shadowColor: "#000",

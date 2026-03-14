@@ -1,4 +1,4 @@
-import { generateApproxChart, generateStyledChart, ChartStyle, DEFAULT_STYLE } from "./natalChart";
+import { generateApproxChart, generateStyledChart, ChartStyle, DEFAULT_STYLE } from "../natalChart";
 import fs from "fs";
 
 export const testNatalChart = () => {
@@ -27,7 +27,7 @@ export const testNatalChart = () => {
 
     // Generate the styled SVG
     const svgContent = generateStyledChart(chart, customStyle);
-    
+
     // Save to file
     fs.writeFileSync("./birth_chart_styled.svg", svgContent);
     console.log("Styled natal chart saved to: birth_chart_styled.svg");

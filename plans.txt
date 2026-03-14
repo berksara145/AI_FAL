@@ -130,3 +130,11 @@ bir de kullanıcı olayını halletmek lazım yani orbit logic de hallolmalı fi
 file bitsin çalışsın sonra orbit direkt prod ready hale getiricem
 ilk başta olmicak eklendikçe gelcek fln
 sonra içine girerken kullanıcı dataıyla gircek adam akıllı olan
+
+
+
+export { generateApproxChart } from "./natalChart/core";
+export { generateChartForGpt } from "./natalChart/gpt";
+export { generateStyledChart } from "./natalChart/svg";
+export { DEFAULT_STYLE } from "./natalChart/types";
+export type { ChartStyle, ChartForGpt, AspectLine } from "./natalChart/types";

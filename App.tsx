@@ -2,28 +2,27 @@ import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import * as NavigationBar from "expo-navigation-bar";
-import { Platform } from "react-native";
+import { Platform, AppState, View } from "react-native";
 
 import RootStack from "./navigation/RootStack";
 import "./global.css";
 
 export default function App() {
   useEffect(() => {
-    // Set navigation bar button style for Android
-    // Note: Custom native code requires a development build (not Expo Go)
-    // For Expo Go, only setButtonStyleAsync works, but background color won't apply
+    // With edge-to-edge enabled (RN 0.81+), the nav bar is transparent —
+    // setBackgroundColorAsync is not supported. Only set button icon style.
     if (Platform.OS === "android") {
-      // Try to set button style (works in Expo Go)
-      NavigationBar.setButtonStyleAsync("light").catch(() => {
-        // Silently fail if not supported
-      });
+      NavigationBar.setButtonStyleAsync("light").catch(() => {});
     }
   }, []);
 
   return (
-    <NavigationContainer>
-      <RootStack />
-      <StatusBar style="light" />
-    </NavigationContainer>
+    // Wrapper fills the area behind the transparent nav bar in edge-to-edge mode
+    <View style={{ flex: 1, backgroundColor: "#050016" }}>
+      <NavigationContainer>
+        <RootStack />
+        <StatusBar style="light" />
+      </NavigationContainer>
+    </View>
   );
 }

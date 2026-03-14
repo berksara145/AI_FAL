@@ -6,10 +6,10 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { generateApproxChart, generateStyledChart, DEFAULT_STYLE } from "./natalChart";
-import type { ChartStyle } from "./natalChart";
+import { generateApproxChart, generateStyledChart, DEFAULT_STYLE } from "../natalChart";
+import type { ChartStyle } from "../natalChart";
 
-const ASSETS_ZODIACS = path.join(__dirname, "..", "assets", "zodiacs");
+const ASSETS_ZODIACS = path.join(__dirname, "..", "..", "assets", "zodiacs");
 
 /** Load 12 zodiac PNGs from assets/zodiacs and return as data URIs (order: Aries..Pisces). */
 function loadZodiacImageUrls(): string[] {
@@ -78,7 +78,7 @@ function generateRandomPersonBirthData(): {
 }
 
 function runTest() {
-  const outDir = path.join(__dirname, "test-output");
+  const outDir = path.join(__dirname, "..", "test-output");
   if (!fs.existsSync(outDir)) {
     fs.mkdirSync(outDir, { recursive: true });
   }

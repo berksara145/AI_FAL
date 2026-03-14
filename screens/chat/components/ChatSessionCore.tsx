@@ -7,7 +7,7 @@ import {
   StatusBar,
   Text,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
@@ -47,7 +47,6 @@ export default function ChatSessionCore({
   children,
 }: ChatSessionCoreProps) {
   const scrollViewRef = useRef<ScrollView>(null);
-  const insets = useSafeAreaInsets();
 
   const content = (
     <>
@@ -73,9 +72,9 @@ export default function ChatSessionCore({
       </View>
 
       {mode === "interactive" && (
-        <View style={{ paddingBottom: insets.bottom }}>
+        <SafeAreaView edges={["bottom"]}>
           <MessageInput onSend={onSendMessage} disabled={disabled || isTyping} />
-        </View>
+        </SafeAreaView>
       )}
 
       {children}
@@ -87,11 +86,7 @@ export default function ChatSessionCore({
       <StatusBar barStyle="light-content" backgroundColor="#1a0d2e" />
 
       {Platform.OS === "ios" ? (
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior="padding"
-          keyboardVerticalOffset={0}
-        >
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
           {content}
         </KeyboardAvoidingView>
       ) : (

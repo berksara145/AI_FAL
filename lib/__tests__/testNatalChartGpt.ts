@@ -5,7 +5,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { generateApproxChart, generateChartForGpt } from "./natalChart";
+import { generateApproxChart, generateChartForGpt } from "../natalChart";
 
 const PLACES = [
   { name: "Istanbul, Turkey", lat: 41.0082, lng: 28.9784 },
@@ -45,7 +45,7 @@ function generateRandomPersonBirthData(): {
 }
 
 function runTest() {
-  const outDir = path.join(__dirname, "test-output");
+  const outDir = path.join(__dirname, "..", "test-output");
   if (!fs.existsSync(outDir)) {
     fs.mkdirSync(outDir, { recursive: true });
   }

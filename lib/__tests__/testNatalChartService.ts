@@ -1,14 +1,14 @@
 /**
  * Test script for natal chart service integration
  * Simulates the complete flow: birth data -> chart generation -> storage
- * 
+ *
  * Note: This tests the core service logic. React Native UI integration
  * happens in BirthMapChatWrapper.tsx
  */
 
-import { generateAndSaveNatalChart, formatChartDataForDisplay } from "./natalChartService";
-import { getOrCreateUser, updateBirthDate, updateBirthTime, updateBirthLocation } from "../db/user.repo";
-import type { ChartStyleConfig } from "../types/natalChart";
+import { generateAndSaveNatalChart, formatChartDataForDisplay } from "../natalChartService";
+import { getOrCreateUser, updateBirthDate, updateBirthTime, updateBirthLocation } from "../../db/user.repo";
+import type { ChartStyleConfig } from "../../types/natalChart";
 
 async function testNatalChartIntegration() {
   try {

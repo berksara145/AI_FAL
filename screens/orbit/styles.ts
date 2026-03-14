@@ -1,10 +1,11 @@
 import { StyleSheet, Platform } from "react-native";
 import { ORBIT_SIZE, CENTER_SIZE, OUTER_ORBIT_SIZE, SCREEN_HEIGHT } from "./constants";
+import { Colors } from "../../utils/theme";
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#050016",
+    backgroundColor: Colors.bgDark,
     alignItems: "center",
     justifyContent: "flex-start",
     paddingTop: SCREEN_HEIGHT * 0.15, // Position closer to top but still centered-ish
@@ -16,7 +17,7 @@ export const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     letterSpacing: 4,
-    color: "#f7e3a5",
+    color: Colors.goldPale,
     marginBottom: 24,
     fontWeight: "400",
     textTransform: "uppercase",
@@ -34,7 +35,7 @@ export const styles = StyleSheet.create({
     height: OUTER_ORBIT_SIZE,
     borderRadius: OUTER_ORBIT_SIZE / 2,
     borderWidth: 1,
-    borderColor: "rgba(250, 218, 134, 0.6)",
+    borderColor: "rgba(250, 218, 134, 0.6)", // Colors.goldLight at 60%
     left: (ORBIT_SIZE - OUTER_ORBIT_SIZE) / 2,
     top: (ORBIT_SIZE - OUTER_ORBIT_SIZE) / 2,
   },
@@ -44,7 +45,7 @@ export const styles = StyleSheet.create({
     height: ORBIT_SIZE * 0.60,
     borderRadius: (ORBIT_SIZE * 0.60) / 2,
     borderWidth: 1,
-    borderColor: "#FADA86",
+    borderColor: Colors.goldLight,
   },
   /* ✨ CENTER GLOW SYSTEM */
   centerWrapper: {
@@ -70,13 +71,13 @@ export const styles = StyleSheet.create({
     height: CENTER_SIZE,
     borderRadius: CENTER_SIZE / 2,
     borderWidth: 8,
-    borderColor: "#FADA86",
+    borderColor: Colors.goldLight,
     backgroundColor: "transparent",
     alignItems: "center",
     justifyContent: "center",
   },
   centerLabel: {
-    color: "#E6CB8B",
+    color: Colors.goldPrimary,
     fontSize: 22,
     letterSpacing: 4,
     fontFamily: Platform.select({
@@ -92,7 +93,7 @@ export const styles = StyleSheet.create({
   legendTitle: {
     fontSize: 16,
     letterSpacing: 1.5,
-    color: "#f7e3a5",
+    color: Colors.goldPale,
     marginBottom: 8,
   },
   legendText: {
@@ -122,7 +123,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 24,
     paddingHorizontal: 20,
-    backgroundColor: "rgba(26, 13, 46, 0.85)",
+    backgroundColor: "rgba(26, 13, 46, 0.85)", // Colors.bgMain at 85%
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "rgba(250, 218, 134, 0.25)",
@@ -130,7 +131,7 @@ export const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#FADA86",
+    color: Colors.goldLight,
     letterSpacing: 1,
     marginBottom: 8,
   },
@@ -143,7 +144,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   emptyStateButton: {
-    backgroundColor: "#FADA86",
+    backgroundColor: Colors.goldLight,
     paddingVertical: 14,
     paddingHorizontal: 32,
     borderRadius: 25,
@@ -153,7 +154,7 @@ export const styles = StyleSheet.create({
   emptyStateButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#1a0d2e",
+    color: Colors.bgMain,
     letterSpacing: 1,
   },
 });

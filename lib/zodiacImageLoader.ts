@@ -1,4 +1,4 @@
-const ZODIAC_ASSETS = [
+export const ZODIAC_ASSETS = [
   require("../assets/zodiacs/zodiacSign1.png"),
   require("../assets/zodiacs/zodiacSign2.png"),
   require("../assets/zodiacs/zodiacSign3.png"),
@@ -14,12 +14,31 @@ const ZODIAC_ASSETS = [
 ];
 
 let _cached: string[] | null = null;
+let _cachedLocalUris: string[] | null = null;
 
 function getLegacyFileSystem() {
   try {
     return require("expo-file-system/legacy"); // ✅ SDK 50+
   } catch {
     return require("expo-file-system");        // fallback
+  }
+}
+
+export async function getZodiacLocalUris(): Promise<string[]> {
+  if (_cachedLocalUris?.length === 12 && _cachedLocalUris.every(Boolean)) return _cachedLocalUris;
+
+  try {
+    const { Asset } = require("expo-asset");
+    const assets = ZODIAC_ASSETS.map((src: number) => Asset.fromModule(src));
+    for (const a of assets) await a.downloadAsync();
+
+    const uris = assets.map((a: any) => a.localUri ?? a.uri ?? "");
+    const allOk = uris.length === 12 && uris.every(Boolean);
+    if (allOk) _cachedLocalUris = uris;
+    return uris;
+  } catch (e) {
+    console.warn("[zodiacImageLoader] getZodiacLocalUris failed:", e);
+    return Array(12).fill("");
   }
 }
 

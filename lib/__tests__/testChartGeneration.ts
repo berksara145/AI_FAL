@@ -3,8 +3,8 @@
  * Tests the chart generation logic without database dependencies
  */
 
-import { generateApproxChart, generateStyledChart, DEFAULT_STYLE } from "./natalChart";
-import type { ChartStyleConfig, BirthData, NatalChartData } from "../types/natalChart";
+import { generateApproxChart, generateStyledChart, DEFAULT_STYLE } from "../natalChart";
+import type { ChartStyleConfig, BirthData, NatalChartData } from "../../types/natalChart";
 
 // Build chart data from sample data
 function buildChartDataFromSample(): NatalChartData {

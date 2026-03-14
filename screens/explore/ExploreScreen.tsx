@@ -5,6 +5,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/RootStack";
 import FeatureCard from "./components/FeatureCard";
 import { EXPLORE_CLASSES, type ExploreClass, type ExploreClassId } from "./exploreClasses";
+import { Colors } from "../../utils/theme";
 
 const EXPLORE_IMAGES: Record<ExploreClass["imageKey"], number> = {
   feature4: require("../../assets/feature4.png"),
@@ -33,7 +34,7 @@ export default function ExploreScreen() {
   return (
     <View
       className="flex-1"
-      style={{ backgroundColor: "#1a0d2e" }}
+      style={{ backgroundColor: Colors.bgMain }}
     >
       <ScrollView
         className="flex-1"

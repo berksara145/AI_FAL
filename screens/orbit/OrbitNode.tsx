@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Colors } from "../../utils/theme";
 
 export type OrbitNodeProps = {
   label: string;
@@ -27,7 +28,7 @@ export function OrbitNode({ label, subtitle, style, icon, imageSource, onPress, 
           {/* Inner fill */}
           <View style={styles.nodeCircleInner}>
             {isAddButton ? (
-              <MaterialCommunityIcons name="plus" size={32} color="#FADA86" />
+              <MaterialCommunityIcons name="plus" size={32} color={Colors.goldLight} />
             ) : imageSource ? (
               <Image source={imageSource} style={styles.nodeImage} resizeMode="contain" />
             ) : typeof icon === "string" ? (
@@ -54,7 +55,7 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 32,
     borderWidth: 3,
-    borderColor: "#FADA86",
+    borderColor: Colors.goldLight,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "transparent",
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
     height: 59,
     borderRadius: 30,
     borderWidth: 11,
-    borderColor: "#693A63", // Lighter purple ring
+    borderColor: Colors.orbitNodeRing,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "transparent",
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
     borderRadius: 27,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#311034", // Inner fill color
+    backgroundColor: Colors.orbitNodeFill,
   },
   nodeIconText: {
     fontSize: 26,
@@ -85,16 +86,16 @@ const styles = StyleSheet.create({
   nodeImage: {
     width: 40,
     height: 40,
-    tintColor: "#FADA86",
+    tintColor: Colors.goldLight,
   },
   nodeLabel: {
-    color: "#FADA86",
+    color: Colors.goldLight,
     fontSize: 12,
     textAlign: "center",
     marginTop: 2,
   },
   nodeSubtitle: {
-    color: "rgba(247, 227, 165, 0.8)",
+    color: "rgba(247, 227, 165, 0.8)", // Colors.goldPale at 80%
     fontSize: 11,
     marginTop: 2,
     textAlign: "center",

@@ -4,7 +4,7 @@
  * Integrates astrological calculations with the application database
  */
 
-import { generateApproxChart, generateStyledChart, generateChartForGpt, DEFAULT_STYLE, ChartStyle } from "../lib/natalChart";
+import { generateApproxChart, generateStyledChart, generateChartForGpt, DEFAULT_STYLE, ChartStyle, ZODIAC_SYMBOLS, PLANET_SYMBOLS as PLANET_SYMBOL_MAP } from "./natalChart";
 import { birthPlaceLocalToUTC } from "../lib/birthTimeUtils";
 import { getOrCreateUser } from "../db/user.repo";
 import { upsertPersonWithChart, getPersonByName, Person } from "../db/person.repo";
@@ -157,35 +157,18 @@ export const buildBirthDataFromPerson = (person: Person): BirthData => {
 const formatPlanetPositions = (
   bodies: Array<{ key: string; lon: number; house: number }>
 ): PlanetPosition[] => {
-  const ZODIAC_NAMES = [
-    "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
-    "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces",
-  ];
-
-  const PLANET_SYMBOLS: Record<string, string> = {
-    Sun: "☉",
-    Moon: "☽",
-    Mercury: "☿",
-    Venus: "♀",
-    Mars: "♂",
-    Jupiter: "♃",
-    Saturn: "♄",
-    Uranus: "♅",
-    Neptune: "♆",
-    Pluto: "♇",
-  };
-
   return bodies.map((body) => {
     const signIndex = Math.floor(body.lon / 30);
     const degree = Math.floor(body.lon % 30);
+    const symbolEntry = PLANET_SYMBOL_MAP[body.key as keyof typeof PLANET_SYMBOL_MAP];
 
     return {
       bodyKey: body.key,
-      symbol: PLANET_SYMBOLS[body.key] || body.key.substring(0, 2),
+      symbol: symbolEntry?.symbol ?? body.key.substring(0, 2),
       longitude: body.lon,
       house: body.house,
       degree,
-      sign: ZODIAC_NAMES[signIndex],
+      sign: ZODIAC_SYMBOLS[signIndex]?.name ?? "",
     };
   });
 };

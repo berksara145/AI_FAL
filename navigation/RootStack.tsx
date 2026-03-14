@@ -1,4 +1,5 @@
 import React from "react";
+import { Platform } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 // Screens
@@ -43,13 +44,17 @@ export default function RootStack() {
       <Stack.Screen name="MainApp" component={MainTabs} />
 
       {/* Chat Session - full-screen modal */}
-      <Stack.Screen 
-        name="ChatSession" 
+      <Stack.Screen
+        name="ChatSession"
         component={ChatSessionScreen}
-        options={{ 
-          presentation: "fullScreenModal",
-          headerShown: false // use custom ChatHeader inside the screen
-        }}
+        options={Platform.select({
+          // On iOS: fullScreenModal slides up and is a true modal (correct keyboard behavior)
+          ios: { presentation: "fullScreenModal", headerShown: false },
+          // On Android: fullScreenModal = Dialog → ignores windowSoftInputMode (adjustResize broken).
+          // Use card + slide_from_bottom for identical visuals with working keyboard.
+          android: { presentation: "card", animation: "slide_from_bottom", headerShown: false },
+          default: { presentation: "fullScreenModal", headerShown: false },
+        })}
       />
     </Stack.Navigator>
   );
