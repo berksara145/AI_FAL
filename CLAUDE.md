@@ -42,7 +42,7 @@ RootStack
 ├── MainApp
 │   ├── Tabs
 │   │   ├── Insights      ← ExploreScreen
-│   │   └── Orbit         ← OrbitScreen (people ring)
+│   │   └── Birth Chart   ← OrbitScreen (people ring) — tab label is "Birth Chart", route name is still "Orbit"
 │   ├── Settings
 │   ├── History
 │   └── PersonDetail      ← individual person profile

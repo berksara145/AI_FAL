@@ -1,6 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { useFocusEffect } from "@react-navigation/native";
-import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Image, InteractionManager, Dimensions, Platform } from "react-native";
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ImageBackground,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  Dimensions,
+  Platform,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -8,84 +17,68 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { MainStackParamList } from "../../navigation/MainTabs";
 import type { RootStackParamList } from "../../navigation/RootStack";
 import { getZodiacInfoFromBirthDate } from "./utils";
-import { getPersonByName } from "../../db/person.repo";
 import { Colors } from "../../utils/theme";
+import { usePersonDetail } from "./hooks/usePersonDetail";
 
 type Props = NativeStackScreenProps<MainStackParamList, "PersonDetail">;
+
+function InterpretationSection({ text }: { text: string }) {
+  const lines = text.split("\n").filter((l) => l.trim());
+  return (
+    <>
+      {lines.map((line, i) => {
+        const isHeader = line.includes("✦");
+        const clean = line.replace(/\*\*/g, "").trim();
+        if (!clean) return null;
+        return (
+          <Text key={i} style={isHeader ? styles.sectionHeader : styles.sectionBody}>
+            {clean}
+          </Text>
+        );
+      })}
+    </>
+  );
+}
 
 export default function PersonDetailScreen({ route }: Props) {
   const navigation = useNavigation();
   const rootNavigation = navigation.getParent<NativeStackNavigationProp<RootStackParamList>>();
   const { name, birthDate } = route.params;
-  console.log("birthDate", birthDate);  
-  console.log("name: ", name);
+
   const zodiacInfo = getZodiacInfoFromBirthDate(birthDate) ?? null;
   const zodiacImageSource = zodiacInfo?.image ?? null;
-  const [loadingChart, setLoadingChart] = useState(true);
-  const [pngUri, setPngUri] = useState<string | null>(null);
 
-  // Reload chart whenever this screen gains focus (so going back will refresh)
-  useFocusEffect(
-    React.useCallback(() => {
-      let mounted = true;
-      setLoadingChart(true);
-
-      InteractionManager.runAfterInteractions(() => {
-        (async () => {
-          try {
-            const personName = name;
-
-            if (!personName) {
-              if (mounted) {
-                setPngUri(null);
-                setLoadingChart(false);
-              }
-              return;
-            }
-
-            const person = await getPersonByName(personName);
-
-            if (!mounted) return;
-
-            if (person) {
-              // Fast path: if a cached PNG path exists, show it immediately (instant)
-              if (person.png_path) {
-                if (mounted) {
-                  setPngUri(person.png_path);
-                  setLoadingChart(false);
-                }
-              } else {
-                if (mounted) {
-                  setPngUri(null);
-                  setLoadingChart(false);
-                }
-              }
-            } else {
-              if (mounted) {
-                setPngUri(null);
-                setLoadingChart(false);
-              }
-            }
-            } catch (err) {
-              console.warn("Error loading natal chart:", err);
-              if (mounted) {
-                setPngUri(null);
-                setLoadingChart(false);
-              }
-            }
-        })();
-      });
-
-      return () => {
-        mounted = false;
-      };
-    }, [name])
-  );
-
-  // No SVG rendering/capture on this screen — we only show cached PNGs.
+  const {
+    loadingChart,
+    pngUri,
+    interpretation,
+    generatingInterpretation,
+    interpretationError,
+    loadingPhrase,
+    hasChart,
+    retryGeneration,
+  } = usePersonDetail(name);
 
   const { width: screenWidth } = Dimensions.get("window");
   const chartSize = Math.min(screenWidth - 48, 400);
+
+  const openBirthMap = () => {
+    const nav = rootNavigation ?? (navigation as any);
+    nav.navigate("ChatSession", {
+      feature: "birthMap",
+      mode: "interactive",
+      birthDate,
+      personName: name,
+    } as any);
+  };
+
+  const openChartChat = () => {
+    const nav = rootNavigation ?? (navigation as any);
+    nav.navigate("ChatSession", {
+      feature: "natalChartAnalysis",
+      mode: "interactive",
+    } as any);
+  };
 
   return (
     <ImageBackground
@@ -94,16 +87,15 @@ export default function PersonDetailScreen({ route }: Props) {
       style={styles.container}
       imageStyle={styles.backgroundImage}
     >
-      <View style={styles.content}>
-        {/* Top symbol */}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Zodiac symbol */}
         <View style={styles.symbolWrapper}>
           <View style={styles.symbolOuterRing}>
             <View style={styles.symbolInnerRing}>
-              <Image
-                source={zodiacImageSource}
-                style={styles.symbolImage}
-                resizeMode="contain"
-              />
+              <Image source={zodiacImageSource} style={styles.symbolImage} resizeMode="contain" />
             </View>
           </View>
         </View>
@@ -111,14 +103,10 @@ export default function PersonDetailScreen({ route }: Props) {
         {/* Name */}
         <Text style={styles.nameText}>{name}</Text>
 
-        {/* Pills: zodiac + birth date */}
+        {/* Pills */}
         <View style={styles.pillsRow}>
           <View style={styles.pill}>
-            <Image
-              source={zodiacImageSource}
-              style={styles.pillIconImage}
-              resizeMode="contain"  
-            />
+            <Image source={zodiacImageSource} style={styles.pillIconImage} resizeMode="contain" />
             <Text style={styles.pillText}>{zodiacInfo?.name}</Text>
           </View>
           <View style={styles.pill}>
@@ -129,9 +117,8 @@ export default function PersonDetailScreen({ route }: Props) {
 
         <View style={styles.separator} />
 
-        {/* If chart exists display it, otherwise show a button to open/generate it.
-            Only show the button after we've finished loading the check. */}
-        {!loadingChart ? (
+        {/* Chart or CTA */}
+        {!loadingChart && (
           pngUri ? (
             <View style={[styles.chartImage, { width: chartSize, height: chartSize }]}>
               <Image
@@ -141,40 +128,57 @@ export default function PersonDetailScreen({ route }: Props) {
               />
             </View>
           ) : (
-            <TouchableOpacity
-              activeOpacity={0.9}
-              style={styles.ctaButton}
-              onPress={() => {
-                console.log("[PersonDetailScreen] Open Birth Map pressed", { birthDate, loadingChart });
-                if (rootNavigation) {
-                  rootNavigation.navigate("ChatSession", {
-                    feature: "birthMap",
-                    mode: "interactive",
-                    birthDate,
-                    personName: name,
-                  } as any);
-                } else {
-                  (navigation as any).navigate("ChatSession", {
-                    feature: "birthMap",
-                    mode: "interactive",
-                    birthDate,
-                    personName: name,
-                  } as any);
-                }
-              }}
-            >
+            <TouchableOpacity activeOpacity={0.9} style={styles.ctaButton} onPress={openBirthMap}>
               <View style={styles.ctaGlow} />
               <Text style={styles.ctaText}>Open Birth Map</Text>
             </TouchableOpacity>
           )
-        ) : null}
+        )}
 
-        <Text style={styles.ctaSubText}>Requires birth date, time, and location</Text>
-      </View>
+        {!hasChart && !loadingChart && (
+          <Text style={styles.ctaSubText}>Requires birth date, time, and location</Text>
+        )}
+
+        {/* Analysis section — only shown when chart exists */}
+        {hasChart && (
+          <View style={styles.analysisWrapper}>
+            <View style={styles.analysisTitleRow}>
+              <Text style={styles.analysisTitle}>✦ Natal Chart Reading</Text>
+            </View>
+
+            {generatingInterpretation && (
+              <View style={styles.loadingCard}>
+                <Text style={styles.loadingStars}>✦  ✦  ✦</Text>
+                <Text style={styles.loadingPhrase}>{loadingPhrase}</Text>
+                <Text style={styles.loadingNote}>Lunara is preparing your reading…</Text>
+              </View>
+            )}
+
+            {!generatingInterpretation && interpretationError && (
+              <TouchableOpacity style={styles.errorCard} onPress={retryGeneration} activeOpacity={0.8}>
+                <Text style={styles.errorText}>{interpretationError}</Text>
+                <Text style={styles.retryText}>Tap to retry</Text>
+              </TouchableOpacity>
+            )}
+
+            {!generatingInterpretation && interpretation && (
+              <View style={styles.interpretationCard}>
+                <InterpretationSection text={interpretation} />
+              </View>
+            )}
+
+            {/* Chat CTA */}
+            {interpretation && !generatingInterpretation && (
+              <TouchableOpacity style={styles.chatButton} onPress={openChartChat} activeOpacity={0.85}>
+                <Text style={styles.chatButtonText}>✦ Chat about this chart</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+      </ScrollView>
     </ImageBackground>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -184,12 +188,11 @@ const styles = StyleSheet.create({
   backgroundImage: {
     opacity: 0.9,
   },
-  content: {
-    flex: 1,
+  scrollContent: {
     alignItems: "center",
-    justifyContent: "flex-start",
     paddingTop: 80,
     paddingHorizontal: 24,
+    paddingBottom: 60,
   },
   symbolWrapper: {
     marginBottom: 32,
@@ -286,6 +289,7 @@ const styles = StyleSheet.create({
   ctaSubText: {
     fontSize: 12,
     color: "rgba(245, 234, 200, 0.9)",
+    marginTop: 4,
   },
   chartImage: {
     marginTop: 8,
@@ -304,5 +308,108 @@ const styles = StyleSheet.create({
       android: { elevation: 8 },
     }),
   },
-});
 
+  // ── Analysis ─────────────────────────────────────────────────
+  analysisWrapper: {
+    width: "100%",
+    marginTop: 36,
+  },
+  analysisTitleRow: {
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  analysisTitle: {
+    fontSize: 14,
+    letterSpacing: 3,
+    color: Colors.goldPrimary,
+    textTransform: "uppercase",
+    fontWeight: "400",
+  },
+  loadingCard: {
+    borderWidth: 1,
+    borderColor: "rgba(250, 218, 134, 0.2)",
+    borderRadius: 16,
+    backgroundColor: "rgba(26, 13, 46, 0.7)",
+    paddingVertical: 32,
+    paddingHorizontal: 24,
+    alignItems: "center",
+    gap: 12,
+  },
+  loadingStars: {
+    fontSize: 18,
+    color: "rgba(250, 218, 134, 0.4)",
+    letterSpacing: 8,
+  },
+  loadingPhrase: {
+    fontSize: 15,
+    color: Colors.goldPale,
+    letterSpacing: 0.5,
+    textAlign: "center",
+    fontStyle: "italic",
+  },
+  loadingNote: {
+    fontSize: 12,
+    color: "rgba(245, 234, 200, 0.45)",
+    letterSpacing: 0.5,
+    marginTop: 4,
+  },
+  errorCard: {
+    borderWidth: 1,
+    borderColor: "rgba(255, 100, 100, 0.3)",
+    borderRadius: 16,
+    backgroundColor: "rgba(26, 13, 46, 0.7)",
+    paddingVertical: 24,
+    paddingHorizontal: 24,
+    alignItems: "center",
+    gap: 8,
+  },
+  errorText: {
+    fontSize: 14,
+    color: "rgba(255, 180, 180, 0.9)",
+    textAlign: "center",
+  },
+  retryText: {
+    fontSize: 13,
+    color: Colors.goldPrimary,
+    letterSpacing: 0.5,
+  },
+  interpretationCard: {
+    borderWidth: 1,
+    borderColor: "rgba(250, 218, 134, 0.2)",
+    borderRadius: 16,
+    backgroundColor: "rgba(26, 13, 46, 0.7)",
+    paddingVertical: 28,
+    paddingHorizontal: 24,
+    gap: 6,
+  },
+  sectionHeader: {
+    fontSize: 13,
+    color: Colors.goldPrimary,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    fontWeight: "600",
+    marginTop: 16,
+    marginBottom: 6,
+  },
+  sectionBody: {
+    fontSize: 14,
+    color: "rgba(245, 234, 200, 0.85)",
+    lineHeight: 22,
+    fontWeight: "300",
+  },
+  chatButton: {
+    marginTop: 16,
+    alignSelf: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 28,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(250, 218, 134, 0.35)",
+    backgroundColor: "rgba(26, 13, 46, 0.5)",
+  },
+  chatButtonText: {
+    fontSize: 13,
+    color: Colors.goldPale,
+    letterSpacing: 1.5,
+  },
+});

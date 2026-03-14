@@ -1,5 +1,5 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
+import React, { useRef, useCallback } from "react";
+import { View, StyleSheet, Animated } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -34,6 +34,15 @@ export default function BirthMapChatWrapper(
   const sessionIdParam = (route.params as any)?.sessionId;
   const isAddPersonFlow = !personNameFromParams;
 
+  const screenOpacity = useRef(new Animated.Value(1)).current;
+  const navigateBack = useCallback(() => {
+    Animated.timing(screenOpacity, {
+      toValue: 0,
+      duration: 400,
+      useNativeDriver: true,
+    }).start(() => navigation.goBack());
+  }, [navigation, screenOpacity]);
+
   // --- Hooks ---
   const chat = useChatSession({
     sessionId: sessionIdParam ? Number(sessionIdParam) : undefined,
@@ -43,14 +52,15 @@ export default function BirthMapChatWrapper(
 
   const addPerson = useAddPersonFlow(
     chat.appendMessage,
-    () => navigation.goBack()
+    () => navigateBack()
   );
 
   const effectivePersonName = personNameFromParams ?? addPerson.createdPersonName;
 
   const chartCapture = useChartCapture(async () => {
     await chat.appendMessage("assistant", "✨ Your Natal Chart has been generated and saved!");
-    navigation.goBack();
+    await new Promise((r) => setTimeout(r, 900));
+    navigateBack();
   });
 
   const birthMap = useBirthMapFlow(
@@ -61,10 +71,10 @@ export default function BirthMapChatWrapper(
       if (name && chart.svgContent) {
         chartCapture.startCapture(chart.svgContent, name, chart.chartData);
       } else {
-        navigation.goBack();
+        navigateBack();
       }
     },
-    () => navigation.goBack()
+    () => navigateBack()
   );
 
   // --- Streaming complete: trigger pickers based on message content ---
@@ -108,15 +118,15 @@ export default function BirthMapChatWrapper(
     birthMap.isGenerating;
 
   return (
-    <>
+    <Animated.View style={{ flex: 1, opacity: screenOpacity }}>
       <ChatSessionCore
         title="Generate Birth Map"
         messages={chat.messages}
         onSendMessage={handleSendMessage}
-        isLoading={chat.isLoading || birthMap.isGenerating}
+        isLoading={chat.isLoading}
         mode="interactive"
         disabled={isDisabled}
-        onClose={() => navigation.goBack()}
+        onClose={() => navigateBack()}
         onStreamingComplete={handleStreamingComplete}
       >
         {addPerson.showBirthDatePicker && (
@@ -164,7 +174,7 @@ export default function BirthMapChatWrapper(
           </ViewShot>
         </View>
       )}
-    </>
+    </Animated.View>
   );
 }
 

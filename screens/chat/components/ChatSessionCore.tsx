@@ -53,7 +53,7 @@ export default function ChatSessionCore({
       <ChatHeader title={title} onClose={onClose || (() => {})} mode={mode} />
 
       <View style={{ flex: 1, backgroundColor: "#1a0d2e" }}>
-        {isLoading ? (
+        {isLoading && messages.length === 0 ? (
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
             <Text style={{ color: "rgba(212, 175, 55, 0.6)", fontSize: 14 }}>
               Loading...
@@ -66,7 +66,7 @@ export default function ChatSessionCore({
               scrollViewRef={scrollViewRef}
               onStreamingComplete={onStreamingComplete || undefined}
             />
-            {isTyping && <TypingIndicator />}
+            {(isTyping || isLoading) && <TypingIndicator />}
           </>
         )}
       </View>

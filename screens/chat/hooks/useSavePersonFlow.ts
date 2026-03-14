@@ -29,12 +29,12 @@ export function useSavePersonFlow(getSessionId: () => number | null, refreshMess
     const name = (savePersonName || pendingSavePerson || "").trim() || "Unknown";
     const count = await getPersonCount();
     if (count >= MAX_PERSONS) {
-      setSavePersonError(`You've reached the maximum of ${MAX_PERSONS} people in your orbit.`);
+      setSavePersonError(`You've reached the maximum of ${MAX_PERSONS} people in your birth chart.`);
       return;
     }
     const taken = await isPersonNameTaken(name);
     if (taken) {
-      setSavePersonError("This name is already in your orbit. Please choose a unique name.");
+      setSavePersonError("This name is already in your birth chart. Please choose a unique name.");
       return;
     }
 
@@ -51,13 +51,13 @@ export function useSavePersonFlow(getSessionId: () => number | null, refreshMess
       await createPersonMinimal({ name, birth_year: y, birth_month: m, birth_day: d });
     } catch (e: any) {
       if (e?.message === "PERSON_LIMIT_REACHED") {
-        setSavePersonError(`You've reached the maximum of ${MAX_PERSONS} people in your orbit.`);
+        setSavePersonError(`You've reached the maximum of ${MAX_PERSONS} people in your birth chart.`);
         return;
       }
       throw e;
     }
 
-    await addMessage({ sessionId: sid, role: "assistant", content: `Added ${name} to your orbit! ✨` });
+    await addMessage({ sessionId: sid, role: "assistant", content: `Added ${name} to your birth chart! ✨` });
     await refreshMessages();
   };
 

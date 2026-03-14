@@ -66,7 +66,7 @@ export default function ChatSessionScreen() {
         const names = personsWithCharts.map((p) => p.name ?? "").filter(Boolean);
         effectiveInitialMessage = names.length > 0
           ? `🪐 I have natal charts for: ${names.join(", ")}. Type one or more of these names (e.g. ${names[0]}) and I'll analyze their chart.`
-          : "🪐 You don't have any natal charts yet. Add people in Orbit and generate their birth charts there — then come back here to get an analysis.";
+          : "🪐 You don't have any natal charts yet. Add people in Birth Chart and generate their birth charts there — then come back here to get an analysis.";
       }
 
       const service = new ChatSessionService({
@@ -141,9 +141,9 @@ export default function ChatSessionScreen() {
     >
       {savePerson.pendingSavePerson !== null && (
         <View style={styles.savePersonSection}>
-          <Text style={styles.savePersonTitle}>Save to Orbit?</Text>
+          <Text style={styles.savePersonTitle}>Save to Birth Chart?</Text>
           <Text style={styles.savePersonSubtitle}>
-            Same protocol as Orbit: name and birth date (day, month, year).
+            Same protocol as Birth Chart: name and birth date (day, month, year).
           </Text>
           <TextInput
             style={styles.nameInput}

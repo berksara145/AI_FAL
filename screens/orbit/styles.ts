@@ -8,7 +8,7 @@ export const styles = StyleSheet.create({
     backgroundColor: Colors.bgDark,
     alignItems: "center",
     justifyContent: "flex-start",
-    paddingTop: SCREEN_HEIGHT * 0.15, // Position closer to top but still centered-ish
+    paddingTop: SCREEN_HEIGHT * 0.05,
     overflow: "hidden",
   },
   backgroundImage: {
@@ -113,6 +113,33 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: "rgba(250, 218, 134, 0.8)",
     letterSpacing: 1,
+  },
+  pageDescription: {
+    alignItems: "center",
+    paddingHorizontal: 32,
+    paddingTop: 16,
+    paddingBottom: 4,
+  },
+  pageDescriptionTitle: {
+    fontSize: 15,
+    letterSpacing: 2.5,
+    color: Colors.goldPrimary,
+    fontWeight: "400",
+    textTransform: "uppercase",
+    marginBottom: 6,
+  },
+  pageDescriptionText: {
+    fontSize: 13,
+    color: "rgba(245, 234, 200, 0.6)",
+    textAlign: "center",
+    lineHeight: 19,
+  },
+  pageDescriptionHint: {
+    marginTop: 8,
+    fontSize: 12,
+    color: "rgba(250, 218, 134, 0.45)",
+    letterSpacing: 1,
+    fontStyle: "italic",
   },
   /* Empty orbit: 0 people — centered CTA card */
   emptyState: {

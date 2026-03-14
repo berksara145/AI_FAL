@@ -9,3 +9,15 @@ kişi uyumu
 günlük fortune cookie
 3 tarot kartı çevirme
 birth chart ekle bide üstüne açıklama
+
+
+orbit yerine birth chart ekle her yere 
+
+birth chart analiz ekle personal page sayfa altına
+
+sohbet yerinde natal chart modunda yoksa oluşturma 
+yerine yönlendirsin eğer varsa da onları basılabilir 
+button olarak göstersin 
+
+basınca analiz adam akıllı yapsın yani
+

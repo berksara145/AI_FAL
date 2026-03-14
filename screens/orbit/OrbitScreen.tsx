@@ -84,9 +84,19 @@ export default function OrbitScreen() {
         )}
       </View>
 
+      <View style={styles.pageDescription}>
+        <Text style={styles.pageDescriptionTitle}>Your Celestial Circle</Text>
+        <Text style={styles.pageDescriptionText}>
+          Add the people in your life to explore their natal charts and astrological connections.
+        </Text>
+        {nodes.length > 0 && (
+          <Text style={styles.pageDescriptionHint}>Tap a person to view their birth chart</Text>
+        )}
+      </View>
+
       {nodes.length === 0 && (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyStateTitle}>Your orbit is empty</Text>
+          <Text style={styles.emptyStateTitle}>Your birth chart is empty</Text>
           <Text style={styles.emptyStateSubtitle}>
             Add people by name and birth date. You can generate their birth maps later from their profile.
           </Text>

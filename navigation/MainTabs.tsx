@@ -107,7 +107,8 @@ function BottomTabs() {
         name="Orbit"
         component={OrbitScreen}
         options={{
-          tabBarLabel: "Orbit",
+          tabBarLabel: "Birth Chart",
+          headerTitle: "Birth Chart",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="orbit-variant" size={size} color={color} />
           ),

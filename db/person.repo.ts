@@ -21,6 +21,7 @@ export type Person = {
   style: string | null;
   chart_gpt_json: string | null;
   generated_at: string | null;
+  chart_interpretation: string | null;
   orbit_avatar_index: number | null;
   created_at: string;
   updated_at: string;
@@ -293,5 +294,16 @@ export const updatePersonPngPath = async (personName: string, pngPath: string): 
   await executeSql(
     `UPDATE persons SET png_path = ?, updated_at = datetime('now') WHERE owner_user_id = ? AND name = ?`,
     [pngPath, user.id, personName]
+  );
+};
+
+/**
+ * Update the GPT interpretation text for a person (by name, current user).
+ */
+export const updatePersonInterpretation = async (personName: string, interpretation: string): Promise<void> => {
+  const user = await getOrCreateUser();
+  await executeSql(
+    `UPDATE persons SET chart_interpretation = ?, updated_at = datetime('now') WHERE owner_user_id = ? AND name = ?`,
+    [interpretation, user.id, personName]
   );
 };

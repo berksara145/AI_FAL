@@ -54,8 +54,8 @@ const DEFAULT_AGENDA =
 const DEFAULT_MAX_HISTORY = 12;
 
 const SAVE_PERSON_INSTRUCTION =
-  "\n\nTwo-step save-to-Orbit flow:\n" +
-  "1) When the user mentions a specific person they might want to save (e.g. by name), ask if they want to add them to Orbit. End your reply with exactly one line: [SAVE_PERSON: FirstName]. Use only the person's first name. Omit if they are not clearly referring to a specific person.\n" +
+  "\n\nTwo-step save-to-Birth Chart flow:\n" +
+  "1) When the user mentions a specific person they might want to save (e.g. by name), ask if they want to add them to Birth Chart. End your reply with exactly one line: [SAVE_PERSON: FirstName]. Use only the person's first name. Omit if they are not clearly referring to a specific person.\n" +
   "2) When the user then agrees (yes, sure, let's do it, etc.), reply briefly and positively, then end with exactly one line: [OPEN_SAVE_PERSON: FirstName]. Use the same first name. That line is for the system only and will not be shown. Omit if the user declined.";
 
 /** Regex: tag at end of reply, optional newline/space before. Strip so no [SAVE_PERSON] / [OPEN_SAVE_PERSON] ever stored. */

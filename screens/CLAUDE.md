@@ -19,7 +19,8 @@ screens/[feature]/
 
 ## Current Screens
 
-### orbit/ — People management
+### orbit/ — Birth Chart tab (people management)
+> **Note:** The tab is displayed as "Birth Chart" in the UI (tab label + header title). The folder, route name (`Orbit`), and code identifiers remain `orbit`/`Orbit` — do not rename them.
 - `OrbitScreen.tsx` — visual ring of people, loads from DB on focus
 - `PersonDetailScreen.tsx` — zodiac symbol, birth date pills, cached chart PNG, "Open Birth Map" CTA
 - `BirthMapChatWrapper.tsx` — chat flow for adding people + generating natal charts (178 lines, coordinates 4 hooks)

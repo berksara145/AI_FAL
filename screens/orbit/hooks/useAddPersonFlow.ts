@@ -48,7 +48,7 @@ export function useAddPersonFlow(
       if (e?.message === "PERSON_LIMIT_REACHED") {
         await appendMessage(
           "assistant",
-          `You've reached the maximum of ${MAX_PERSONS} people in your orbit. Remove someone to add a new person.`
+          `You've reached the maximum of ${MAX_PERSONS} people in your birth chart. Remove someone to add a new person.`
         );
         return;
       }
@@ -56,7 +56,7 @@ export function useAddPersonFlow(
     }
 
     setCreatedPersonName(collectedName);
-    await appendMessage("assistant", `Added ${collectedName} to your orbit! ✨`);
+    await appendMessage("assistant", `Added ${collectedName} to your birth chart! ✨`);
     onDone();
   };
 

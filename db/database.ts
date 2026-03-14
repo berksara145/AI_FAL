@@ -187,6 +187,11 @@ export const initDatabase = (): Promise<void> => {
       } catch (e) {
         // Column already exists, ignore
       }
+      try {
+        db.execSync(`ALTER TABLE persons ADD COLUMN chart_interpretation TEXT;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
       // Backfill orbit_avatar_index for existing persons (stable per person by id)
       try {
         db.execSync(`UPDATE persons SET orbit_avatar_index = id % 8 WHERE orbit_avatar_index IS NULL;`);
