@@ -37,7 +37,7 @@ export default function MessageList({ messages, scrollViewRef, onStreamingComple
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 48, paddingHorizontal: 24 }}>
           <Text 
             style={{ 
-              color: "rgba(212, 175, 55, 0.6)", 
+              color: "rgba(212, 175, 55, 0.6)",
               textAlign: "center",
               fontSize: 14,
               fontStyle: "italic",

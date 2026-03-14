@@ -29,7 +29,7 @@ export default function MessageInput({ onSend, disabled = false }: MessageInputP
           maxLength={1000}
           editable={!disabled}
           keyboardAppearance="dark"
-          style={{ 
+          style={{
             flex: 1,
             textAlignVertical: "top",
             backgroundColor: "#2d1b3d",
@@ -58,7 +58,7 @@ export default function MessageInput({ onSend, disabled = false }: MessageInputP
             height: 44,
             justifyContent: "center",
             alignItems: "center",
-            flexShrink: 0
+            flexShrink: 0,
           }}
           activeOpacity={0.7}
         >

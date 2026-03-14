@@ -55,7 +55,7 @@ export default function ChatSessionCore({
       <View style={{ flex: 1, backgroundColor: "#1a0d2e" }}>
         {isLoading && messages.length === 0 ? (
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <Text style={{ color: "rgba(212, 175, 55, 0.6)", fontSize: 14 }}>
+            <Text style={{ color: "rgba(212, 175, 55, 0.6)", fontSize: 14, fontStyle: "italic" }}>
               Loading...
             </Text>
           </View>

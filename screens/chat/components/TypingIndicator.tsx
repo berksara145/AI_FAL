@@ -4,13 +4,21 @@ import { ActivityIndicator } from "react-native";
 
 export default function TypingIndicator() {
   return (
-    <View className="flex-row items-center px-4 py-2 mb-2">
-      <View className="bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-3">
-        <View className="flex-row items-center">
-          <ActivityIndicator size="small" color="#6200ee" />
-          <Text className="text-gray-500 text-sm ml-2">AI is typing...</Text>
-        </View>
-      </View>
+    <View style={{ paddingHorizontal: 24, paddingVertical: 8, marginBottom: 4 }}>
+      <Text
+        style={{
+          fontSize: 11,
+          fontWeight: "500",
+          color: "rgba(212,175,55,0.5)",
+          textTransform: "uppercase",
+          letterSpacing: 1.5,
+          fontStyle: "italic",
+          marginBottom: 4,
+        }}
+      >
+        Lunara
+      </Text>
+      <ActivityIndicator size="small" color="rgba(212,175,55,0.6)" />
     </View>
   );
 }

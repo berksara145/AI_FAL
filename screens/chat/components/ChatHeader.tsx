@@ -10,7 +10,7 @@ type ChatHeaderProps = {
 
 export default function ChatHeader({ title, onClose, mode = "interactive" }: ChatHeaderProps) {
   return (
-    <View 
+    <View
       style={{
         flexDirection: "row",
         alignItems: "center",
@@ -23,7 +23,7 @@ export default function ChatHeader({ title, onClose, mode = "interactive" }: Cha
     >
       <TouchableOpacity
         onPress={onClose}
-        style={{ 
+        style={{
           padding: 8,
           marginRight: 12,
           opacity: 0.8,
@@ -34,7 +34,7 @@ export default function ChatHeader({ title, onClose, mode = "interactive" }: Cha
       </TouchableOpacity>
       <View style={{ flex: 1 }}>
         {title ? (
-          <Text 
+          <Text
             style={{
               fontSize: 18,
               fontWeight: "400",

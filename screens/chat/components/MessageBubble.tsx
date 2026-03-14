@@ -100,46 +100,86 @@ export default function MessageBubble({ message, onStreamingComplete }: MessageB
     };
   }, [message.id, isUser]); // Removed message.content and message.isStreaming from dependencies
 
+  if (isUser) {
+    return (
+      <View
+        style={{
+          marginBottom: 32,
+          width: "100%",
+          paddingHorizontal: 24,
+          alignItems: "flex-end",
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 10,
+            fontWeight: "500",
+            color: "rgba(212,175,55,0.45)",
+            marginBottom: 5,
+            textTransform: "uppercase",
+            letterSpacing: 1.5,
+            fontStyle: "italic",
+          }}
+        >
+          {senderName}
+        </Text>
+        <Text
+          style={{
+            fontSize: 15,
+            color: "rgba(229,229,229,0.65)",
+            lineHeight: 24,
+            fontWeight: "400",
+            letterSpacing: 0.3,
+            textAlign: "right",
+          }}
+        >
+          {displayedText}
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View
       style={{
-        marginBottom: 24,
+        marginBottom: 32,
         width: "100%",
-        paddingHorizontal: 24,
+        paddingLeft: 20,
+        paddingRight: 24,
+        borderLeftWidth: 2,
+        borderLeftColor: "rgba(212,175,55,0.55)",
       }}
     >
-      {/* Character Name - Theatre Script Style */}
+      {/* LUNARA label */}
       <Text
         style={{
-          fontSize: 11,
-          fontWeight: "500",
+          fontSize: 12,
+          fontWeight: "700",
           color: "#d4af37",
-          marginBottom: 6,
+          marginBottom: 8,
           textTransform: "uppercase",
-          letterSpacing: 1.5,
+          letterSpacing: 2,
           fontStyle: "italic",
         }}
       >
         {senderName}
       </Text>
 
-      {/* Dialogue - Left Aligned Script Style */}
-      <View>
-        <Text
-          style={{
-            fontSize: 15,
-            color: "#e5e5e5",
-            lineHeight: 24,
-            fontWeight: "300",
-            letterSpacing: 0.3,
-          }}
-        >
-          {displayedText}
-          {isStreaming && (
-            <Text style={{ color: "#d4af37" }}>▊</Text>
-          )}
-        </Text>
-      </View>
+      {/* Dialogue */}
+      <Text
+        style={{
+          fontSize: 16,
+          color: "#f0ead8",
+          lineHeight: 26,
+          fontWeight: "300",
+          letterSpacing: 0.3,
+        }}
+      >
+        {displayedText}
+        {isStreaming && (
+          <Text style={{ color: "#d4af37" }}>▊</Text>
+        )}
+      </Text>
     </View>
   );
 }
