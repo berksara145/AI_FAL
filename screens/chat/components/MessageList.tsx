@@ -16,9 +16,11 @@ type MessageListProps = {
   scrollViewRef?: React.RefObject<ScrollView | null>;
   onStreamingComplete?: (messageId: string) => void;
   trailingContent?: React.ReactNode;
+  headerContent?: React.ReactNode;
+  staticDisplay?: boolean;
 };
 
-export default function MessageList({ messages, scrollViewRef, onStreamingComplete, trailingContent }: MessageListProps) {
+export default function MessageList({ messages, scrollViewRef, onStreamingComplete, trailingContent, headerContent, staticDisplay }: MessageListProps) {
   useEffect(() => {
     // Auto-scroll to bottom when new messages arrive
     if (scrollViewRef?.current && messages.length > 0) {
@@ -31,8 +33,8 @@ export default function MessageList({ messages, scrollViewRef, onStreamingComple
   return (
     <ScrollView
       ref={scrollViewRef}
-      style={{ flex: 1 }}
-      contentContainerStyle={{ paddingVertical: 24 }}
+      style={{ flex: 1, backgroundColor: ChatColors.bg }}
+      contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 28, paddingBottom: 16 }}
       showsVerticalScrollIndicator={false}
     >
       {messages.length === 0 ? (
@@ -51,11 +53,29 @@ export default function MessageList({ messages, scrollViewRef, onStreamingComple
         </View>
       ) : (
         <>
-          {messages.map((message) => (
+          {/* Date pill */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 30 }}>
+            <Text style={{ fontSize: 8, color: ChatColors.sendActive, opacity: 0.55 }}>✦</Text>
+            <Text style={{
+              fontSize: 10,
+              fontWeight: "600",
+              letterSpacing: 2.2,
+              textTransform: "uppercase",
+              color: ChatColors.userLabel,
+              opacity: 0.75,
+            }}>
+              {`Today · ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" })}`}
+            </Text>
+            <Text style={{ fontSize: 8, color: ChatColors.sendActive, opacity: 0.55 }}>✦</Text>
+          </View>
+          {headerContent}
+          {messages.map((message, index) => (
             <MessageBubble
               key={message.id}
               message={message}
               onStreamingComplete={onStreamingComplete}
+              staticDisplay={staticDisplay}
+              showDivider={index > 0}
             />
           ))}
           {trailingContent}

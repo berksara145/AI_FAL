@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/RootStack";
@@ -7,7 +7,6 @@ import BasicChatUI, { type ChatMessage } from "../../components/BasicChatUI";
 import BirthDatePicker from "./components/BirthDatePicker";
 import { useOnboarding } from "./hooks/useOnboarding";
 import { INITIAL_MESSAGE } from "./constants";
-import { ChatColors } from "../../utils/theme";
 
 export default function UserInfoChatScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -28,7 +27,7 @@ export default function UserInfoChatScreen() {
   const isStreaming = messages.some((m) => m.isStreaming);
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: ChatColors.bg }} edges={["top", "bottom"]}>
+    <View className="flex-1">
       <BasicChatUI
         title="About You"
         messages={messages}
@@ -44,6 +43,6 @@ export default function UserInfoChatScreen() {
           onConfirm={handleDateConfirm}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }

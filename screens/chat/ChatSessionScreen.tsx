@@ -230,7 +230,8 @@ export default function ChatSessionScreen() {
       mode={mode}
       disabled={savePerson.pendingSavePerson !== null || (feature === FEATURE_TAROT && !tarot.allRevealed)}
       onClose={() => navigation.goBack()}
-      trailingContent={natalChartBar ?? tarotBar}
+      trailingContent={natalChartBar ?? undefined}
+      headerContent={tarotBar ?? undefined}
     >
 
       {savePerson.pendingSavePerson !== null && (

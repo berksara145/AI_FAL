@@ -254,6 +254,19 @@ export const getLastMessages = async (
 };
 
 /**
+ * Delete all chat sessions and their messages
+ */
+export const deleteAllChatSessions = async (): Promise<void> => {
+  try {
+    await executeSql("DELETE FROM messages");
+    await executeSql("DELETE FROM chat_sessions");
+  } catch (error) {
+    console.error("Error deleting all chat sessions:", error);
+    throw error;
+  }
+};
+
+/**
  * Delete a message
  */
 export const deleteMessage = async (messageId: number): Promise<void> => {

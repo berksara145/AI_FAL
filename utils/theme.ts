@@ -40,26 +40,29 @@ export const Colors = {
   borderGoldMid: "rgba(250, 218, 134, 0.7)",    // outer ring borders
 } as const;
 
-/** Chat screen color palette. */
+/** Chat screen color palette — parchment + deep navy theme. */
 export const ChatColors = {
-  bg:           "#1a0d2e",
-  headerBg:     "#1a0d2e",
-  inputFieldBg: "#2d1b3d",
-  border:       "rgba(212,175,55,0.2)",
+  bg:           "#cfc0a3",   // parchment background
+  headerBg:     "#120c28",   // deep navy header
+  inputBarBg:   "#c4b597",   // slightly darker parchment for input bar
+  inputFieldBg: "#b8a98a",   // surface — input pill
+  border:       "rgba(100,80,40,0.18)",
 
-  lunaraLabel:  "#d4af37",
-  lunaraText:   "#f0ead8",
-  lunaraBorder: "rgba(212,175,55,0.55)",
-  streamCursor: "#d4af37",
+  lunaraLabel:  "#7a5810",   // gold-brown label (AI)
+  lunaraText:   "#0f0920",   // near-black text (AI)
+  lunaraBorder: "rgba(201,168,76,0.5)",  // gold left rule on AI text
+  streamCursor: "#c9a84c",
 
-  userLabel:    "rgba(212,175,55,0.45)",
-  userText:     "rgba(229,229,229,0.65)",
+  userLabel:    "#5a4a78",   // muted lavender label (user)
+  userText:     "#221550",   // deep indigo text (user)
+  userDot:      "#9b8cc8",   // lavender dot
 
-  placeholder:  "rgba(212,175,55,0.5)",
-  sendActive:   "#d4af37",
-  sendInactive: "rgba(212,175,55,0.35)",
-  typingColor:  "rgba(212,175,55,0.55)",
-  loadingText:  "rgba(212,175,55,0.6)",
+  placeholder:  "rgba(90,74,120,0.6)",
+  sendActive:   "#c9a84c",
+  sendInactive: "rgba(201,168,76,0.28)",
+  typingColor:  "#c9a84c",
+  loadingText:  "rgba(122,88,16,0.7)",
+  divider:      "rgba(100,80,40,0.20)",
 } as const;
 
 /** Default natal chart style. Import this wherever a chart is generated. */

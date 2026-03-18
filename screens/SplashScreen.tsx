@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/RootStack";
@@ -24,6 +25,7 @@ export default function SplashScreen() {
 
   return (
     <View className="flex-1" style={{ backgroundColor: "#6366f1" }}>
+      <StatusBar style="light" backgroundColor="#6366f1" />
       <ScrollView 
         className="flex-1" 
         contentContainerStyle={{ paddingVertical: 40, paddingHorizontal: 24 }}

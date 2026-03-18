@@ -18,11 +18,30 @@ import {
   getLastMessages,
   getMessageCount,
 } from "../../db/chat.repo";
+import { EXPLORE_CLASSES } from "./exploreClasses";
 import type { ChatSession } from "../../types/chatSession";
 import type { Message } from "../../types/message";
-import { Colors } from "../../utils/theme";
+import { ChatColors } from "../../utils/theme";
 
-// ── helpers ───────────────────────────────────────────────────────────────────
+// ── Design tokens — mirror exact chat theme ───────────────────────────────────
+const C = {
+  navy:       ChatColors.headerBg,      // #120c28
+  gold:       ChatColors.sendActive,    // #c9a84c
+  deepPurple: "#2d1f5e",
+  bg:         ChatColors.bg,            // #cfc0a3
+  bgCard:     ChatColors.inputBarBg,    // #c4b597
+  surface:    ChatColors.inputFieldBg,  // #b8a98a
+  border:     ChatColors.border,        // rgba(100,80,40,0.18)
+  textDark:   ChatColors.lunaraText,    // #0f0920
+  textMid:    ChatColors.userText,      // #221550
+  textMuted:  ChatColors.userLabel,     // #5a4a78
+  goldLabel:  ChatColors.lunaraLabel,   // #7a5810
+  lavender:   ChatColors.userDot,       // #9b8cc8
+  bubbleAiBg: "#2d1f5e",
+  bubbleAiTx: "#f5e9c8",
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function timeAgo(iso: string): string {
   try {
@@ -35,26 +54,21 @@ function timeAgo(iso: string): string {
     const days = Math.floor(hrs / 24);
     if (days < 7) return `${days}d ago`;
     return new Date(iso).toLocaleDateString([], { month: "short", day: "numeric" });
-  } catch {
-    return "";
-  }
+  } catch { return ""; }
 }
 
 function dateBucket(iso: string): string {
   try {
-    const d = new Date(iso);
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const diff = todayStart.getTime() - new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const diff = todayStart.getTime() - new Date(new Date(iso).getFullYear(), new Date(iso).getMonth(), new Date(iso).getDate()).getTime();
     const days = Math.round(diff / 86400000);
     if (days === 0) return "Today";
     if (days === 1) return "Yesterday";
     if (days < 7) return "This Week";
     if (days < 30) return "This Month";
     return "Older";
-  } catch {
-    return "Older";
-  }
+  } catch { return "Older"; }
 }
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
@@ -63,24 +77,12 @@ function featureIcon(feature: string | null): IconName {
   if (!feature) return "chat-outline";
   const f = feature.toLowerCase();
   if (f.includes("tarot")) return "cards-playing-outline";
-  if (f.includes("natal") || f.includes("birth chart") || f.includes("chart")) return "star-circle-outline";
-  if (f.includes("someone") || f.includes("special")) return "heart-outline";
+  if (f.includes("natal") || f.includes("chart")) return "star-circle-outline";
+  if (f.includes("special") || f.includes("someone")) return "heart-outline";
   if (f.includes("energy") || f.includes("today")) return "weather-sunny";
   if (f.includes("friend")) return "account-group-outline";
-  if (f.includes("birthmap") || f.includes("birth map")) return "map-outline";
+  if (f.includes("mind")) return "chat-outline";
   return "chat-outline";
-}
-
-function featureColor(feature: string | null): string {
-  if (!feature) return Colors.goldPrimary;
-  const f = feature.toLowerCase();
-  if (f.includes("tarot")) return Colors.pinkLight;
-  if (f.includes("natal") || f.includes("chart")) return Colors.goldBright;
-  if (f.includes("someone") || f.includes("special")) return Colors.pinkHot;
-  if (f.includes("energy") || f.includes("today")) return Colors.skyBlue;
-  if (f.includes("friend")) return Colors.goldLight;
-  if (f.includes("birthmap") || f.includes("birth map")) return "#a78bfa";
-  return Colors.goldPrimary;
 }
 
 function sessionLabel(session: ChatSession): string {
@@ -92,96 +94,71 @@ function sessionLabel(session: ChatSession): string {
   return "Chat";
 }
 
-type SessionWithMeta = ChatSession & {
-  lastMessages: Message[];
-  messageCount: number;
-};
+type SessionWithMeta = ChatSession & { firstMessage: Message | null; messageCount: number };
 
-// ── section header ────────────────────────────────────────────────────────────
+// ── Section header (date pill style) ─────────────────────────────────────────
 
-function SectionHeader({ label }: { label: string }) {
+function DatePill({ label }: { label: string }) {
   return (
-    <View style={sectionStyles.row}>
-      <View style={sectionStyles.line} />
-      <Text style={sectionStyles.label}>{label}</Text>
-      <View style={sectionStyles.line} />
+    <View style={styles.datePillRow}>
+      <View style={styles.datePillLine} />
+      <Text style={styles.datePillText}>{label}</Text>
+      <View style={styles.datePillLine} />
     </View>
   );
 }
 
-const sectionStyles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 24,
-    marginBottom: 10,
-    paddingHorizontal: 4,
-  },
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: Colors.borderGold,
-  },
-  label: {
-    fontSize: 10,
-    fontWeight: "600",
-    color: Colors.textFaint,
-    letterSpacing: 1.4,
-    marginHorizontal: 10,
-    textTransform: "uppercase",
-  },
-});
+// ── Chat card ─────────────────────────────────────────────────────────────────
 
-// ── chat card ─────────────────────────────────────────────────────────────────
-
-function ChatCard({
-  session,
-  onPress,
-}: {
-  session: SessionWithMeta;
-  onPress: () => void;
-}) {
-  const iconColor = featureColor(session.feature ?? null);
-  const iconName = featureIcon(session.feature ?? null);
+function ChatCard({ session, onPress }: { session: SessionWithMeta; onPress: () => void }) {
   const label = sessionLabel(session);
+  const icon = featureIcon(session.feature ?? null);
   const time = timeAgo(session.updated_at || session.created_at);
-  const count = session.messageCount;
-
-  const firstMessage = session.lastMessages.find((m) => m.role !== "system");
+  const preview = session.firstMessage?.content ?? null;
 
   return (
     <Pressable
-      style={({ pressed }) => [styles.cardWrapper, pressed && styles.cardPressed]}
+      style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
       onPress={onPress}
     >
-      {/* Top row: icon + title + meta */}
-      <View style={styles.cardMeta}>
-        <View style={[styles.iconCircle, { borderColor: iconColor + "66", backgroundColor: iconColor + "18" }]}>
-          <MaterialCommunityIcons name={iconName} size={16} color={iconColor} />
+      {/* Card header row */}
+      <View style={styles.cardHeader}>
+        {/* Avatar circle */}
+        <View style={styles.avatar}>
+          <Text style={styles.avatarStar}>✦</Text>
         </View>
-        <Text style={[styles.cardTitle, { color: iconColor }]} numberOfLines={1}>
-          {label}
-        </Text>
-        <Text style={styles.timeText}>{time}</Text>
-        {count > 0 && (
+
+        <View style={styles.cardMeta}>
+          <Text style={styles.senderLabel}>{label}</Text>
+          <Text style={styles.cardTime}>{time}</Text>
+        </View>
+
+        {session.messageCount > 0 && (
           <View style={styles.countBadge}>
-            <Text style={styles.countBadgeText}>{count}</Text>
+            <Text style={styles.countBadgeText}>{session.messageCount}</Text>
           </View>
         )}
       </View>
 
-      {/* Speech bubble */}
-      <View style={styles.speechBubble}>
-        <View style={styles.bubbleTail} />
-        <Text style={styles.msgText} numberOfLines={3}>
-          {firstMessage ? firstMessage.content : "No messages yet"}
-        </Text>
-      </View>
+      {/* Preview bubble — dark purple AI style */}
+      {preview ? (
+        <View style={styles.previewBubble}>
+          <Text style={styles.starDot}>✦</Text>
+          <Text style={styles.previewText} numberOfLines={3}>{preview}</Text>
+        </View>
+      ) : (
+        <View style={[styles.previewBubble, styles.previewBubbleEmpty]}>
+          <Text style={styles.previewEmpty}>No messages yet</Text>
+        </View>
+      )}
+
+      {/* Stars strip */}
+      <Text style={styles.starsStrip}>· ✦ · ✦ · ✦ ·</Text>
     </Pressable>
   );
 }
 
-// ── main component ─────────────────────────────────────────────────────────────
+// ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function HistoryScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -194,14 +171,16 @@ export default function HistoryScreen() {
       (async () => {
         setLoading(true);
         try {
-          const list = await getRecentChatSessions(40);
+          const allowedFeatures = new Set(EXPLORE_CLASSES.map((c) => c.feature));
+          const all = await getRecentChatSessions(40);
+          const list = all.filter((s) => s.feature != null && allowedFeatures.has(s.feature));
           if (cancelled) return;
           const withMeta = await Promise.all(
-            list.map(async (s) => ({
-              ...s,
-              lastMessages: await getLastMessages(s.id, 2),
-              messageCount: await getMessageCount(s.id),
-            }))
+            list.map(async (s) => {
+              const msgs = await getLastMessages(s.id, 2);
+              const first = msgs.find((m) => m.role !== "system") ?? null;
+              return { ...s, firstMessage: first, messageCount: await getMessageCount(s.id) };
+            })
           );
           if (!cancelled) setSessions(withMeta);
         } catch {
@@ -222,7 +201,6 @@ export default function HistoryScreen() {
     });
   };
 
-  // Group sessions by date bucket
   const bucketOrder = ["Today", "Yesterday", "This Week", "This Month", "Older"];
   const bucketMap: Record<string, SessionWithMeta[]> = {};
   for (const s of sessions) {
@@ -236,16 +214,18 @@ export default function HistoryScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.bgMain} />
+      <StatusBar barStyle="light-content" backgroundColor={C.navy} />
 
-      {/* Header */}
+      {/* Header — navy with gold */}
       <View style={styles.header}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={styles.headerSide}>
-          <MaterialCommunityIcons name="arrow-left" size={22} color={Colors.goldPrimary} />
+        <Pressable onPress={() => navigation.goBack()} hitSlop={12}>
+          <MaterialCommunityIcons name="arrow-left" size={22} color={C.gold} />
         </Pressable>
         <Text style={styles.headerTitle}>Chat History</Text>
-        <View style={styles.headerSide} />
+        <View style={{ width: 22 }} />
       </View>
+      {/* Gold gradient divider */}
+      <View style={styles.headerDivider} />
 
       <ScrollView
         style={styles.scroll}
@@ -254,24 +234,21 @@ export default function HistoryScreen() {
       >
         {loading ? (
           <View style={styles.centered}>
-            <ActivityIndicator size="large" color={Colors.goldPrimary} />
+            <ActivityIndicator size="large" color={C.gold} />
           </View>
         ) : sessions.length === 0 ? (
           <View style={styles.centered}>
-            <MaterialCommunityIcons name="chat-sleep-outline" size={48} color={Colors.textFaint} />
+            <Text style={styles.emptyStars}>✦  ✦  ✦</Text>
             <Text style={styles.emptyText}>No conversations yet</Text>
             <Text style={styles.emptySubtext}>Start a chat from the Insights tab</Text>
           </View>
         ) : (
           grouped.map(({ bucket, items }) => (
             <View key={bucket}>
-              <SectionHeader label={bucket} />
+              <DatePill label={bucket} />
               {items.map((session) => (
                 <React.Fragment key={session.id}>
-                  <ChatCard
-                    session={session}
-                    onPress={() => openSession(session)}
-                  />
+                  <ChatCard session={session} onPress={() => openSession(session)} />
                   <View style={{ height: 50 }} />
                 </React.Fragment>
               ))}
@@ -283,127 +260,197 @@ export default function HistoryScreen() {
   );
 }
 
-// ── styles ────────────────────────────────────────────────────────────────────
+// ── Styles ────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.bgMain,
-  },
+  container: { flex: 1, backgroundColor: C.bg },
+
+  // Header
   header: {
+    backgroundColor: C.navy,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  headerSide: {
-    width: 36,
+    paddingVertical: 14,
+    gap: 14,
   },
   headerTitle: {
     flex: 1,
-    fontSize: 22,
-    fontWeight: "700",
-    color: Colors.goldPrimary,
-    letterSpacing: 0.3,
-    textAlign: "center",
+    fontSize: 20,
+    fontWeight: "600",
+    color: C.gold,
+    letterSpacing: 0.4,
   },
+  headerDivider: {
+    height: 1,
+    backgroundColor: C.gold,
+    opacity: 0.4,
+  },
+
   scroll: { flex: 1 },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 4,
+    paddingHorizontal: 18,
+    paddingTop: 20,
     paddingBottom: 48,
   },
+
+  // Date pill
+  datePillRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+    marginTop: 8,
+  },
+  datePillLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: C.border,
+  },
+  datePillText: {
+    fontSize: 10,
+    fontWeight: "600",
+    letterSpacing: 1.8,
+    textTransform: "uppercase",
+    color: C.textMuted,
+    marginHorizontal: 12,
+  },
+
+  // Card
+  card: {
+    backgroundColor: C.bgCard,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: C.border,
+    overflow: "hidden",
+    shadowColor: C.navy,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
+  },
+  cardPressed: { opacity: 0.82 },
+
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 12,
+    gap: 10,
+  },
+
+  // Avatar circle
+  avatar: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: C.deepPurple,
+    borderWidth: 1.5,
+    borderColor: C.gold,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  avatarStar: {
+    fontSize: 13,
+    color: C.gold,
+  },
+
+  cardMeta: { flex: 1 },
+  senderLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 1.4,
+    textTransform: "uppercase",
+    color: C.goldLabel,
+    marginBottom: 2,
+  },
+  cardTime: {
+    fontSize: 11,
+    color: C.textMuted,
+    letterSpacing: 0.3,
+  },
+
+  countBadge: {
+    backgroundColor: C.gold,
+    borderRadius: 10,
+    minWidth: 22,
+    height: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 6,
+  },
+  countBadgeText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: C.navy,
+  },
+
+  // Preview bubble — dark purple AI style
+  previewBubble: {
+    backgroundColor: C.bubbleAiBg,
+    marginHorizontal: 14,
+    marginBottom: 2,
+    borderRadius: 14,
+    borderBottomLeftRadius: 4,
+    padding: 13,
+    shadowColor: C.deepPurple,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
+  },
+  previewBubbleEmpty: {
+    backgroundColor: C.surface,
+  },
+  starDot: {
+    fontSize: 8,
+    color: C.gold,
+    opacity: 0.7,
+    marginBottom: 4,
+  },
+  previewText: {
+    fontSize: 14,
+    fontWeight: "300",
+    lineHeight: 21,
+    color: C.bubbleAiTx,
+    letterSpacing: 0.2,
+  },
+  previewEmpty: {
+    fontSize: 13,
+    color: C.textMuted,
+    fontStyle: "italic",
+  },
+
+  // Stars strip
+  starsStrip: {
+    textAlign: "center",
+    fontSize: 10,
+    color: C.gold,
+    letterSpacing: 6,
+    opacity: 0.4,
+    paddingVertical: 10,
+  },
+
+  // Empty / loading
   centered: {
     paddingTop: 80,
     alignItems: "center",
     gap: 12,
   },
+  emptyStars: {
+    fontSize: 18,
+    color: C.gold,
+    letterSpacing: 8,
+    opacity: 0.5,
+  },
   emptyText: {
     fontSize: 16,
-    color: Colors.textMuted,
+    color: C.textMid,
     marginTop: 4,
   },
   emptySubtext: {
     fontSize: 13,
-    color: Colors.textFaint,
-  },
-
-  // ── Card wrapper ───────────────────────────────────────────────────────────
-  cardWrapper: {
-    gap: 8,
-  },
-  cardPressed: {
-    opacity: 0.75,
-  },
-
-  // Top meta row (icon + title + time + count)
-  cardMeta: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 4,
-  },
-  iconCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  cardTitle: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: "700",
-    letterSpacing: 0.1,
-  },
-  timeText: {
-    fontSize: 11,
-    color: Colors.textFaint,
-    letterSpacing: 0.3,
-  },
-  countBadge: {
-    backgroundColor: Colors.goldPrimary,
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 5,
-  },
-  countBadgeText: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: Colors.bgMain,
-  },
-
-  // Big speech bubble
-  speechBubble: {
-    backgroundColor: Colors.bgCard,
-    borderRadius: 20,
-    borderTopLeftRadius: 4,
-    borderWidth: 1,
-    borderColor: Colors.borderGold,
-    padding: 14,
-    gap: 10,
-  },
-  bubbleTail: {
-    position: "absolute",
-    top: -9,
-    left: 14,
-    width: 0,
-    height: 0,
-    borderLeftWidth: 8,
-    borderRightWidth: 8,
-    borderBottomWidth: 10,
-    borderLeftColor: "transparent",
-    borderRightColor: "transparent",
-    borderBottomColor: Colors.borderGold,
-  },
-  msgText: {
-    fontSize: 13,
-    lineHeight: 19,
-    color: Colors.textMuted,
+    color: C.textMuted,
   },
 });

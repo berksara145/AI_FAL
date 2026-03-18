@@ -34,6 +34,8 @@ type ChatSessionCoreProps = {
   onStreamingComplete?: (messageId: string) => void;
   /** Rendered inside the scroll view, after the last message */
   trailingContent?: React.ReactNode;
+  /** Rendered inside the scroll view, before all messages */
+  headerContent?: React.ReactNode;
   children?: React.ReactNode;
 };
 
@@ -48,6 +50,7 @@ export default function ChatSessionCore({
   onClose,
   onStreamingComplete,
   trailingContent,
+  headerContent,
   children,
 }: ChatSessionCoreProps) {
   const scrollViewRef = useRef<ScrollView>(null);
@@ -70,6 +73,8 @@ export default function ChatSessionCore({
               scrollViewRef={scrollViewRef}
               onStreamingComplete={onStreamingComplete || undefined}
               trailingContent={trailingContent}
+              headerContent={headerContent}
+              staticDisplay={mode === "readonly"}
             />
             {(isTyping || isLoading) && <TypingIndicator />}
           </>
@@ -87,8 +92,8 @@ export default function ChatSessionCore({
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: ChatColors.bg }} edges={["top"]}>
-      <StatusBar barStyle="light-content" backgroundColor={ChatColors.bg} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: ChatColors.headerBg }} edges={["top", "bottom"]}>
+      <StatusBar barStyle="light-content" backgroundColor={ChatColors.headerBg} />
 
       {Platform.OS === "ios" ? (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">

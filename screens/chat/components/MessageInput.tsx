@@ -18,58 +18,85 @@ export default function MessageInput({ onSend, disabled = false }: MessageInputP
     }
   };
 
+  const active = !!text.trim() && !disabled;
+
   return (
-    <View style={{ backgroundColor: ChatColors.bg, paddingHorizontal: 24, paddingTop: 16, paddingBottom: 8 }}>
-      <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 12 }}>
+    <View style={{
+      backgroundColor: ChatColors.inputBarBg,
+      borderTopWidth: 1,
+      borderTopColor: "rgba(100,80,40,0.15)",
+      paddingHorizontal: 16,
+      paddingTop: 13,
+      paddingBottom: 26,
+      flexDirection: "row",
+      alignItems: "flex-end",
+      gap: 10,
+      shadowColor: "#0c0818",
+      shadowOpacity: 0.10,
+      shadowRadius: 28,
+      shadowOffset: { width: 0, height: -8 },
+      elevation: 6,
+    }}>
+      {/* Pill input */}
+      <View style={{
+        flex: 1,
+        backgroundColor: ChatColors.inputFieldBg,
+        borderWidth: 1.5,
+        borderColor: "rgba(100,80,40,0.20)",
+        borderRadius: 28,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        minHeight: 46,
+        maxHeight: 110,
+        justifyContent: "center",
+      }}>
         <TextInput
           value={text}
           onChangeText={setText}
-          placeholder="Continue the dialogue..."
+          placeholder="Continue the dialogue…"
           placeholderTextColor={ChatColors.placeholder}
           multiline
           maxLength={1000}
           editable={!disabled}
-          keyboardAppearance="dark"
+          keyboardAppearance="light"
           style={{
             flex: 1,
             textAlignVertical: "top",
-            backgroundColor: ChatColors.inputFieldBg,
-            borderWidth: 1,
-            borderColor: ChatColors.border,
-            borderRadius: 24,
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            minHeight: 44,
-            maxHeight: 100,
+            fontSize: 14.5,
+            fontWeight: "400",
             color: ChatColors.lunaraText,
-            fontSize: 15,
-            fontWeight: "300",
-            letterSpacing: 0.3,
+            letterSpacing: 0.1,
+            padding: 0,
           }}
         />
-        <TouchableOpacity
-          onPress={handleSend}
-          disabled={!text.trim() || disabled}
-          style={{
-            backgroundColor: "transparent",
-            borderWidth: 1,
-            borderColor: text.trim() && !disabled ? ChatColors.sendActive : ChatColors.sendInactive,
-            borderRadius: 22,
-            width: 44,
-            height: 44,
-            justifyContent: "center",
-            alignItems: "center",
-            flexShrink: 0,
-          }}
-          activeOpacity={0.7}
-        >
-          <MaterialCommunityIcons
-            name="send"
-            size={20}
-            color={text.trim() && !disabled ? ChatColors.sendActive : ChatColors.sendInactive}
-          />
-        </TouchableOpacity>
       </View>
+
+      {/* Gold circle send button */}
+      <TouchableOpacity
+        onPress={handleSend}
+        disabled={!active}
+        activeOpacity={0.75}
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          backgroundColor: active ? ChatColors.sendActive : ChatColors.sendInactive,
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          shadowColor: "#c9a84c",
+          shadowOpacity: active ? 0.45 : 0,
+          shadowRadius: 14,
+          shadowOffset: { width: 0, height: 3 },
+          elevation: active ? 4 : 0,
+        }}
+      >
+        <MaterialCommunityIcons
+          name="send"
+          size={19}
+          color={active ? ChatColors.headerBg : "rgba(100,80,40,0.4)"}
+        />
+      </TouchableOpacity>
     </View>
   );
 }

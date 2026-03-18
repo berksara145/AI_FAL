@@ -66,8 +66,8 @@ export default function BasicChatUI({
   };
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: ChatColors.bg }} edges={["top", "bottom"]}>
-      <StatusBar barStyle="light-content" backgroundColor={ChatColors.bg} />
+    <SafeAreaView className="flex-1" style={{ backgroundColor: ChatColors.headerBg }} edges={["top", "bottom"]}>
+      <StatusBar barStyle="light-content" backgroundColor={ChatColors.headerBg} />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
@@ -77,8 +77,8 @@ export default function BasicChatUI({
         <View 
           style={{ 
             paddingHorizontal: 24, 
-            paddingTop: 0,
-            paddingBottom: 10,
+            paddingTop: 12,
+            paddingBottom: 18,
             borderBottomWidth: 1,
             borderBottomColor: ChatColors.border,
             backgroundColor: ChatColors.headerBg,
