@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text } from "react-native";
+import { ChatColors } from "../../../utils/theme";
 
 type Message = {
   id: string;
@@ -119,7 +120,7 @@ export default function MessageBubble({ message, onStreamingComplete }: MessageB
           style={{
             fontSize: 10,
             fontWeight: "500",
-            color: "rgba(212,175,55,0.45)",
+            color: ChatColors.userLabel,
             marginBottom: 5,
             textTransform: "uppercase",
             letterSpacing: 1.5,
@@ -131,7 +132,7 @@ export default function MessageBubble({ message, onStreamingComplete }: MessageB
         <Text
           style={{
             fontSize: 15,
-            color: "rgba(229,229,229,0.65)",
+            color: ChatColors.userText,
             lineHeight: 24,
             fontWeight: "400",
             letterSpacing: 0.3,
@@ -152,7 +153,7 @@ export default function MessageBubble({ message, onStreamingComplete }: MessageB
         paddingLeft: 20,
         paddingRight: 24,
         borderLeftWidth: 2,
-        borderLeftColor: "rgba(212,175,55,0.55)",
+        borderLeftColor: ChatColors.lunaraBorder,
       }}
     >
       {/* LUNARA label */}
@@ -160,7 +161,7 @@ export default function MessageBubble({ message, onStreamingComplete }: MessageB
         style={{
           fontSize: 12,
           fontWeight: "700",
-          color: "#d4af37",
+          color: ChatColors.lunaraLabel,
           marginBottom: 8,
           textTransform: "uppercase",
           letterSpacing: 2,
@@ -174,7 +175,7 @@ export default function MessageBubble({ message, onStreamingComplete }: MessageB
       <Text
         style={{
           fontSize: 16,
-          color: "#f0ead8",
+          color: ChatColors.lunaraText,
           lineHeight: 26,
           fontWeight: "300",
           letterSpacing: 0.3,
@@ -182,7 +183,7 @@ export default function MessageBubble({ message, onStreamingComplete }: MessageB
       >
         {displayedText}
         {isStreaming && (
-          <Text style={{ color: "#d4af37" }}>▊</Text>
+          <Text style={{ color: ChatColors.streamCursor }}>▊</Text>
         )}
       </Text>
     </View>

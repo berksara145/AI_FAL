@@ -54,14 +54,17 @@ function InterpretationSection({ text }: { text: string }) {
   }
 
   return (
-    <View style={styles.sectionCard}>
-      {sections.map(({ header, body }, si) => {
+    <>
+      {sections.map(({ header, body }) => {
         const meta = SECTION_META[header] ?? { subtitle: "", accent: "rgba(212,175,55,0.8)" };
         return (
-          <View key={header} style={si > 0 ? styles.sectionBlock : undefined}>
+          <View key={header} style={[styles.sectionCard, { borderLeftColor: meta.accent }]}>
             <Text style={[styles.sectionCardTitle, { color: meta.accent }]}>
               ✦ {header.toUpperCase()}
             </Text>
+            {meta.subtitle ? (
+              <Text style={styles.sectionCardSubtitle}>{meta.subtitle}</Text>
+            ) : null}
             <View style={styles.bulletList}>
               {body.split("\n").filter((l) => l.trim()).map((line, i) => {
                 const clean = line.replace(/^[-•]\s*/, "").trim();
@@ -76,7 +79,7 @@ function InterpretationSection({ text }: { text: string }) {
           </View>
         );
       })}
-    </View>
+    </>
   );
 }
 
@@ -417,19 +420,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   sectionCard: {
-    borderWidth: 1,
-    borderColor: "rgba(212,175,55,0.2)",
-    borderRadius: 16,
+    borderLeftWidth: 3,
+    borderRadius: 12,
     backgroundColor: "rgba(26, 13, 46, 0.75)",
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-    gap: 0,
-  },
-  sectionBlock: {
-    marginTop: 20,
-    paddingTop: 20,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(212,175,55,0.15)",
+    paddingVertical: 16,
+    paddingLeft: 18,
+    paddingRight: 16,
   },
   sectionCardTitle: {
     fontSize: 11,

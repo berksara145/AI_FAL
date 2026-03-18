@@ -207,6 +207,19 @@ export const initDatabase = (): Promise<void> => {
         console.warn("Persons table clear skipped:", e);
       }
 
+      // Tarot readings table — one row per calendar day
+      db.execSync(`
+        CREATE TABLE IF NOT EXISTS tarot_readings (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          date TEXT NOT NULL,
+          card_past TEXT NOT NULL,
+          card_today TEXT NOT NULL,
+          card_future TEXT NOT NULL,
+          interpretation TEXT,
+          created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+      `);
+
       // No mock seeding: persons table starts empty; users add people via Orbit + button.
 
       console.log("Database initialized successfully");

@@ -7,7 +7,7 @@ import BasicChatUI, { type ChatMessage } from "../../components/BasicChatUI";
 import BirthDatePicker from "./components/BirthDatePicker";
 import { useOnboarding } from "./hooks/useOnboarding";
 import { INITIAL_MESSAGE } from "./constants";
-import { Colors } from "../../utils/theme";
+import { ChatColors } from "../../utils/theme";
 
 export default function UserInfoChatScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -28,7 +28,7 @@ export default function UserInfoChatScreen() {
   const isStreaming = messages.some((m) => m.isStreaming);
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.bgMain }} edges={["top", "bottom"]}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: ChatColors.bg }} edges={["top", "bottom"]}>
       <BasicChatUI
         title="About You"
         messages={messages}

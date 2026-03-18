@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { ChatColors } from "../../../utils/theme";
 
 type ChatHeaderProps = {
   title: string;
@@ -16,9 +17,9 @@ export default function ChatHeader({ title, onClose, mode = "interactive" }: Cha
         alignItems: "center",
         paddingHorizontal: 16,
         paddingVertical: 12,
-        backgroundColor: "#1a0d2e",
+        backgroundColor: ChatColors.headerBg,
         borderBottomWidth: 1,
-        borderBottomColor: "rgba(212, 175, 55, 0.2)",
+        borderBottomColor: ChatColors.border,
       }}
     >
       <TouchableOpacity
@@ -30,7 +31,7 @@ export default function ChatHeader({ title, onClose, mode = "interactive" }: Cha
         }}
         activeOpacity={0.5}
       >
-        <MaterialCommunityIcons name="arrow-left" size={24} color="#d4af37" />
+        <MaterialCommunityIcons name="arrow-left" size={24} color={ChatColors.lunaraLabel} />
       </TouchableOpacity>
       <View style={{ flex: 1 }}>
         {title ? (
@@ -38,7 +39,7 @@ export default function ChatHeader({ title, onClose, mode = "interactive" }: Cha
             style={{
               fontSize: 18,
               fontWeight: "400",
-              color: "#d4af37",
+              color: ChatColors.lunaraLabel,
               letterSpacing: 1,
             }}
             numberOfLines={1}
@@ -47,7 +48,7 @@ export default function ChatHeader({ title, onClose, mode = "interactive" }: Cha
           </Text>
         ) : null}
         {mode === "readonly" && (
-          <Text style={{ fontSize: 12, color: "rgba(212, 175, 55, 0.6)", marginTop: 4 }}>
+          <Text style={{ fontSize: 12, color: ChatColors.typingColor, marginTop: 4 }}>
             Read Only
           </Text>
         )}

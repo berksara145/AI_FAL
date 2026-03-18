@@ -3,6 +3,7 @@ import { View, Text, ScrollView, KeyboardAvoidingView, Platform, StatusBar } fro
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import MessageList from "../screens/chat/components/MessageList";
 import MessageInput from "../screens/chat/components/MessageInput";
+import { ChatColors } from "../utils/theme";
 
 export type ChatMessage = {
   id: string;
@@ -65,8 +66,8 @@ export default function BasicChatUI({
   };
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: "#1a0d2e" }} edges={["top", "bottom"]}>
-      <StatusBar barStyle="light-content" backgroundColor="#1a0d2e" />
+    <SafeAreaView className="flex-1" style={{ backgroundColor: ChatColors.bg }} edges={["top", "bottom"]}>
+      <StatusBar barStyle="light-content" backgroundColor={ChatColors.bg} />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
@@ -79,8 +80,8 @@ export default function BasicChatUI({
             paddingTop: 0,
             paddingBottom: 10,
             borderBottomWidth: 1,
-            borderBottomColor: "rgba(212, 175, 55, 0.2)",
-            backgroundColor: "#1a0d2e",
+            borderBottomColor: ChatColors.border,
+            backgroundColor: ChatColors.headerBg,
             alignItems: "center",
           }}
         >
@@ -88,7 +89,7 @@ export default function BasicChatUI({
             style={{
               fontSize: 18,
               fontWeight: "400",
-              color: "#d4af37",
+              color: ChatColors.lunaraLabel,
               letterSpacing: 2,
               textTransform: "uppercase",
               textAlign: "center",
@@ -99,7 +100,7 @@ export default function BasicChatUI({
         </View>
 
         {/* Chat Messages - Script Style */}
-        <View className="flex-1" style={{ backgroundColor: "#1a0d2e" }}>
+        <View className="flex-1" style={{ backgroundColor: ChatColors.bg }}>
           <MessageList 
             messages={messages} 
             scrollViewRef={scrollViewRef} 
@@ -109,8 +110,8 @@ export default function BasicChatUI({
 
         {/* Text Input - Minimal Theatre Style */}
         <View 
-          style={{ 
-            backgroundColor: "#1a0d2e", 
+          style={{
+            backgroundColor: ChatColors.bg,
             paddingTop: 12,
             paddingBottom: Math.max(insets.bottom, Platform.OS === "android" ? 0 : 8),
           }}

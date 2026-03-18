@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, TextInput, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { ChatColors } from "../../../utils/theme";
 
 type MessageInputProps = {
   onSend: (text: string) => void;
@@ -18,13 +19,13 @@ export default function MessageInput({ onSend, disabled = false }: MessageInputP
   };
 
   return (
-    <View style={{ backgroundColor: "#1a0d2e", paddingHorizontal: 24, paddingTop: 16, paddingBottom: 8 }}>
+    <View style={{ backgroundColor: ChatColors.bg, paddingHorizontal: 24, paddingTop: 16, paddingBottom: 8 }}>
       <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 12 }}>
         <TextInput
           value={text}
           onChangeText={setText}
           placeholder="Continue the dialogue..."
-          placeholderTextColor="rgba(212, 175, 55, 0.5)"
+          placeholderTextColor={ChatColors.placeholder}
           multiline
           maxLength={1000}
           editable={!disabled}
@@ -32,15 +33,15 @@ export default function MessageInput({ onSend, disabled = false }: MessageInputP
           style={{
             flex: 1,
             textAlignVertical: "top",
-            backgroundColor: "#2d1b3d",
+            backgroundColor: ChatColors.inputFieldBg,
             borderWidth: 1,
-            borderColor: "rgba(212, 175, 55, 0.3)",
+            borderColor: ChatColors.border,
             borderRadius: 24,
             paddingHorizontal: 16,
             paddingVertical: 12,
             minHeight: 44,
             maxHeight: 100,
-            color: "#e5e5e5",
+            color: ChatColors.lunaraText,
             fontSize: 15,
             fontWeight: "300",
             letterSpacing: 0.3,
@@ -52,7 +53,7 @@ export default function MessageInput({ onSend, disabled = false }: MessageInputP
           style={{
             backgroundColor: "transparent",
             borderWidth: 1,
-            borderColor: text.trim() && !disabled ? "#d4af37" : "rgba(212, 175, 55, 0.3)",
+            borderColor: text.trim() && !disabled ? ChatColors.sendActive : ChatColors.sendInactive,
             borderRadius: 22,
             width: 44,
             height: 44,
@@ -65,7 +66,7 @@ export default function MessageInput({ onSend, disabled = false }: MessageInputP
           <MaterialCommunityIcons
             name="send"
             size={20}
-            color={text.trim() && !disabled ? "#d4af37" : "rgba(212, 175, 55, 0.4)"}
+            color={text.trim() && !disabled ? ChatColors.sendActive : ChatColors.sendInactive}
           />
         </TouchableOpacity>
       </View>

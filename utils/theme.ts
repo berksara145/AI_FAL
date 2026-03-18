@@ -40,6 +40,28 @@ export const Colors = {
   borderGoldMid: "rgba(250, 218, 134, 0.7)",    // outer ring borders
 } as const;
 
+/** Chat screen color palette. */
+export const ChatColors = {
+  bg:           "#1a0d2e",
+  headerBg:     "#1a0d2e",
+  inputFieldBg: "#2d1b3d",
+  border:       "rgba(212,175,55,0.2)",
+
+  lunaraLabel:  "#d4af37",
+  lunaraText:   "#f0ead8",
+  lunaraBorder: "rgba(212,175,55,0.55)",
+  streamCursor: "#d4af37",
+
+  userLabel:    "rgba(212,175,55,0.45)",
+  userText:     "rgba(229,229,229,0.65)",
+
+  placeholder:  "rgba(212,175,55,0.5)",
+  sendActive:   "#d4af37",
+  sendInactive: "rgba(212,175,55,0.35)",
+  typingColor:  "rgba(212,175,55,0.55)",
+  loadingText:  "rgba(212,175,55,0.6)",
+} as const;
+
 /** Default natal chart style. Import this wherever a chart is generated. */
 export const ChartColors = {
   background: Colors.bgDeepest,

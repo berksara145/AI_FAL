@@ -201,6 +201,21 @@ export const getMessagesBySession = async (sessionId: number): Promise<Message[]
 };
 
 /**
+ * Get the number of messages in a session.
+ */
+export const getMessageCount = async (sessionId: number): Promise<number> => {
+  try {
+    const rows = await querySql<{ count: number }>(
+      "SELECT COUNT(*) as count FROM messages WHERE session_id = ?",
+      [sessionId]
+    );
+    return rows[0]?.count ?? 0;
+  } catch {
+    return 0;
+  }
+};
+
+/**
  * Get the first user message content for a session (for history preview).
  */
 export const getFirstUserMessageContent = async (

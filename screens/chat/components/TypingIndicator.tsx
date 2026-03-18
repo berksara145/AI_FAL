@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { ActivityIndicator } from "react-native";
+import { ChatColors } from "../../../utils/theme";
 
 export default function TypingIndicator() {
   return (
@@ -9,7 +10,7 @@ export default function TypingIndicator() {
         style={{
           fontSize: 11,
           fontWeight: "500",
-          color: "rgba(212,175,55,0.5)",
+          color: ChatColors.typingColor,
           textTransform: "uppercase",
           letterSpacing: 1.5,
           fontStyle: "italic",
@@ -18,7 +19,7 @@ export default function TypingIndicator() {
       >
         Lunara
       </Text>
-      <ActivityIndicator size="small" color="rgba(212,175,55,0.6)" />
+      <ActivityIndicator size="small" color={ChatColors.typingColor} />
     </View>
   );
 }

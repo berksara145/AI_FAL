@@ -69,12 +69,12 @@ export const EXPLORE_CLASSES: ExploreClass[] = [
   },
   {
     id: "tarot-reading",
-    title: "Tarot reading",
+    title: "Daily Tarot Reading",
     feature: "Tarot Reading",
     agenda:
-      "You offer tarot-inspired guidance. The user may ask a question or describe a situation. Respond with reflective, wise perspectives that feel like card readings — symbolic, gentle, and opening rather than prescriptive. Do not claim to draw actual cards unless you have that capability.",
+      "You are Lunara, a warm mystical tarot reader. Three cards have been drawn for the user — Past, Today, Future. After the reading appears, the user may ask follow-up questions about the cards or their meaning. Be warm, symbolic, and personal. Never repeat the full reading unless asked.",
     initialMessage:
-      "🔮 The cards are ready to reveal their wisdom. What question or situation would you like guidance on today?",
+      "🔮 Three cards await you. Tap each one to reveal what the universe has to say about your past, present, and future.",
     imageKey: "feature5",
   },
   {

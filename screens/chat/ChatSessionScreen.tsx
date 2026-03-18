@@ -8,9 +8,12 @@ import type { RootStackParamList } from "../../navigation/RootStack";
 import ChatSessionCore, { type ChatMessage } from "./components/ChatSessionCore";
 import BirthMapChatWrapper from "../../screens/orbit/BirthMapChatWrapper";
 import BirthDatePicker from "../onboarding/components/BirthDatePicker";
+import TarotReveal from "./components/TarotReveal";
 import { ChatSessionService, type ChatSessionMessage } from "../../lib/chatSessionService";
 import { getPersonsWithChartData, type Person } from "../../db/person.repo";
+import { getTodayReading } from "../../db/tarot.repo";
 import { useSavePersonFlow } from "./hooks/useSavePersonFlow";
+import { useTarotReading } from "./hooks/useTarotReading";
 import { Colors } from "../../utils/theme";
 
 type ChatSessionRouteProp = RouteProp<RootStackParamList, "ChatSession">;
@@ -21,6 +24,7 @@ function toCoreMessage(m: ChatSessionMessage): ChatMessage {
 
 const FEATURE_SOMEONE_ON_MIND = "Someone on your mind?";
 const FEATURE_NATAL_CHART_ANALYSIS = "Natal Chart Analysis";
+const FEATURE_TAROT = "Tarot Reading";
 
 export default function ChatSessionScreen() {
   const route = useRoute<ChatSessionRouteProp>();
@@ -59,6 +63,8 @@ export default function ChatSessionScreen() {
     refreshMessages
   );
 
+  const tarot = useTarotReading(serviceRef, refreshMessages);
+
   useEffect(() => {
     const init = async () => {
       let effectiveInitialMessage = initialMessage;
@@ -72,6 +78,14 @@ export default function ChatSessionScreen() {
         } else {
           setChartPersons(personsWithCharts);
           effectiveInitialMessage = "🪐 Whose birth chart would you like to explore? Tap a name below.";
+        }
+      }
+
+      // For tarot: if today's reading is done, use the interpretation as the only message
+      if (feature === FEATURE_TAROT) {
+        const todayReading = await getTodayReading();
+        if (todayReading?.interpretation) {
+          effectiveInitialMessage = todayReading.interpretation;
         }
       }
 
@@ -195,6 +209,17 @@ export default function ChatSessionScreen() {
       )
     : null;
 
+  const tarotBar = feature === FEATURE_TAROT && !isLoading && !tarot.loading && tarot.cards
+    ? (
+      <TarotReveal
+        cards={tarot.cards}
+        revealed={tarot.revealed}
+        onReveal={tarot.handleReveal}
+        generatingInterpretation={tarot.generatingInterpretation}
+      />
+    )
+    : null;
+
   return (
     <ChatSessionCore
       title={sessionTitle}
@@ -203,9 +228,9 @@ export default function ChatSessionScreen() {
       isLoading={isLoading}
       isTyping={isTyping}
       mode={mode}
-      disabled={savePerson.pendingSavePerson !== null}
+      disabled={savePerson.pendingSavePerson !== null || (feature === FEATURE_TAROT && !tarot.allRevealed)}
       onClose={() => navigation.goBack()}
-      trailingContent={natalChartBar}
+      trailingContent={natalChartBar ?? tarotBar}
     >
 
       {savePerson.pendingSavePerson !== null && (

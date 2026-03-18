@@ -12,6 +12,7 @@ import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 import TypingIndicator from "./TypingIndicator";
+import { ChatColors } from "../../../utils/theme";
 
 export type ChatMessage = {
   id: string;
@@ -55,10 +56,10 @@ export default function ChatSessionCore({
     <>
       <ChatHeader title={title} onClose={onClose || (() => {})} mode={mode} />
 
-      <View style={{ flex: 1, backgroundColor: "#1a0d2e" }}>
+      <View style={{ flex: 1, backgroundColor: ChatColors.bg }}>
         {isLoading && messages.length === 0 ? (
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <Text style={{ color: "rgba(212, 175, 55, 0.6)", fontSize: 14, fontStyle: "italic" }}>
+            <Text style={{ color: ChatColors.loadingText, fontSize: 14, fontStyle: "italic" }}>
               Loading...
             </Text>
           </View>
@@ -86,8 +87,8 @@ export default function ChatSessionCore({
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#1a0d2e" }} edges={["top"]}>
-      <StatusBar barStyle="light-content" backgroundColor="#1a0d2e" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: ChatColors.bg }} edges={["top"]}>
+      <StatusBar barStyle="light-content" backgroundColor={ChatColors.bg} />
 
       {Platform.OS === "ios" ? (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">

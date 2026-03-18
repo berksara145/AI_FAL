@@ -275,6 +275,12 @@ export class ChatSessionService {
     };
   }
 
+  /** Directly add an assistant message to the session (bypasses GPT). */
+  async addAssistantMessage(content: string): Promise<void> {
+    if (this.sessionId == null) return;
+    await addMessage({ sessionId: this.sessionId, role: "assistant", content });
+  }
+
   /**
    * Hook for initiating other flows (e.g. user creation, save person).
    * Override or call from UI when needed.

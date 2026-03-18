@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { ScrollView, View, Text } from "react-native";
 import MessageBubble from "./MessageBubble";
+import { ChatColors } from "../../../utils/theme";
 
 type Message = {
   id: string;
@@ -38,7 +39,7 @@ export default function MessageList({ messages, scrollViewRef, onStreamingComple
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 48, paddingHorizontal: 24 }}>
           <Text 
             style={{ 
-              color: "rgba(212, 175, 55, 0.6)",
+              color: ChatColors.loadingText,
               textAlign: "center",
               fontSize: 14,
               fontStyle: "italic",

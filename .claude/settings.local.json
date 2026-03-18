@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(find /c/Users/PC/Documents/GitHub/AI_FAL/screens/chat/components -type f -name \"*.tsx\" | xargs -I {} basename {})",
-      "Bash(grep -rh \"#[0-9a-fA-F]\\\\{3,8\\\\}\" C:/Users/PC/Documents/GitHub/AI_FAL/screens C:/Users/PC/Documents/GitHub/AI_FAL/lib \\\\\n  --include=\"*.ts\" --include=\"*.tsx\" | \\\\\n  grep -oE '\"#[0-9a-fA-F]{3,8}\"' | sort | uniq -c | sort -rn | head -40)"
+      "Bash(grep -rh \"#[0-9a-fA-F]\\\\{3,8\\\\}\" C:/Users/PC/Documents/GitHub/AI_FAL/screens C:/Users/PC/Documents/GitHub/AI_FAL/lib \\\\\n  --include=\"*.ts\" --include=\"*.tsx\" | \\\\\n  grep -oE '\"#[0-9a-fA-F]{3,8}\"' | sort | uniq -c | sort -rn | head -40)",
+      "Bash(grep -r tarot /c/Users/PC/Documents/GitHub/AI_FAL --include=*.ts --include=*.tsx -i)",
+      "Bash(find /c/Users/PC/Documents/GitHub/AI_FAL -path ./node_modules -prune -o -type f \\\\\\(-name *tarot* -o -name *card* \\\\\\) -print)",
+      "Bash(grep -r \"Cards-jpg\\\\|tarot\\\\|card\" /c/Users/PC/Documents/GitHub/AI_FAL/screens --include=*.ts --include=*.tsx -i)",
+      "Bash(find /c/Users/PC/Documents/GitHub/AI_FAL/lib -type f \\\\\\(-name *.ts -o -name *.tsx \\\\\\))"
     ]
   }
 }

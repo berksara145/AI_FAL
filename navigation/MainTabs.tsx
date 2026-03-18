@@ -149,10 +149,7 @@ export default function MainTabs() {
       <Stack.Screen
         name="History"
         component={HistoryScreen}
-        options={{
-          title: "History",
-          headerShown: true,
-        }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="PersonDetail"
