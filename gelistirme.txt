@@ -11,7 +11,7 @@ günlük fortune cookie
 birth chart ekle bide üstüne açıklama
 
 
-orbit yerine birth chart ekle her yere 
+orbit yerine birth chart ekle her yere ##
 
 birth chart analiz ekle personal page sayfa altına
 

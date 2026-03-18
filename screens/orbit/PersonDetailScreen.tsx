@@ -22,21 +22,61 @@ import { usePersonDetail } from "./hooks/usePersonDetail";
 
 type Props = NativeStackScreenProps<MainStackParamList, "PersonDetail">;
 
+const SECTION_META: Record<string, { subtitle: string; accent: string }> = {
+  "Core Identity": { subtitle: "Sun · Moon · Rising",    accent: "rgba(212,175,55,0.8)"  },
+  "Inner World":   { subtitle: "Emotions · Aspects",     accent: "rgba(180,140,255,0.8)" },
+  "Life Path":     { subtitle: "Purpose · Growth",       accent: "rgba(100,210,190,0.8)" },
+};
+
+function parseSections(text: string): { header: string; body: string }[] {
+  const parts = text.split(/\*\*✦\s+/);
+  return parts
+    .filter((p) => p.trim())
+    .map((part) => {
+      const nl = part.indexOf("\n");
+      const header = (nl > -1 ? part.slice(0, nl) : part).replace(/\*\*/g, "").trim();
+      const body   = (nl > -1 ? part.slice(nl)   : "").replace(/\*\*/g, "").trim();
+      return { header, body };
+    })
+    .filter((s) => s.header && s.body);
+}
+
 function InterpretationSection({ text }: { text: string }) {
-  const lines = text.split("\n").filter((l) => l.trim());
+  const sections = parseSections(text);
+
+  // Fallback: if parsing fails (unexpected format), render plain text
+  if (sections.length === 0) {
+    return (
+      <Text style={styles.sectionBody}>
+        {text.replace(/\*\*/g, "").trim()}
+      </Text>
+    );
+  }
+
   return (
-    <>
-      {lines.map((line, i) => {
-        const isHeader = line.includes("✦");
-        const clean = line.replace(/\*\*/g, "").trim();
-        if (!clean) return null;
+    <View style={styles.sectionCard}>
+      {sections.map(({ header, body }, si) => {
+        const meta = SECTION_META[header] ?? { subtitle: "", accent: "rgba(212,175,55,0.8)" };
         return (
-          <Text key={i} style={isHeader ? styles.sectionHeader : styles.sectionBody}>
-            {clean}
-          </Text>
+          <View key={header} style={si > 0 ? styles.sectionBlock : undefined}>
+            <Text style={[styles.sectionCardTitle, { color: meta.accent }]}>
+              ✦ {header.toUpperCase()}
+            </Text>
+            <View style={styles.bulletList}>
+              {body.split("\n").filter((l) => l.trim()).map((line, i) => {
+                const clean = line.replace(/^[-•]\s*/, "").trim();
+                return (
+                  <View key={i} style={styles.bulletRow}>
+                    <Text style={[styles.bulletDot, { color: meta.accent }]}>·</Text>
+                    <Text style={styles.sectionCardBody}>{clean}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
         );
       })}
-    </>
+    </View>
   );
 }
 
@@ -162,7 +202,7 @@ export default function PersonDetailScreen({ route }: Props) {
             )}
 
             {!generatingInterpretation && interpretation && (
-              <View style={styles.interpretationCard}>
+              <View style={styles.sectionsWrapper}>
                 <InterpretationSection text={interpretation} />
               </View>
             )}
@@ -373,28 +413,61 @@ const styles = StyleSheet.create({
     color: Colors.goldPrimary,
     letterSpacing: 0.5,
   },
-  interpretationCard: {
-    borderWidth: 1,
-    borderColor: "rgba(250, 218, 134, 0.2)",
-    borderRadius: 16,
-    backgroundColor: "rgba(26, 13, 46, 0.7)",
-    paddingVertical: 28,
-    paddingHorizontal: 24,
-    gap: 6,
+  sectionsWrapper: {
+    gap: 12,
   },
-  sectionHeader: {
-    fontSize: 13,
-    color: Colors.goldPrimary,
-    letterSpacing: 2,
+  sectionCard: {
+    borderWidth: 1,
+    borderColor: "rgba(212,175,55,0.2)",
+    borderRadius: 16,
+    backgroundColor: "rgba(26, 13, 46, 0.75)",
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    gap: 0,
+  },
+  sectionBlock: {
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "rgba(212,175,55,0.15)",
+  },
+  sectionCardTitle: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 2.5,
     textTransform: "uppercase",
-    fontWeight: "600",
-    marginTop: 16,
-    marginBottom: 6,
+    marginBottom: 2,
+  },
+  sectionCardSubtitle: {
+    fontSize: 11,
+    color: "rgba(245, 234, 200, 0.4)",
+    letterSpacing: 1,
+    marginBottom: 10,
+  },
+  bulletList: {
+    gap: 8,
+    marginTop: 4,
+  },
+  bulletRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  bulletDot: {
+    fontSize: 20,
+    lineHeight: 26,
+  },
+  sectionCardBody: {
+    flex: 1,
+    fontSize: 15,
+    color: "rgba(245, 234, 200, 0.9)",
+    lineHeight: 26,
+    fontWeight: "300",
   },
   sectionBody: {
-    fontSize: 14,
-    color: "rgba(245, 234, 200, 0.85)",
-    lineHeight: 22,
+    fontSize: 15,
+    color: "rgba(245, 234, 200, 0.9)",
+    lineHeight: 26,
     fontWeight: "300",
   },
   chatButton: {

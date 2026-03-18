@@ -31,6 +31,8 @@ type ChatSessionCoreProps = {
   mode?: "interactive" | "readonly";
   onClose?: () => void;
   onStreamingComplete?: (messageId: string) => void;
+  /** Rendered inside the scroll view, after the last message */
+  trailingContent?: React.ReactNode;
   children?: React.ReactNode;
 };
 
@@ -44,6 +46,7 @@ export default function ChatSessionCore({
   mode = "interactive",
   onClose,
   onStreamingComplete,
+  trailingContent,
   children,
 }: ChatSessionCoreProps) {
   const scrollViewRef = useRef<ScrollView>(null);
@@ -65,6 +68,7 @@ export default function ChatSessionCore({
               messages={messages}
               scrollViewRef={scrollViewRef}
               onStreamingComplete={onStreamingComplete || undefined}
+              trailingContent={trailingContent}
             />
             {(isTyping || isLoading) && <TypingIndicator />}
           </>

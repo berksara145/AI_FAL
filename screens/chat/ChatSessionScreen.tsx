@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -43,6 +43,9 @@ export default function ChatSessionScreen() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [chartPersons, setChartPersons] = useState<Person[]>([]);
+  const [noCharts, setNoCharts] = useState(false);
+  const [personSelected, setPersonSelected] = useState(false);
 
   const refreshMessages = async () => {
     const service = serviceRef.current;
@@ -63,10 +66,13 @@ export default function ChatSessionScreen() {
       if (feature === FEATURE_NATAL_CHART_ANALYSIS) {
         const personsWithCharts = await getPersonsWithChartData();
         chartPersonsRef.current = personsWithCharts;
-        const names = personsWithCharts.map((p) => p.name ?? "").filter(Boolean);
-        effectiveInitialMessage = names.length > 0
-          ? `🪐 I have natal charts for: ${names.join(", ")}. Type one or more of these names (e.g. ${names[0]}) and I'll analyze their chart.`
-          : "🪐 You don't have any natal charts yet. Add people in Birth Chart and generate their birth charts there — then come back here to get an analysis.";
+        if (personsWithCharts.length === 0) {
+          setNoCharts(true);
+          effectiveInitialMessage = "🪐 You don't have any birth charts yet. Head to the Birth Chart tab to add someone and generate their chart — then come back here for a full analysis.";
+        } else {
+          setChartPersons(personsWithCharts);
+          effectiveInitialMessage = "🪐 Whose birth chart would you like to explore? Tap a name below.";
+        }
       }
 
       const service = new ChatSessionService({
@@ -128,6 +134,67 @@ export default function ChatSessionScreen() {
     }
   };
 
+  const handlePersonSelect = async (person: Person) => {
+    const service = serviceRef.current;
+    if (!service || isTyping) return;
+
+    const parts = [
+      `Give a short, readable birth chart reading for ${person.name}. Focus on 3-4 key highlights — most important placements, one or two standout aspects, and overall energy. Use brief sections with a bold header and 1-2 sentences each. Skip technical jargon. Keep it under 200 words.`,
+    ];
+    if (person.chart_gpt_json) {
+      parts.push("[Attached chart data — use only this for analysis]");
+      parts.push(`--- ${person.name} ---\n${person.chart_gpt_json}`);
+    }
+    const messageToSend = parts.join("\n\n");
+
+    setIsTyping(true);
+    setPersonSelected(true);
+    try {
+      await service.sendMessage(messageToSend, { silent: true });
+      await refreshMessages();
+    } catch (e) {
+      console.error("[ChatSessionScreen] chart analysis error:", e);
+      await refreshMessages();
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  const natalChartBar = feature === FEATURE_NATAL_CHART_ANALYSIS && !isLoading && !personSelected && savePerson.pendingSavePerson === null
+    ? noCharts
+      ? (
+        <View style={styles.personButtonsRow}>
+          <TouchableOpacity
+            style={[styles.personButton, styles.createChartButton]}
+            onPress={() =>
+              navigation.navigate("MainApp" as any, {
+                screen: "MainTabs",
+                params: { screen: "Orbit" },
+              } as any)
+            }
+            activeOpacity={0.7}
+          >
+            <Text style={styles.personButtonText}>Go to Birth Chart →</Text>
+          </TouchableOpacity>
+        </View>
+      )
+      : (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.personButtonsRow}>
+          {chartPersons.map((p) => (
+            <TouchableOpacity
+              key={p.name}
+              style={styles.personButton}
+              onPress={() => handlePersonSelect(p)}
+              activeOpacity={0.7}
+              disabled={isTyping}
+            >
+              <Text style={styles.personButtonText}>{p.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )
+    : null;
+
   return (
     <ChatSessionCore
       title={sessionTitle}
@@ -138,7 +205,9 @@ export default function ChatSessionScreen() {
       mode={mode}
       disabled={savePerson.pendingSavePerson !== null}
       onClose={() => navigation.goBack()}
+      trailingContent={natalChartBar}
     >
+
       {savePerson.pendingSavePerson !== null && (
         <View style={styles.savePersonSection}>
           <Text style={styles.savePersonTitle}>Save to Birth Chart?</Text>
@@ -173,6 +242,30 @@ export default function ChatSessionScreen() {
 }
 
 const styles = StyleSheet.create({
+  personButtonsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingTop: 4,
+    paddingBottom: 16,
+  },
+  personButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.goldPrimary,
+    backgroundColor: "rgba(212,175,55,0.08)",
+  },
+  createChartButton: {
+    backgroundColor: "rgba(212,175,55,0.15)",
+  },
+  personButtonText: {
+    color: Colors.goldPrimary,
+    fontSize: 14,
+    fontWeight: "500",
+  },
   savePersonSection: {
     backgroundColor: Colors.bgMain,
     borderTopWidth: 1,

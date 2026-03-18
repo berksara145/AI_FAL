@@ -1,10 +1,10 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../navigation/RootStack";
 import { updateUserName, updateBirthDate, completeOnboarding } from "../../../db/user.repo";
 import { upsertSelfPersonFromCurrentUser } from "../../../db/person.repo";
-import { extractName, isValidDate, calculateStreamingDuration } from "../utils";
-import { MESSAGES, MONTH_NAMES_FULL, DATE_PICKER_CONFIG, STREAMING_SPEED_MS } from "../constants";
+import { extractName, isValidDate } from "../utils";
+import { MESSAGES, MONTH_NAMES_FULL, DATE_PICKER_CONFIG } from "../constants";
 import type { ChatMessage } from "../../../components/BasicChatUI";
 
 export type OnboardingStep = "name" | "date" | "complete";
@@ -19,22 +19,6 @@ function makeAiMessage(content: string, streaming = true): ChatMessage {
   return { id: (Date.now() + 1).toString(), role: "assistant", content, isStreaming: streaming };
 }
 
-/** Schedule a message to finish streaming after its natural duration. */
-function scheduleStreamingDone(
-  messageId: string,
-  content: string,
-  setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
-  onDone?: () => void
-) {
-  const duration = Math.ceil(calculateStreamingDuration(content, STREAMING_SPEED_MS) * 1.5) + 800;
-  setTimeout(() => {
-    setMessages((prev) =>
-      prev.map((m) => (m.id === messageId ? { ...m, isStreaming: false } : m))
-    );
-    onDone?.();
-  }, duration);
-}
-
 export function useOnboarding(
   navigation: NativeStackNavigationProp<RootStackParamList>,
   setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>
@@ -46,16 +30,29 @@ export function useOnboarding(
     month: 1,
     day: 1,
   });
+  // Map of messageId → callback to run when that message finishes streaming
+  const streamCallbacksRef = useRef<Record<string, () => void>>({});
+
+  const onMessageStreamingComplete = useCallback((id: string) => {
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, isStreaming: false } : m)));
+    const cb = streamCallbacksRef.current[id];
+    if (cb) {
+      delete streamCallbacksRef.current[id];
+      cb();
+    }
+  }, [setMessages]);
 
   const handleNameMessage = useCallback(async (text: string) => {
     if (step !== "name") return;
+
+    const userMsg: ChatMessage = { id: Date.now().toString(), role: "user", content: text };
+    setMessages((prev) => [...prev, userMsg]);
 
     const name = extractName(text);
 
     if (!name) {
       const msg = makeAiMessage(MESSAGES.NAME_INVALID);
       setMessages((prev) => [...prev, msg]);
-      scheduleStreamingDone(msg.id, msg.content, setMessages);
       return;
     }
 
@@ -64,10 +61,8 @@ export function useOnboarding(
       setStep("date");
 
       const msg = makeAiMessage(MESSAGES.NAME_COLLECTED(name));
+      streamCallbacksRef.current[msg.id] = () => setShowDatePicker(true);
       setMessages((prev) => [...prev, msg]);
-      scheduleStreamingDone(msg.id, msg.content, setMessages, () => {
-        setShowDatePicker(true);
-      });
     } catch {
       const msg = makeAiMessage(MESSAGES.NAME_ERROR, false);
       setMessages((prev) => [...prev, msg]);
@@ -91,17 +86,16 @@ export function useOnboarding(
 
       const content = MESSAGES.DATE_SAVED(MONTH_NAMES_FULL[month - 1], day, year);
       const msg = makeAiMessage(content);
-      setMessages((prev) => [...prev, msg]);
-
-      scheduleStreamingDone(msg.id, content, setMessages, async () => {
+      streamCallbacksRef.current[msg.id] = async () => {
         try {
           await completeOnboarding();
           await upsertSelfPersonFromCurrentUser();
         } catch (e) {
           console.error("[useOnboarding] finalize error:", e);
         }
-        setTimeout(() => navigation.replace("MainApp"), 1000);
-      });
+        navigation.replace("MainApp");
+      };
+      setMessages((prev) => [...prev, msg]);
     } catch {
       const msg = makeAiMessage(MESSAGES.DATE_ERROR, false);
       setMessages((prev) => [...prev, msg]);
@@ -115,5 +109,6 @@ export function useOnboarding(
     setBirthDateState,
     handleNameMessage,
     handleDateConfirm,
+    onMessageStreamingComplete,
   };
 }

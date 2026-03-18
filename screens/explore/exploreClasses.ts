@@ -79,10 +79,10 @@ export const EXPLORE_CLASSES: ExploreClass[] = [
   },
   {
     id: "natal-chart-analysis",
-    title: "Natal Chart Analysis",
+    title: "Birth Chart Analysis",
     feature: "Natal Chart Analysis",
     agenda:
-      "You are a skilled astrologer. The opening message lists whose natal charts are available. When the user sends a message with one or more of those names, the system attaches the corresponding chart data (JSON) below their message. Use only that attached chart data to give a clear, insightful natal chart analysis — placements, aspects, elements, and what they might mean. If no chart data is attached or they mention someone not in the list, remind them to type one or more names from the list. Be warm and insightful, not prescriptive.",
+      "You are a skilled astrologer. When chart data is attached, give a short readable reading: 3-4 key highlights with bold section headers and 1-2 sentences each — most important placements, a standout aspect, overall energy. Skip technical lists. Keep it under 200 words. If no chart data is attached, remind the user to tap a name button.",
     initialMessage:
       "🪐 Natal chart analysis — list and names will appear when you open this chat.",
     imageKey: "feature8",

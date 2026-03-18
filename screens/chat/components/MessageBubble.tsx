@@ -56,16 +56,21 @@ export default function MessageBubble({ message, onStreamingComplete }: MessageB
       hasStartedStreamingRef.current = true;
       currentTextRef.current = "";
       currentIndexRef.current = 0;
-      
+
+      // Fixed 10ms tick; chars per tick scales so any message finishes in ~1.5s
+      const totalLen = message.content.length;
+      const charsPerTick = Math.max(1, Math.ceil(totalLen / 150));
+      const intervalMs = 10;
+
       streamIntervalRef.current = setInterval(() => {
         // Always check the latest message content
         const latestFullText = messageContentRef.current;
-        
-        // Continue streaming letter by letter until complete
+
+        // Continue streaming until complete
         if (currentIndexRef.current < latestFullText.length) {
-          currentTextRef.current = latestFullText.substring(0, currentIndexRef.current + 1);
+          currentIndexRef.current = Math.min(currentIndexRef.current + charsPerTick, latestFullText.length);
+          currentTextRef.current = latestFullText.substring(0, currentIndexRef.current);
           setDisplayedText(currentTextRef.current);
-          currentIndexRef.current++;
         } else {
           // Streaming complete - show full text
           setIsStreaming(false);
@@ -78,7 +83,7 @@ export default function MessageBubble({ message, onStreamingComplete }: MessageB
           // Notify parent that streaming is complete
           onStreamingComplete?.(messageIdRef.current);
         }
-      }, 25); // Streaming speed: 25ms per character (2x faster)
+      }, intervalMs);
     } else if (!message.isStreaming && message.content && !hasStartedStreamingRef.current && streamIntervalRef.current === null) {
       // Message was added without streaming, show full content immediately
       setDisplayedText(message.content);

@@ -222,18 +222,24 @@ export class ChatSessionService {
    * Send user message: persist to DB, call GPT with rewritten history, persist reply.
    * When enableSavePersonHint, parses [SAVE_PERSON: Name] and returns suggestedSavePerson so the same chat can show the person-creation flow (name + birth date) without a new session.
    */
-  async sendMessage(userContent: string): Promise<SendMessageResult> {
+  /**
+   * Send a message. When `silent` is true, the user message is sent to GPT for context
+   * but NOT saved to the DB or shown in the UI — only the assistant reply is persisted.
+   */
+  async sendMessage(userContent: string, opts?: { silent?: boolean }): Promise<SendMessageResult> {
     if (this.sessionId == null) {
       throw new Error("ChatSessionService: no session. Call initializeSession first.");
     }
     const trimmed = userContent.trim();
     if (!trimmed) return { reply: "" };
 
-    await addMessage({
-      sessionId: this.sessionId,
-      role: "user",
-      content: trimmed,
-    });
+    if (!opts?.silent) {
+      await addMessage({
+        sessionId: this.sessionId,
+        role: "user",
+        content: trimmed,
+      });
+    }
 
     const allMessages = await getMessagesBySession(this.sessionId);
     const uiMessages = allMessages.map(dbMessageToUI);

@@ -22,6 +22,7 @@ export default function UserInfoChatScreen() {
     setBirthDateState,
     handleNameMessage,
     handleDateConfirm,
+    onMessageStreamingComplete,
   } = useOnboarding(navigation, setMessages);
 
   const isStreaming = messages.some((m) => m.isStreaming);
@@ -33,9 +34,7 @@ export default function UserInfoChatScreen() {
         messages={messages}
         onSendMessage={handleNameMessage}
         disabled={showDatePicker || isStreaming || step === "date"}
-        onStreamingComplete={(id) =>
-          setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, isStreaming: false } : m)))
-        }
+        onStreamingComplete={onMessageStreamingComplete}
       />
 
       {showDatePicker && (
