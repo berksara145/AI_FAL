@@ -219,6 +219,11 @@ export const initDatabase = (): Promise<void> => {
           created_at TEXT NOT NULL DEFAULT (datetime('now'))
         );
       `);
+      try {
+        db.execSync(`ALTER TABLE tarot_readings ADD COLUMN session_id INTEGER;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
 
       // No mock seeding: persons table starts empty; users add people via Orbit + button.
 

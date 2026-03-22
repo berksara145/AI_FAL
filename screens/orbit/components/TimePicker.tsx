@@ -1,12 +1,15 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import IOSDatePicker from "../../../components/IOSDatePicker";
+import { useTranslation } from "react-i18next";
 
 interface TimePickerProps {
   hour: number;
   minute: number;
   onTimeChange: (updates: { hour?: number; minute?: number }) => void;
   onConfirm: () => void;
+  /** Whether to show the confirm button (default true) */
+  showConfirm?: boolean;
 }
 
 export default function TimePicker({
@@ -14,7 +17,9 @@ export default function TimePicker({
   minute,
   onTimeChange,
   onConfirm,
+  showConfirm = true,
 }: TimePickerProps) {
+  const { t } = useTranslation();
   const handleHourChange = (newHour: number) => {
     onTimeChange({ hour: newHour });
   };
@@ -34,7 +39,7 @@ export default function TimePicker({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Select Your Birth Time</Text>
+        <Text style={styles.title}>{t("timePicker.title")}</Text>
       </View>
 
       <View style={styles.row}>
@@ -43,7 +48,7 @@ export default function TimePicker({
           onValueChange={handleHourChange}
           min={0}
           max={23}
-          label="Hour"
+          label={t("timePicker.hour")}
           formatter={formatHour}
         />
 
@@ -52,18 +57,20 @@ export default function TimePicker({
           onValueChange={handleMinuteChange}
           min={0}
           max={59}
-          label="Minute"
+          label={t("timePicker.minute")}
           formatter={formatMinute}
         />
       </View>
 
-      <TouchableOpacity
-        style={styles.confirmButton}
-        onPress={onConfirm}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.confirmButtonText}>Continue</Text>
-      </TouchableOpacity>
+      {showConfirm !== false && (
+        <TouchableOpacity
+          style={styles.confirmButton}
+          onPress={onConfirm}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.confirmButtonText}>{t("common.continue")}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }

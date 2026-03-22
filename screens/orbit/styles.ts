@@ -141,8 +141,8 @@ export const styles = StyleSheet.create({
     letterSpacing: 1,
     fontStyle: "italic",
   },
-  /* Empty orbit: 0 people — centered CTA card */
-  emptyState: {
+  /* Step 2: self chart done, no one in orbit yet */
+  addPromptCard: {
     position: "absolute",
     bottom: SCREEN_HEIGHT * 0.18,
     left: 24,
@@ -150,37 +150,52 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 24,
     paddingHorizontal: 20,
-    backgroundColor: "rgba(26, 13, 46, 0.85)", // Colors.bgMain at 85%
-    borderRadius: 16,
+    backgroundColor: "rgba(26, 13, 46, 0.88)",
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: "rgba(250, 218, 134, 0.25)",
+    borderColor: "rgba(250, 218, 134, 0.35)",
   },
-  emptyStateTitle: {
+  addPromptTitle: {
     fontSize: 18,
     fontWeight: "600",
     color: Colors.goldLight,
-    letterSpacing: 1,
-    marginBottom: 8,
+    letterSpacing: 1.5,
+    marginBottom: 10,
   },
-  emptyStateSubtitle: {
+  addPromptText: {
     fontSize: 14,
     color: "rgba(247, 227, 165, 0.85)",
     textAlign: "center",
-    lineHeight: 20,
-    marginBottom: 20,
-    paddingHorizontal: 8,
+    lineHeight: 21,
+    marginBottom: 22,
+    paddingHorizontal: 4,
   },
-  emptyStateButton: {
+  addPromptButtonWrapper: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addPromptButtonGlow: {
+    position: "absolute",
+    width: 180,
+    height: 50,
+    borderRadius: 25,
+    shadowColor: "#FADA86",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.95,
+    shadowRadius: 22,
+    elevation: 22,
+  },
+  addPromptButton: {
     backgroundColor: Colors.goldLight,
-    paddingVertical: 14,
-    paddingHorizontal: 32,
+    paddingVertical: 13,
+    paddingHorizontal: 36,
     borderRadius: 25,
     minWidth: 160,
     alignItems: "center",
   },
-  emptyStateButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
+  addPromptButtonText: {
+    fontSize: 15,
+    fontWeight: "700",
     color: Colors.bgMain,
     letterSpacing: 1,
   },

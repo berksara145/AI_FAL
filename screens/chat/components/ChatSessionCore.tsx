@@ -7,12 +7,13 @@ import {
   StatusBar,
   Text,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 import TypingIndicator from "./TypingIndicator";
 import { ChatColors } from "../../../utils/theme";
+import { useTranslation } from "react-i18next";
 
 export type ChatMessage = {
   id: string;
@@ -53,7 +54,9 @@ export default function ChatSessionCore({
   headerContent,
   children,
 }: ChatSessionCoreProps) {
+  const { t } = useTranslation();
   const scrollViewRef = useRef<ScrollView>(null);
+  const insets = useSafeAreaInsets();
 
   const content = (
     <>
@@ -63,7 +66,7 @@ export default function ChatSessionCore({
         {isLoading && messages.length === 0 ? (
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
             <Text style={{ color: ChatColors.loadingText, fontSize: 14, fontStyle: "italic" }}>
-              Loading...
+              {t("chat.loading")}
             </Text>
           </View>
         ) : (
@@ -72,7 +75,7 @@ export default function ChatSessionCore({
               messages={messages}
               scrollViewRef={scrollViewRef}
               onStreamingComplete={onStreamingComplete || undefined}
-              trailingContent={trailingContent}
+              trailingContent={mode === "readonly" ? undefined : trailingContent}
               headerContent={headerContent}
               staticDisplay={mode === "readonly"}
             />
@@ -82,12 +85,12 @@ export default function ChatSessionCore({
       </View>
 
       {mode === "interactive" && (
-        <SafeAreaView edges={["bottom"]}>
+        <View style={{ paddingBottom: Math.max(insets.bottom - 8, 0) }}>
           <MessageInput onSend={onSendMessage} disabled={disabled || isTyping} />
-        </SafeAreaView>
+        </View>
       )}
 
-      {children}
+      {mode !== "readonly" && children}
     </>
   );
 
@@ -95,13 +98,12 @@ export default function ChatSessionCore({
     <SafeAreaView style={{ flex: 1, backgroundColor: ChatColors.headerBg }} edges={["top", "bottom"]}>
       <StatusBar barStyle="light-content" backgroundColor={ChatColors.headerBg} />
 
-      {Platform.OS === "ios" ? (
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-          {content}
-        </KeyboardAvoidingView>
-      ) : (
-        <View style={{ flex: 1 }}>{content}</View>
-      )}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        {content}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

@@ -6,6 +6,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 // @expo/vector-icons is included with Expo, but if not available, use react-native-vector-icons
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 // Screens
 import ExploreScreen from "../screens/explore/ExploreScreen";
@@ -66,6 +67,7 @@ function HeaderRight() {
 
 // Bottom tabs component
 function BottomTabs() {
+  const { t } = useTranslation();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -93,7 +95,7 @@ function BottomTabs() {
         name="Insights"
         component={ExploreScreen}
         options={{
-          tabBarLabel: "Insights",
+          tabBarLabel: t("navigation.insights"),
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="compass-outline" size={size} color={color} />
           ),
@@ -107,8 +109,8 @@ function BottomTabs() {
         name="Orbit"
         component={OrbitScreen}
         options={{
-          tabBarLabel: "Birth Chart",
-          headerTitle: "Birth Chart",
+          tabBarLabel: t("navigation.birthChart"),
+          headerTitle: t("navigation.birthChart"),
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="orbit-variant" size={size} color={color} />
           ),
@@ -141,10 +143,7 @@ export default function MainTabs() {
       <Stack.Screen
         name="Settings"
         component={SettingsScreen}
-        options={{
-          title: "Settings",
-          headerShown: true,
-        }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="History"

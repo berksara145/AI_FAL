@@ -9,12 +9,17 @@ import ChatSessionCore, { type ChatMessage } from "./components/ChatSessionCore"
 import BirthMapChatWrapper from "../../screens/orbit/BirthMapChatWrapper";
 import BirthDatePicker from "../onboarding/components/BirthDatePicker";
 import TarotReveal from "./components/TarotReveal";
+import CrossroadsCard from "./components/CrossroadsCard";
 import { ChatSessionService, type ChatSessionMessage } from "../../lib/chatSessionService";
-import { getPersonsWithChartData, type Person } from "../../db/person.repo";
-import { getTodayReading } from "../../db/tarot.repo";
+import { getPersonsWithChartData, getSelfPerson, type Person } from "../../db/person.repo";
+import { getReadingByDate, getReadingBySessionId } from "../../db/tarot.repo";
+import { getCardById, type TarotCard } from "../../lib/tarotDeck";
+import { drawCrossroadsCardForDate, resolveTarotCard, type CrossroadsCard as CrossroadsCardData } from "../../lib/cosmicCrossroads";
 import { useSavePersonFlow } from "./hooks/useSavePersonFlow";
 import { useTarotReading } from "./hooks/useTarotReading";
+import { useCrossroadsReading } from "./hooks/useCrossroadsReading";
 import { Colors } from "../../utils/theme";
+import { useTranslation } from "react-i18next";
 
 type ChatSessionRouteProp = RouteProp<RootStackParamList, "ChatSession">;
 
@@ -22,11 +27,14 @@ function toCoreMessage(m: ChatSessionMessage): ChatMessage {
   return { id: m.id, role: m.role, content: m.content, timestamp: m.timestamp };
 }
 
-const FEATURE_SOMEONE_ON_MIND = "Someone on your mind?";
+const FEATURE_SOMEONE_SPECIAL = "Someone Special";
+const FEATURE_FRIEND_DYNAMICS = "Friend Dynamics";
 const FEATURE_NATAL_CHART_ANALYSIS = "Natal Chart Analysis";
 const FEATURE_TAROT = "Tarot Reading";
+const FEATURE_COSMIC_CROSSROADS = "Cosmic Crossroads";
 
 export default function ChatSessionScreen() {
+  const { t } = useTranslation();
   const route = useRoute<ChatSessionRouteProp>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { sessionId, mode = "interactive", feature, initialMessage, agenda } = route.params || {};
@@ -43,6 +51,8 @@ export default function ChatSessionScreen() {
 
   const serviceRef = useRef<ChatSessionService | null>(null);
   const chartPersonsRef = useRef<Person[]>([]);
+  const selfPersonRef = useRef<Person | null>(null);
+  const activeChartPersonRef = useRef<Person | null>(null);
   const [sessionTitle, setSessionTitle] = useState("Chat");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -50,6 +60,9 @@ export default function ChatSessionScreen() {
   const [chartPersons, setChartPersons] = useState<Person[]>([]);
   const [noCharts, setNoCharts] = useState(false);
   const [personSelected, setPersonSelected] = useState(false);
+  const [compatibilityPersonSelected, setCompatibilityPersonSelected] = useState(false);
+  const [readonlyTarotCards, setReadonlyTarotCards] = useState<[TarotCard, TarotCard, TarotCard] | null>(null);
+  const [readonlyCrossroadsCard, setReadonlyCrossroadsCard] = useState<CrossroadsCardData | null>(null);
 
   const refreshMessages = async () => {
     const service = serviceRef.current;
@@ -64,6 +77,7 @@ export default function ChatSessionScreen() {
   );
 
   const tarot = useTarotReading(serviceRef, refreshMessages);
+  const crossroads = useCrossroadsReading();
 
   useEffect(() => {
     const init = async () => {
@@ -74,27 +88,65 @@ export default function ChatSessionScreen() {
         chartPersonsRef.current = personsWithCharts;
         if (personsWithCharts.length === 0) {
           setNoCharts(true);
-          effectiveInitialMessage = "🪐 You don't have any birth charts yet. Head to the Birth Chart tab to add someone and generate their chart — then come back here for a full analysis.";
+          effectiveInitialMessage = t("chat.noBirthCharts");
         } else {
           setChartPersons(personsWithCharts);
-          effectiveInitialMessage = "🪐 Whose birth chart would you like to explore? Tap a name below.";
+          effectiveInitialMessage = t("chat.selectBirthChart");
         }
       }
 
-      // For tarot: if today's reading is done, use the interpretation as the only message
-      if (feature === FEATURE_TAROT) {
-        const todayReading = await getTodayReading();
-        if (todayReading?.interpretation) {
-          effectiveInitialMessage = todayReading.interpretation;
+      if (feature === FEATURE_SOMEONE_SPECIAL) {
+        const selfPerson = await getSelfPerson();
+        selfPersonRef.current = selfPerson ?? null;
+        if (!selfPerson?.chart_gpt_json) {
+          setNoCharts(true);
+          effectiveInitialMessage = t("chat.noSelfChart");
+        } else {
+          const personsWithCharts = await getPersonsWithChartData();
+          const others = personsWithCharts.filter(
+            (p) => p.name?.toLowerCase() !== (selfPerson.name ?? "").toLowerCase()
+          );
+          chartPersonsRef.current = others;
+          if (others.length === 0) {
+            setNoCharts(true);
+            effectiveInitialMessage = t("chat.noPartnerChart");
+          } else {
+            setChartPersons(others);
+            effectiveInitialMessage = t("chat.whosOnYourMind");
+          }
         }
       }
+
+      if (feature === FEATURE_FRIEND_DYNAMICS) {
+        const selfPerson = await getSelfPerson();
+        selfPersonRef.current = selfPerson ?? null;
+        if (!selfPerson?.chart_gpt_json) {
+          setNoCharts(true);
+          effectiveInitialMessage = t("chat.noSelfChart");
+        } else {
+          const personsWithCharts = await getPersonsWithChartData();
+          const others = personsWithCharts.filter(
+            (p) => p.name?.toLowerCase() !== (selfPerson.name ?? "").toLowerCase()
+          );
+          chartPersonsRef.current = others;
+          if (others.length === 0) {
+            setNoCharts(true);
+            effectiveInitialMessage = t("chat.noFriendChart");
+          } else {
+            setChartPersons(others);
+            effectiveInitialMessage = t("chat.whosYourFriend");
+          }
+        }
+      }
+
+
 
       const service = new ChatSessionService({
         agenda: agenda ?? "You are a warm, supportive assistant. Keep responses concise and helpful.",
         feature,
         initialMessage: effectiveInitialMessage,
         mode,
-        enableSavePersonHint: feature === FEATURE_SOMEONE_ON_MIND,
+        enableSavePersonHint: false,
       });
       serviceRef.current = service;
 
@@ -104,6 +156,30 @@ export default function ChatSessionScreen() {
         const { session, messages: msgs } = await service.initializeSession(existingId);
         setSessionTitle(session?.title || feature || session?.feature || "Chat");
         setMessages(msgs.map(toCoreMessage));
+        // If crossroads session already has a reading, mark card as revealed
+        if (feature === FEATURE_COSMIC_CROSSROADS && msgs.length > 1) {
+          crossroads.markDone();
+        }
+        // Readonly: load the historic card for tarot / crossroads
+        if (mode === "readonly" && session?.created_at) {
+          const sessionDate = new Date(session.created_at);
+          const dateStr = session.created_at.slice(0, 10);
+          if (feature === FEATURE_TAROT) {
+            const sid = session?.id ?? (existingId ?? null);
+            const reading = sid
+              ? (await getReadingBySessionId(sid)) ?? (await getReadingByDate(dateStr))
+              : await getReadingByDate(dateStr);
+            if (reading) {
+              const past   = getCardById(reading.card_past);
+              const today  = getCardById(reading.card_today);
+              const future = getCardById(reading.card_future);
+              if (past && today && future) setReadonlyTarotCards([past, today, future]);
+            }
+          }
+          if (feature === FEATURE_COSMIC_CROSSROADS) {
+            setReadonlyCrossroadsCard(drawCrossroadsCardForDate(sessionDate));
+          }
+        }
       } catch (e) {
         console.error("[ChatSessionScreen] init error:", e);
       } finally {
@@ -117,25 +193,41 @@ export default function ChatSessionScreen() {
     const service = serviceRef.current;
     if (!service || !text.trim()) return;
 
-    // Inject chart JSON when user mentions a person by name
-    let messageToSend = text.trim();
-    if (feature === FEATURE_NATAL_CHART_ANALYSIS && chartPersonsRef.current.length > 0) {
-      const lower = messageToSend.toLowerCase();
-      const matched = chartPersonsRef.current.filter(
-        (p) => p.name && lower.includes((p.name ?? "").toLowerCase())
-      );
-      if (matched.length > 0) {
-        const parts = ["[Attached chart data for analysis — use only these when answering]"];
-        for (const p of matched) {
-          if (p.chart_gpt_json) parts.push(`--- ${p.name} ---\n${p.chart_gpt_json}`);
-        }
-        messageToSend = messageToSend + "\n\n" + parts.join("\n\n");
+    // Cosmic Crossroads: first user message triggers card reveal + oracle reading
+    if (feature === FEATURE_COSMIC_CROSSROADS && !crossroads.revealed) {
+      setIsTyping(true);
+      try {
+        await crossroads.handleQuestion(text.trim(), service, refreshMessages);
+      } finally {
+        setIsTyping(false);
+      }
+      return;
+    }
+
+    const displayText = text.trim();
+    let gptContent = displayText;
+
+    if (feature === FEATURE_NATAL_CHART_ANALYSIS) {
+      const active = activeChartPersonRef.current;
+      if (active?.chart_gpt_json) {
+        gptContent =
+          displayText +
+          `\n\n[Chart context for ${active.name} — use this to answer]\n--- ${active.name} ---\n${active.chart_gpt_json}`;
+      }
+    }
+    if (feature === FEATURE_SOMEONE_SPECIAL || feature === FEATURE_FRIEND_DYNAMICS) {
+      const active = activeChartPersonRef.current;
+      const self = selfPersonRef.current;
+      if (active?.chart_gpt_json && self?.chart_gpt_json) {
+        gptContent =
+          displayText +
+          `\n\n[Chart context — use this to answer]\n--- ${self.name} (You) ---\n${self.chart_gpt_json}\n--- ${active.name} ---\n${active.chart_gpt_json}`;
       }
     }
 
     setIsTyping(true);
     try {
-      const result = await service.sendMessage(messageToSend);
+      const result = await service.sendMessage(gptContent, { displayContent: displayText });
       await refreshMessages();
       if (result.suggestedSavePerson != null) {
         savePerson.suggest(result.suggestedSavePerson);
@@ -153,7 +245,7 @@ export default function ChatSessionScreen() {
     if (!service || isTyping) return;
 
     const parts = [
-      `Give a short, readable birth chart reading for ${person.name}. Focus on 3-4 key highlights — most important placements, one or two standout aspects, and overall energy. Use brief sections with a bold header and 1-2 sentences each. Skip technical jargon. Keep it under 200 words.`,
+      `Give a very short birth chart reading for ${person.name}. Pick 3 highlights max — one sentence each. Bold header per point. Plain simple language. Under 100 words total.`,
     ];
     if (person.chart_gpt_json) {
       parts.push("[Attached chart data — use only this for analysis]");
@@ -163,11 +255,44 @@ export default function ChatSessionScreen() {
 
     setIsTyping(true);
     setPersonSelected(true);
+    activeChartPersonRef.current = person;
     try {
-      await service.sendMessage(messageToSend, { silent: true });
+      await service.sendMessage(messageToSend, { displayContent: `Analyze ${person.name}'s birth chart.` });
       await refreshMessages();
     } catch (e) {
       console.error("[ChatSessionScreen] chart analysis error:", e);
+      await refreshMessages();
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  const handleCompatibilitySelect = async (person: Person) => {
+    const service = serviceRef.current;
+    const selfPerson = selfPersonRef.current;
+    if (!service || isTyping || !selfPerson?.chart_gpt_json || !person.chart_gpt_json) return;
+
+    const prompt = feature === FEATURE_FRIEND_DYNAMICS
+      ? `Give a short friendship compatibility reading between ${selfPerson.name} and ${person.name}. What makes their friendship work and where friction might arise. Pick 3 key points max — one sentence each. Bold header per point. Simple plain language. Under 100 words total.`
+      : `Give a short compatibility reading between ${selfPerson.name} and ${person.name}. Pick 3 key connection points max — one sentence each. Bold header per point. Simple plain language. Under 100 words total.`;
+
+    const parts = [
+      prompt,
+      "[Attached chart data — compare both charts for the reading]",
+      `--- ${selfPerson.name} (You) ---\n${selfPerson.chart_gpt_json}`,
+      `--- ${person.name} ---\n${person.chart_gpt_json}`,
+    ];
+
+    setIsTyping(true);
+    setCompatibilityPersonSelected(true);
+    activeChartPersonRef.current = person;
+    try {
+      const displayMsg = feature === FEATURE_FRIEND_DYNAMICS
+        ? `Tell me about my friendship dynamic with ${person.name}.`
+        : `Tell me about my compatibility with ${person.name}.`;
+      await service.sendMessage(parts.join("\n\n"), { displayContent: displayMsg });
+      await refreshMessages();
+    } catch (e) {
       await refreshMessages();
     } finally {
       setIsTyping(false);
@@ -188,7 +313,7 @@ export default function ChatSessionScreen() {
             }
             activeOpacity={0.7}
           >
-            <Text style={styles.personButtonText}>Go to Birth Chart →</Text>
+            <Text style={styles.personButtonText}>{t("chat.goToBirthChart")}</Text>
           </TouchableOpacity>
         </View>
       )
@@ -209,13 +334,117 @@ export default function ChatSessionScreen() {
       )
     : null;
 
-  const tarotBar = feature === FEATURE_TAROT && !isLoading && !tarot.loading && tarot.cards
+  const friendDynamicsBar = feature === FEATURE_FRIEND_DYNAMICS && !isLoading && !compatibilityPersonSelected && savePerson.pendingSavePerson === null
+    ? noCharts
+      ? (
+        <View style={styles.personButtonsRow}>
+          <TouchableOpacity
+            style={[styles.personButton, styles.createChartButton]}
+            onPress={() =>
+              navigation.navigate("MainApp" as any, {
+                screen: "MainTabs",
+                params: { screen: "Orbit" },
+              } as any)
+            }
+            activeOpacity={0.7}
+          >
+            <Text style={styles.personButtonText}>{t("chat.goToBirthChart")}</Text>
+          </TouchableOpacity>
+        </View>
+      )
+      : (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.personButtonsRow}>
+          {chartPersons.map((p) => (
+            <TouchableOpacity
+              key={p.name}
+              style={styles.personButton}
+              onPress={() => handleCompatibilitySelect(p)}
+              activeOpacity={0.7}
+              disabled={isTyping}
+            >
+              <Text style={styles.personButtonText}>{p.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )
+    : null;
+
+  const someoneSpecialBar = feature === FEATURE_SOMEONE_SPECIAL && !isLoading && !compatibilityPersonSelected && savePerson.pendingSavePerson === null
+    ? noCharts
+      ? (
+        <View style={styles.personButtonsRow}>
+          <TouchableOpacity
+            style={[styles.personButton, styles.createChartButton]}
+            onPress={() =>
+              navigation.navigate("MainApp" as any, {
+                screen: "MainTabs",
+                params: { screen: "Orbit" },
+              } as any)
+            }
+            activeOpacity={0.7}
+          >
+            <Text style={styles.personButtonText}>{t("chat.goToBirthChart")}</Text>
+          </TouchableOpacity>
+        </View>
+      )
+      : (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.personButtonsRow}>
+          {chartPersons.map((p) => (
+            <TouchableOpacity
+              key={p.name}
+              style={styles.personButton}
+              onPress={() => handleCompatibilitySelect(p)}
+              activeOpacity={0.7}
+              disabled={isTyping}
+            >
+              <Text style={styles.personButtonText}>{p.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )
+    : null;
+
+  const tarotBar = feature === FEATURE_TAROT && mode !== "readonly" && !isLoading && !tarot.loading && tarot.cards
     ? (
       <TarotReveal
         cards={tarot.cards}
         revealed={tarot.revealed}
         onReveal={tarot.handleReveal}
         generatingInterpretation={tarot.generatingInterpretation}
+      />
+    )
+    : null;
+
+  const crossroadsBar = feature === FEATURE_COSMIC_CROSSROADS && mode !== "readonly" && !isLoading
+    ? (
+      <CrossroadsCard
+        card={crossroads.card}
+        tarotCard={crossroads.tarotCard}
+        revealed={crossroads.revealed}
+        generating={crossroads.generating}
+      />
+    )
+    : null;
+
+  // Readonly: static versions of the card(s) shown in history
+  const readonlyTarotBar = mode === "readonly" && readonlyTarotCards
+    ? (
+      <TarotReveal
+        cards={readonlyTarotCards}
+        revealed={[true, true, true]}
+        onReveal={() => {}}
+        generatingInterpretation={false}
+      />
+    )
+    : null;
+
+  const readonlyCrossroadsBar = mode === "readonly" && readonlyCrossroadsCard
+    ? (
+      <CrossroadsCard
+        card={readonlyCrossroadsCard}
+        tarotCard={resolveTarotCard(readonlyCrossroadsCard)}
+        revealed={true}
+        generating={false}
       />
     )
     : null;
@@ -230,19 +459,17 @@ export default function ChatSessionScreen() {
       mode={mode}
       disabled={savePerson.pendingSavePerson !== null || (feature === FEATURE_TAROT && !tarot.allRevealed)}
       onClose={() => navigation.goBack()}
-      trailingContent={natalChartBar ?? undefined}
-      headerContent={tarotBar ?? undefined}
+      trailingContent={natalChartBar ?? someoneSpecialBar ?? friendDynamicsBar ?? undefined}
+      headerContent={tarotBar ?? crossroadsBar ?? readonlyTarotBar ?? readonlyCrossroadsBar ?? undefined}
     >
 
       {savePerson.pendingSavePerson !== null && (
         <View style={styles.savePersonSection}>
-          <Text style={styles.savePersonTitle}>Save to Birth Chart?</Text>
-          <Text style={styles.savePersonSubtitle}>
-            Same protocol as Birth Chart: name and birth date (day, month, year).
-          </Text>
+          <Text style={styles.savePersonTitle}>{t("chat.saveToChart")}</Text>
+          <Text style={styles.savePersonSubtitle}>{t("chat.saveToChartSubtitle")}</Text>
           <TextInput
             style={styles.nameInput}
-            placeholder="Name"
+            placeholder={t("chat.namePlaceholder")}
             placeholderTextColor={Colors.textFaint}
             value={savePerson.savePersonName}
             onChangeText={savePerson.setSavePersonName}
@@ -256,10 +483,10 @@ export default function ChatSessionScreen() {
               savePerson.setSavePersonBirthDate((prev) => ({ ...prev, ...updates }))
             }
             onConfirm={savePerson.handleConfirm}
-            title="Select their birth date"
+            title={t("onboarding.selectTheirBirthDate")}
           />
           <TouchableOpacity style={styles.cancelButton} onPress={savePerson.handleCancel} activeOpacity={0.8}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
+            <Text style={styles.cancelButtonText}>{t("common.cancel")}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -281,16 +508,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: Colors.goldPrimary,
-    backgroundColor: "rgba(212,175,55,0.08)",
+    borderColor: "rgba(201,168,76,0.45)",
+    backgroundColor: "rgba(15,9,32,0.72)",
   },
   createChartButton: {
-    backgroundColor: "rgba(212,175,55,0.15)",
+    backgroundColor: "rgba(15,9,32,0.85)",
   },
   personButtonText: {
     color: Colors.goldPrimary,
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   savePersonSection: {
     backgroundColor: Colors.bgMain,

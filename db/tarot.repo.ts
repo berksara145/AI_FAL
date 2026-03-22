@@ -14,11 +14,25 @@ function todayStr(): string {
 }
 
 export async function getTodayReading(): Promise<TarotReading | null> {
-  // DEBUG: always return null so a fresh draw is shown on every restart
-  return null;
   const rows = await querySql<TarotReading>(
-    "SELECT * FROM tarot_readings WHERE date = ? LIMIT 1",
+    "SELECT * FROM tarot_readings WHERE date = ? ORDER BY id DESC LIMIT 1",
     [todayStr()]
+  );
+  return rows[0] ?? null;
+}
+
+export async function getReadingByDate(dateStr: string): Promise<TarotReading | null> {
+  const rows = await querySql<TarotReading>(
+    "SELECT * FROM tarot_readings WHERE date = ? ORDER BY id DESC LIMIT 1",
+    [dateStr]
+  );
+  return rows[0] ?? null;
+}
+
+export async function getReadingBySessionId(sessionId: number): Promise<TarotReading | null> {
+  const rows = await querySql<TarotReading>(
+    "SELECT * FROM tarot_readings WHERE session_id = ? LIMIT 1",
+    [sessionId]
   );
   return rows[0] ?? null;
 }
@@ -26,11 +40,12 @@ export async function getTodayReading(): Promise<TarotReading | null> {
 export async function saveTarotReading(
   cardPast: string,
   cardToday: string,
-  cardFuture: string
+  cardFuture: string,
+  sessionId?: number
 ): Promise<number> {
   const result = await executeSql(
-    "INSERT INTO tarot_readings (date, card_past, card_today, card_future) VALUES (?, ?, ?, ?)",
-    [todayStr(), cardPast, cardToday, cardFuture]
+    "INSERT INTO tarot_readings (date, card_past, card_today, card_future, session_id) VALUES (?, ?, ?, ?, ?)",
+    [todayStr(), cardPast, cardToday, cardFuture, sessionId ?? null]
   );
   return result.lastInsertRowId;
 }

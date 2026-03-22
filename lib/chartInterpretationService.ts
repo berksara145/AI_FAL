@@ -16,18 +16,15 @@ export async function generateChartInterpretation(
         `Here is the natal chart data for ${personName}:\n\n${chartGptJson}\n\n` +
         `Write a natal chart reading in exactly 3 sections. Use these exact headers (keep the double asterisks and ✦):\n\n` +
         `**✦ Core Identity**\n` +
-        `- [Sun, Moon, or Rising insight — who ${personName} is at the core]\n` +
-        `- [A second defining trait or inner tension]\n` +
-        `- [How these combine into a personality]\n\n` +
+        `- [One sentence on Sun, Moon, or Rising — the core of who ${personName} is]\n` +
+        `- [One sentence on a key trait or tension]\n\n` +
         `**✦ Inner World**\n` +
-        `- [Emotional pattern or Moon placement insight]\n` +
-        `- [A key aspect and what it creates internally]\n` +
-        `- [How ${personName} relates and feels deeply]\n\n` +
+        `- [One sentence on emotional pattern or Moon placement]\n` +
+        `- [One sentence on a standout aspect]\n\n` +
         `**✦ Life Path**\n` +
-        `- [A core strength or natural gift]\n` +
-        `- [A challenge or growth edge]\n` +
-        `- [Soul direction or life purpose]\n\n` +
-        `Rules: exactly 3 bullet points per section starting with "-". Warm, personal, third person. No prose paragraphs. No extra headers.`,
+        `- [One sentence on a core strength]\n` +
+        `- [One sentence on a challenge or soul direction]\n\n` +
+        `Rules: exactly 2 bullet points per section starting with "-". Each bullet is one short plain sentence. No long sentences, no flowery prose, third person. No extra headers.`,
     },
   ];
 

@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, Animated } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ChatColors } from "../../../utils/theme";
+import { useTranslation } from "react-i18next";
 
 type ChatHeaderProps = {
   title: string;
@@ -10,6 +11,7 @@ type ChatHeaderProps = {
 };
 
 export default function ChatHeader({ title, onClose, mode = "interactive" }: ChatHeaderProps) {
+  const { t } = useTranslation();
   const iconScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -59,7 +61,7 @@ export default function ChatHeader({ title, onClose, mode = "interactive" }: Cha
               marginTop: 2,
               letterSpacing: 0.5,
             }}>
-              Chat History
+              {t("chat.readonlyBadge")}
             </Text>
           )}
         </View>

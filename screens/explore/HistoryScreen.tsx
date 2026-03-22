@@ -22,6 +22,7 @@ import { EXPLORE_CLASSES } from "./exploreClasses";
 import type { ChatSession } from "../../types/chatSession";
 import type { Message } from "../../types/message";
 import { ChatColors } from "../../utils/theme";
+import { useTranslation } from "react-i18next";
 
 // ── Design tokens — mirror exact chat theme ───────────────────────────────────
 const C = {
@@ -161,6 +162,7 @@ function ChatCard({ session, onPress }: { session: SessionWithMeta; onPress: () 
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function HistoryScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [sessions, setSessions] = useState<SessionWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
@@ -202,6 +204,13 @@ export default function HistoryScreen() {
   };
 
   const bucketOrder = ["Today", "Yesterday", "This Week", "This Month", "Older"];
+  const bucketLabels: Record<string, string> = {
+    "Today": t("history.today"),
+    "Yesterday": t("history.yesterday"),
+    "This Week": t("history.thisWeek"),
+    "This Month": t("history.thisMonth"),
+    "Older": t("history.older"),
+  };
   const bucketMap: Record<string, SessionWithMeta[]> = {};
   for (const s of sessions) {
     const b = dateBucket(s.updated_at || s.created_at);
@@ -210,7 +219,7 @@ export default function HistoryScreen() {
   }
   const grouped = bucketOrder
     .filter((b) => bucketMap[b]?.length)
-    .map((b) => ({ bucket: b, items: bucketMap[b] }));
+    .map((b) => ({ bucket: b, label: bucketLabels[b] ?? b, items: bucketMap[b] }));
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
@@ -221,7 +230,7 @@ export default function HistoryScreen() {
         <Pressable onPress={() => navigation.goBack()} hitSlop={12}>
           <MaterialCommunityIcons name="arrow-left" size={22} color={C.gold} />
         </Pressable>
-        <Text style={styles.headerTitle}>Chat History</Text>
+        <Text style={styles.headerTitle}>{t("history.title")}</Text>
         <View style={{ width: 22 }} />
       </View>
       {/* Gold gradient divider */}
@@ -239,13 +248,13 @@ export default function HistoryScreen() {
         ) : sessions.length === 0 ? (
           <View style={styles.centered}>
             <Text style={styles.emptyStars}>✦  ✦  ✦</Text>
-            <Text style={styles.emptyText}>No conversations yet</Text>
-            <Text style={styles.emptySubtext}>Start a chat from the Insights tab</Text>
+            <Text style={styles.emptyText}>{t("history.noConversations")}</Text>
+            <Text style={styles.emptySubtext}>{t("history.noConversationsSubtitle")}</Text>
           </View>
         ) : (
-          grouped.map(({ bucket, items }) => (
+          grouped.map(({ bucket, label, items }) => (
             <View key={bucket}>
-              <DatePill label={bucket} />
+              <DatePill label={label} />
               {items.map((session) => (
                 <React.Fragment key={session.id}>
                   <ChatCard session={session} onPress={() => openSession(session)} />

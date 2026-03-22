@@ -56,8 +56,11 @@ export function useAddPersonFlow(
     }
 
     setCreatedPersonName(collectedName);
-    await appendMessage("assistant", `Added ${collectedName} to your birth chart! ✨`);
-    onDone();
+    await appendMessage(
+      "assistant",
+      `Now, what time was ${collectedName} born? Select the birth time below.`,
+      true
+    );
   };
 
   return {

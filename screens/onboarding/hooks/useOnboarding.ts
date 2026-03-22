@@ -4,8 +4,9 @@ import type { RootStackParamList } from "../../../navigation/RootStack";
 import { updateUserName, updateBirthDate, completeOnboarding } from "../../../db/user.repo";
 import { upsertSelfPersonFromCurrentUser } from "../../../db/person.repo";
 import { extractName, isValidDate } from "../utils";
-import { MESSAGES, MONTH_NAMES_FULL, DATE_PICKER_CONFIG } from "../constants";
+import { DATE_PICKER_CONFIG } from "../constants";
 import type { ChatMessage } from "../../../components/BasicChatUI";
+import i18n from "../../../lib/i18n";
 
 export type OnboardingStep = "name" | "date" | "complete";
 
@@ -51,7 +52,7 @@ export function useOnboarding(
     const name = extractName(text);
 
     if (!name) {
-      const msg = makeAiMessage(MESSAGES.NAME_INVALID);
+      const msg = makeAiMessage(i18n.t("onboarding.nameInvalid"));
       setMessages((prev) => [...prev, msg]);
       return;
     }
@@ -60,11 +61,11 @@ export function useOnboarding(
       await updateUserName(name);
       setStep("date");
 
-      const msg = makeAiMessage(MESSAGES.NAME_COLLECTED(name));
+      const msg = makeAiMessage(i18n.t("onboarding.nameCollected", { name }));
       streamCallbacksRef.current[msg.id] = () => setShowDatePicker(true);
       setMessages((prev) => [...prev, msg]);
     } catch {
-      const msg = makeAiMessage(MESSAGES.NAME_ERROR, false);
+      const msg = makeAiMessage(i18n.t("onboarding.nameError"), false);
       setMessages((prev) => [...prev, msg]);
     }
   }, [step, setMessages]);
@@ -74,7 +75,7 @@ export function useOnboarding(
     if (!year || !month || !day) return;
 
     if (!isValidDate(year, month, day)) {
-      const msg = makeAiMessage(MESSAGES.DATE_INVALID, false);
+      const msg = makeAiMessage(i18n.t("onboarding.dateInvalid"), false);
       setMessages((prev) => [...prev, msg]);
       return;
     }
@@ -84,7 +85,8 @@ export function useOnboarding(
       setShowDatePicker(false);
       setStep("complete");
 
-      const content = MESSAGES.DATE_SAVED(MONTH_NAMES_FULL[month - 1], day, year);
+      const monthsFull = i18n.t("months.full", { returnObjects: true }) as string[];
+      const content = i18n.t("onboarding.dateSaved", { month: monthsFull[month - 1], day, year });
       const msg = makeAiMessage(content);
       streamCallbacksRef.current[msg.id] = async () => {
         try {
@@ -97,7 +99,7 @@ export function useOnboarding(
       };
       setMessages((prev) => [...prev, msg]);
     } catch {
-      const msg = makeAiMessage(MESSAGES.DATE_ERROR, false);
+      const msg = makeAiMessage(i18n.t("onboarding.dateError"), false);
       setMessages((prev) => [...prev, msg]);
     }
   }, [birthDateState, navigation, setMessages]);

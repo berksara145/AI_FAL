@@ -223,10 +223,12 @@ export class ChatSessionService {
    * When enableSavePersonHint, parses [SAVE_PERSON: Name] and returns suggestedSavePerson so the same chat can show the person-creation flow (name + birth date) without a new session.
    */
   /**
-   * Send a message. When `silent` is true, the user message is sent to GPT for context
-   * but NOT saved to the DB or shown in the UI — only the assistant reply is persisted.
+   * Send a message.
+   * - `silent`: user message is sent to GPT for context but NOT saved to DB or shown in UI.
+   * - `displayContent`: what gets saved to DB (shown in chat). If omitted, `userContent` is saved.
+   *   Use this when `userContent` contains hidden context (e.g. chart JSON) that should not appear in the chat bubble.
    */
-  async sendMessage(userContent: string, opts?: { silent?: boolean }): Promise<SendMessageResult> {
+  async sendMessage(userContent: string, opts?: { silent?: boolean; displayContent?: string }): Promise<SendMessageResult> {
     if (this.sessionId == null) {
       throw new Error("ChatSessionService: no session. Call initializeSession first.");
     }
@@ -237,7 +239,7 @@ export class ChatSessionService {
       await addMessage({
         sessionId: this.sessionId,
         role: "user",
-        content: trimmed,
+        content: opts?.displayContent ?? trimmed,
       });
     }
 
@@ -280,6 +282,7 @@ export class ChatSessionService {
     if (this.sessionId == null) return;
     await addMessage({ sessionId: this.sessionId, role: "assistant", content });
   }
+
 
   /**
    * Hook for initiating other flows (e.g. user creation, save person).

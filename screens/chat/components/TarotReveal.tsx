@@ -12,8 +12,7 @@ import {
 import type { TarotCard } from "../../../lib/tarotDeck";
 import { CARD_BACK } from "../../../lib/tarotDeck";
 import { Colors } from "../../../utils/theme";
-
-const POSITIONS = ["PAST", "TODAY", "FUTURE"] as const;
+import { useTranslation } from "react-i18next";
 const POSITION_COLORS = [
   "rgba(180,140,255,0.9)",
   "rgba(212,175,55,0.9)",
@@ -39,6 +38,7 @@ function FlipCard({
   accentColor: string;
   entryDelay: number;
 }) {
+  const { t } = useTranslation();
   const flipAnim = useRef(new Animated.Value(revealed ? 180 : 0)).current;
   const entryAnim = useRef(new Animated.Value(0)).current;
 
@@ -89,7 +89,7 @@ function FlipCard({
             <Image source={CARD_BACK} style={styles.cardImage} resizeMode="cover" />
             {!revealed && (
               <View style={styles.tapHint}>
-                <Text style={styles.tapHintText}>tap</Text>
+                <Text style={styles.tapHintText}>{t("tarot.tap")}</Text>
               </View>
             )}
           </Animated.View>
@@ -118,6 +118,9 @@ interface TarotRevealProps {
 }
 
 export default function TarotReveal({ cards, revealed, onReveal, generatingInterpretation }: TarotRevealProps) {
+  const { t } = useTranslation();
+  const positions = [t("tarot.past"), t("tarot.today"), t("tarot.future")];
+
   return (
     <View style={styles.container}>
       <View style={styles.row}>
@@ -127,7 +130,7 @@ export default function TarotReveal({ cards, revealed, onReveal, generatingInter
             card={card}
             revealed={revealed[i]}
             onReveal={() => onReveal(i as 0 | 1 | 2)}
-            positionLabel={POSITIONS[i]}
+            positionLabel={positions[i]}
             accentColor={POSITION_COLORS[i]}
             entryDelay={i * 150}
           />
@@ -136,7 +139,7 @@ export default function TarotReveal({ cards, revealed, onReveal, generatingInter
 
       {generatingInterpretation && (
         <View style={styles.readingRow}>
-          <Text style={styles.readingText}>✦  Reading the cards…  ✦</Text>
+          <Text style={styles.readingText}>{t("tarot.readingCards")}</Text>
         </View>
       )}
     </View>

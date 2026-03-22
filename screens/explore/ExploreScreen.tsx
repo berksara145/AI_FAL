@@ -6,6 +6,7 @@ import type { RootStackParamList } from "../../navigation/RootStack";
 import FeatureCard from "./components/FeatureCard";
 import { EXPLORE_CLASSES, type ExploreClass, type ExploreClassId } from "./exploreClasses";
 import { Colors } from "../../utils/theme";
+import { useTranslation } from "react-i18next";
 
 const EXPLORE_IMAGES: Record<ExploreClass["imageKey"], number> = {
   feature4: require("../../assets/feature4.png"),
@@ -17,7 +18,26 @@ const EXPLORE_IMAGES: Record<ExploreClass["imageKey"], number> = {
   feature11: require("../../assets/feature11.png"),
 };
 
+const EXPLORE_TITLE_KEYS: Record<ExploreClassId, string> = {
+  "general": "explore.general",
+  "cosmic-crossroads": "explore.cosmicCrossroads",
+  "someone-on-mind": "explore.someoneSpecial",
+  "friend-dynamics": "explore.friendDynamics",
+  "tarot-reading": "explore.tarotReading",
+  "natal-chart-analysis": "explore.birthChartAnalysis",
+};
+
+const EXPLORE_INITIAL_KEYS: Record<ExploreClassId, string> = {
+  "general": "explore.initialGeneral",
+  "cosmic-crossroads": "explore.initialCrossroads",
+  "someone-on-mind": "explore.initialSomeoneSpecial",
+  "friend-dynamics": "explore.initialFriendDynamics",
+  "tarot-reading": "explore.initialTarot",
+  "natal-chart-analysis": "explore.initialBirthChart",
+};
+
 export default function ExploreScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleClassPress = (classId: ExploreClassId) => {
@@ -26,7 +46,7 @@ export default function ExploreScreen() {
     navigation.navigate("ChatSession", {
       feature: exploreClass.feature,
       mode: "interactive",
-      initialMessage: exploreClass.initialMessage,
+      initialMessage: t(EXPLORE_INITIAL_KEYS[classId]),
       agenda: exploreClass.agenda,
     });
   };
@@ -59,7 +79,7 @@ export default function ExploreScreen() {
               <FeatureCard
                 image={EXPLORE_IMAGES[exploreClass.imageKey]}
                 noBackground={true}
-                title={exploreClass.title}
+                title={t(EXPLORE_TITLE_KEYS[exploreClass.id])}
                 onPress={() => handleClassPress(exploreClass.id)}
               />
             </View>

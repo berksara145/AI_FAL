@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { getTodayReading, saveTarotReading, updateTarotInterpretation } from "../../../db/tarot.repo";
-import { drawThreeCards, getCardById, type TarotCard } from "../../../lib/tarotDeck";
+import { saveTarotReading, updateTarotInterpretation } from "../../../db/tarot.repo";
+import { drawThreeCards, type TarotCard } from "../../../lib/tarotDeck";
 import { generateTarotInterpretation } from "../../../lib/tarotService";
 import type { ChatSessionService } from "../../../lib/chatSessionService";
 
@@ -25,30 +25,10 @@ export function useTarotReading(
   const interpretationDoneRef = useRef(false);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const existing = await getTodayReading();
-        if (existing) {
-          // Already done today — restore card objects and show as revealed
-          const past   = getCardById(existing.card_past);
-          const today  = getCardById(existing.card_today);
-          const future = getCardById(existing.card_future);
-          if (past && today && future) {
-            setCards([past, today, future]);
-            setRevealed([true, true, true]);
-            readingIdRef.current = existing.id;
-            interpretationDoneRef.current = true;
-          }
-        } else {
-          // Fresh draw for today
-          const drawn = drawThreeCards();
-          setCards(drawn);
-          setRevealed([false, false, false]);
-        }
-      } finally {
-        setLoading(false);
-      }
-    })();
+    const drawn = drawThreeCards();
+    setCards(drawn);
+    setRevealed([false, false, false]);
+    setLoading(false);
   }, []);
 
   const handleReveal = async (index: 0 | 1 | 2) => {
@@ -66,7 +46,8 @@ export function useTarotReading(
     setGeneratingInterpretation(true);
 
     try {
-      const id = await saveTarotReading(cards[0].id, cards[1].id, cards[2].id);
+      const sessionId = serviceRef.current?.getSessionId() ?? undefined;
+      const id = await saveTarotReading(cards[0].id, cards[1].id, cards[2].id, sessionId ?? undefined);
       readingIdRef.current = id;
 
       const interpretation = await generateTarotInterpretation(

@@ -21,3 +21,22 @@ button olarak göstersin
 
 basınca analiz adam akıllı yapsın yani
 
+
+dil ekle ##
+birth chart flow kolaylaştır ##
+düzgün göster yazdıktan sonra bekle ki anlasın
+daha az kolay kelimelerle analizi ekle
+add person özelliği anlaşılmıyor ona yönlendirmek için düzgün anlat
+animasyonlarla yönlendir
+birth chart kısmı kafa karıştırdı ve buttonlar gözükmedi
+location için nereye ne yazacağını anlamadı kafa karıştırdı
+arkadaş karşılaştırma
+arkadaş veya kendisi saat bilmiyorsa boşluk ekle
+şans kurabiyesi gibi fal cümlesi yaz
+tarot açılmada hepsine basmayı bilmesi lazım
+olcak mı olmicak mı dilek 
+geri button ekle ##
+gereksiz bugı duruyor
+şans kurabiyesi ekleme lazım
+bi olay olcak mı binary event için ekle
+horary ekle ama MVP de değil

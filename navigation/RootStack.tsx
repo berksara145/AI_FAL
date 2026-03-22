@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import SplashScreen from "../screens/SplashScreen";
 import UserInfoChatScreen from "../screens/onboarding/UserInfoChatScreen";
 import ChatSessionScreen from "../screens/chat/ChatSessionScreen";
+import AddPersonScreen from "../screens/orbit/AddPersonScreen";
 
 // Navigation
 import MainTabs from "./MainTabs";
@@ -16,6 +17,8 @@ export type RootStackParamList = {
   UserInfoChat: undefined;
   // Main App (contains bottom tabs)
   MainApp: undefined;
+  // Add Person (full-screen form)
+  AddPerson: undefined;
   // Chat Session (full-screen, reusable)
   ChatSession: {
     sessionId?: string;
@@ -42,6 +45,17 @@ export default function RootStack() {
 
       {/* Main App (Bottom Tabs: Insights / Persons) */}
       <Stack.Screen name="MainApp" component={MainTabs} />
+
+      {/* Add Person - full-screen form */}
+      <Stack.Screen
+        name="AddPerson"
+        component={AddPersonScreen}
+        options={Platform.select({
+          ios: { presentation: "fullScreenModal", headerShown: false },
+          android: { presentation: "card", animation: "slide_from_bottom", headerShown: false },
+          default: { presentation: "fullScreenModal", headerShown: false },
+        })}
+      />
 
       {/* Chat Session - full-screen modal */}
       <Stack.Screen

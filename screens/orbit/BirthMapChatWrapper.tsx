@@ -7,11 +7,21 @@ import type { RootStackParamList } from "../../navigation/RootStack";
 import ViewShot from "react-native-view-shot";
 import NatalChartView from "./components/NatalChartView";
 
+// i18n
+import { useTranslation } from "react-i18next";
+
 // Hooks
 import { useChatSession } from "./hooks/useChatSession";
 import { useAddPersonFlow } from "./hooks/useAddPersonFlow";
 import { useBirthMapFlow } from "./hooks/useBirthMapFlow";
 import { useChartCapture } from "./hooks/useChartCapture";
+import { personToBirthDate } from "./hooks/useOrbitNodes";
+
+// Utils
+import { getZodiacInfoForMonthDay } from "./utils";
+
+// DB
+import { getPersonByName } from "../../db/person.repo";
 
 // Components
 import ChatSessionCore from "../chat/components/ChatSessionCore";
@@ -27,6 +37,7 @@ export default function BirthMapChatWrapper(
   { personName: incomingPersonName, birthDate: incomingBirthDate }:
   { personName?: string; birthDate?: string } = {}
 ) {
+  const { t } = useTranslation();
   const route = useRoute<BirthMapRouteProp>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -35,6 +46,7 @@ export default function BirthMapChatWrapper(
   const isAddPersonFlow = !personNameFromParams;
 
   const screenOpacity = useRef(new Animated.Value(1)).current;
+  const effectivePersonNameRef = useRef<string | null>(null);
   const navigateBack = useCallback(() => {
     Animated.timing(screenOpacity, {
       toValue: 0,
@@ -56,11 +68,30 @@ export default function BirthMapChatWrapper(
   );
 
   const effectivePersonName = personNameFromParams ?? addPerson.createdPersonName;
+  effectivePersonNameRef.current = effectivePersonName;
 
   const chartCapture = useChartCapture(async () => {
-    await chat.appendMessage("assistant", "✨ Your Natal Chart has been generated and saved!");
-    await new Promise((r) => setTimeout(r, 900));
-    navigateBack();
+    await chat.appendMessage("assistant", t("birthMap.complete"));
+    await new Promise((r) => setTimeout(r, 600));
+
+    const name = effectivePersonNameRef.current ?? "";
+    if (!name) { navigateBack(); return; }
+
+    const person = await getPersonByName(name);
+    const zodiacInfo =
+      person?.birth_month != null && person?.birth_day != null
+        ? getZodiacInfoForMonthDay(person.birth_month, person.birth_day)
+        : null;
+
+    (navigation as any).navigate("MainApp", {
+      screen: "PersonDetail",
+      params: {
+        name,
+        zodiac: zodiacInfo?.name ?? "",
+        zodiacSymbol: zodiacInfo?.symbol ?? "",
+        birthDate: person ? personToBirthDate(person) : "",
+      },
+    });
   });
 
   const birthMap = useBirthMapFlow(
@@ -120,7 +151,7 @@ export default function BirthMapChatWrapper(
   return (
     <Animated.View style={{ flex: 1, opacity: screenOpacity }}>
       <ChatSessionCore
-        title="Generate Birth Map"
+        title={t("birthMap.title")}
         messages={chat.messages}
         onSendMessage={handleSendMessage}
         isLoading={chat.isLoading}
@@ -136,7 +167,7 @@ export default function BirthMapChatWrapper(
               addPerson.setBirthDateState((prev) => ({ ...prev, ...updates }))
             }
             onConfirm={addPerson.handleBirthDateConfirm}
-            title="Select their birth date"
+            title={t("onboarding.selectTheirBirthDate")}
           />
         )}
 

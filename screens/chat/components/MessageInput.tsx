@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, TextInput, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ChatColors } from "../../../utils/theme";
+import { useTranslation } from "react-i18next";
 
 type MessageInputProps = {
   onSend: (text: string) => void;
@@ -9,6 +10,7 @@ type MessageInputProps = {
 };
 
 export default function MessageInput({ onSend, disabled = false }: MessageInputProps) {
+  const { t } = useTranslation();
   const [text, setText] = useState("");
 
   const handleSend = () => {
@@ -53,7 +55,7 @@ export default function MessageInput({ onSend, disabled = false }: MessageInputP
         <TextInput
           value={text}
           onChangeText={setText}
-          placeholder="Continue the dialogue…"
+          placeholder={t("chat.inputPlaceholder")}
           placeholderTextColor={ChatColors.placeholder}
           multiline
           maxLength={1000}
@@ -80,21 +82,21 @@ export default function MessageInput({ onSend, disabled = false }: MessageInputP
           width: 44,
           height: 44,
           borderRadius: 22,
-          backgroundColor: active ? ChatColors.sendActive : ChatColors.sendInactive,
+          backgroundColor: ChatColors.sendActive,
+          opacity: active ? 1 : 0.32,
           alignItems: "center",
           justifyContent: "center",
           flexShrink: 0,
           shadowColor: "#c9a84c",
-          shadowOpacity: active ? 0.45 : 0,
+          shadowOpacity: 0.45,
           shadowRadius: 14,
           shadowOffset: { width: 0, height: 3 },
-          elevation: active ? 4 : 0,
         }}
       >
         <MaterialCommunityIcons
           name="send"
           size={19}
-          color={active ? ChatColors.headerBg : "rgba(100,80,40,0.4)"}
+          color={ChatColors.headerBg}
         />
       </TouchableOpacity>
     </View>

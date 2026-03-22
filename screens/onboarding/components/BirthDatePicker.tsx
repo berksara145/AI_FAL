@@ -1,9 +1,9 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import IOSDatePicker from "../../../components/IOSDatePicker";
-import { MONTH_NAMES_SHORT } from "../constants";
 import { getMaxDays } from "../utils";
 import type { BirthDateState } from "../hooks/useOnboardingState";
+import { useTranslation } from "react-i18next";
 
 interface BirthDatePickerProps {
   birthDateState: BirthDateState;
@@ -11,17 +11,23 @@ interface BirthDatePickerProps {
   onConfirm: () => void;
   /** Optional title (e.g. "Select their birth date" for add-person flow) */
   title?: string;
+  /** Whether to show the confirm button (default true) */
+  showConfirm?: boolean;
 }
 
 export default function BirthDatePicker({
   birthDateState,
   onDateChange,
   onConfirm,
-  title = "Select Your Birth Date",
+  title,
+  showConfirm = true,
 }: BirthDatePickerProps) {
+  const { t } = useTranslation();
+  const resolvedTitle = title ?? t("onboarding.selectBirthDate");
   const currentYear = new Date().getFullYear();
   const currentMonth = birthDateState.month || 1;
   const currentYearValue = birthDateState.year || currentYear;
+  const monthsShort = t("months.short", { returnObjects: true }) as string[];
 
   const handleMonthChange = (month: number) => {
     const maxDay = getMaxDays(month, currentYearValue);
@@ -46,7 +52,7 @@ export default function BirthDatePicker({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title}>{resolvedTitle}</Text>
       </View>
 
       <View style={styles.row}>
@@ -55,8 +61,8 @@ export default function BirthDatePicker({
           onValueChange={handleMonthChange}
           min={1}
           max={12}
-          label="Month"
-          formatter={(month) => MONTH_NAMES_SHORT[month - 1]}
+          label={t("onboarding.month")}
+          formatter={(month) => monthsShort[month - 1]}
         />
 
         <IOSDatePicker
@@ -64,7 +70,7 @@ export default function BirthDatePicker({
           onValueChange={handleDayChange}
           min={1}
           max={getMaxDays(currentMonth, currentYearValue)}
-          label="Day"
+          label={t("onboarding.day")}
         />
 
         <IOSDatePicker
@@ -72,17 +78,19 @@ export default function BirthDatePicker({
           onValueChange={handleYearChange}
           min={1900}
           max={currentYear}
-          label="Year"
+          label={t("onboarding.year")}
         />
       </View>
 
-      <TouchableOpacity
-        style={styles.confirmButton}
-        onPress={onConfirm}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.confirmButtonText}>Continue</Text>
-      </TouchableOpacity>
+      {showConfirm !== false && (
+        <TouchableOpacity
+          style={styles.confirmButton}
+          onPress={onConfirm}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.confirmButtonText}>{t("common.continue")}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }

@@ -6,12 +6,13 @@ import type { RootStackParamList } from "../../navigation/RootStack";
 import BasicChatUI, { type ChatMessage } from "../../components/BasicChatUI";
 import BirthDatePicker from "./components/BirthDatePicker";
 import { useOnboarding } from "./hooks/useOnboarding";
-import { INITIAL_MESSAGE } from "./constants";
+import { useTranslation } from "react-i18next";
 
 export default function UserInfoChatScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: "1", role: "assistant", content: INITIAL_MESSAGE, isStreaming: true },
+    { id: "1", role: "assistant", content: t("onboarding.initialMessage"), isStreaming: true },
   ]);
 
   const {
@@ -29,7 +30,7 @@ export default function UserInfoChatScreen() {
   return (
     <View className="flex-1">
       <BasicChatUI
-        title="About You"
+        title={t("onboarding.title")}
         messages={messages}
         onSendMessage={handleNameMessage}
         disabled={showDatePicker || isStreaming || step === "date"}

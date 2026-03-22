@@ -1,0 +1,182 @@
+const tr = {
+  common: {
+    cancel: "İptal",
+    save: "Kaydet",
+    notSet: "Ayarlanmadı",
+    continue: "Devam",
+    loading: "Yükleniyor...",
+  },
+  navigation: {
+    insights: "Keşfet",
+    birthChart: "Doğum Haritası",
+  },
+  settings: {
+    title: "Ayarlar",
+    yourProfile: "Profiliniz",
+    name: "İsim",
+    namePlaceholder: "İsminiz",
+    birthDate: "Doğum Tarihi",
+    birthDateHint: "Gün · Ay · Yıl",
+    birthTime: "Doğum Saati",
+    birthTimeHint: "24 saat formatı — Saat : Dakika",
+    birthPlace: "Doğum Yeri",
+    data: "Veri",
+    clearHistory: "Sohbet Geçmişini Temizle",
+    clearHistoryDesc: "Tüm kaydedilmiş konuşmaları sil",
+    about: "Hakkında",
+    tagline: "Kişisel astroloji yardımcınız",
+    credit: "OpenAI ile güçlendirildi · ✦ ile yapıldı",
+    language: "Dil",
+    clearHistoryAlertTitle: "Sohbet Geçmişini Temizle",
+    clearHistoryAlertMessage:
+      "Bu işlem tüm konuşmalarınızı kalıcı olarak silecek. Bu işlem geri alınamaz.",
+    clearHistoryAlertConfirm: "Tümünü Sil",
+    clearHistorySuccessTitle: "Tamam",
+    clearHistorySuccessMessage: "Tüm sohbet geçmişi temizlendi.",
+    support: "Destek",
+    contactUs: "Bize Ulaşın",
+    contactUsDesc: "Geri bildirim gönderin veya yardım isteyin",
+    termsOfService: "Kullanım Koşulları",
+    privacyPolicy: "Gizlilik Politikası",
+    termsTitle: "Kullanım Koşulları",
+    termsBody: "Lunara'yı kullanarak, bu uygulamayı yalnızca kişisel ve ticari olmayan amaçlarla kullanmayı kabul edersiniz. Sunulan astrolojik yorumlar yalnızca eğlence amaçlıdır ve profesyonel tavsiye niteliği taşımaz. Bu koşulları istediğimiz zaman güncelleme hakkını saklı tutarız.",
+    privacyTitle: "Gizlilik Politikası",
+    privacyBody: "Lunara tüm verilerinizi yalnızca cihazınızda yerel olarak saklar. Kişisel bilgilerinizi, doğum verilerinizi veya sohbet geçmişinizi hiçbir sunucuya iletmiyoruz. Yapay zeka ile olan konuşmalarınız işlenmek üzere OpenAI'ye gönderilmekte ve OpenAI'nin gizlilik politikasına tabidir. Verilerinizi üçüncü taraflarla paylaşmıyor veya satmıyoruz.",
+    close: "Kapat",
+  },
+  orbit: {
+    you: "SEN",
+    celestialCircle: "Göksel Çemberin",
+    tapYouPrompt:
+      "Doğum haritanı oluşturmak ve kozmik yolculuğuna başlamak için SEN'e dokun.",
+    addPeoplePrompt:
+      "Hayatındaki insanları ekle, doğum haritalarını ve astrolojik bağlantılarını keşfet.",
+    tapPersonHint: "Doğum haritasını görmek için kişiye dokun",
+    whosInYourOrbit: "Yörüngende kimler var?",
+    addPromptText:
+      "Astrolojik bağlantını keşfetmek için bir partner, arkadaş veya aile üyesi ekle.",
+    addPerson: "Kişi Ekle",
+    addPersonTitle: "Kişi Ekle",
+    name: "İsim",
+    namePlaceholder: "Onun ismi",
+    birthDate: "Doğum Tarihi",
+    birthTime: "Doğum Saati",
+    birthLocation: "Doğum Yeri",
+    generateChart: "Harita Oluştur",
+  },
+  personDetail: {
+    openBirthMap: "Doğum Haritasını Aç",
+    openBirthMapSubtitle: "Doğum tarihi, saati ve yeri gerektirir",
+    natalChartReading: "✦ Natal Harita Yorumu",
+    preparingReading: "Lunara yorumunuzu hazırlıyor…",
+    tapToRetry: "Tekrar denemek için dokun",
+    chatAboutChart: "✦ Bu harita hakkında sohbet et",
+  },
+  history: {
+    title: "Sohbet Geçmişi",
+    noConversations: "Henüz konuşma yok",
+    noConversationsSubtitle: "Keşfet sekmesinden sohbet başlatın",
+    today: "Bugün",
+    yesterday: "Dün",
+    thisWeek: "Bu Hafta",
+    thisMonth: "Bu Ay",
+    older: "Daha Eski",
+    readonlyBadge: "Sohbet Geçmişi",
+  },
+  chat: {
+    inputPlaceholder: "Diyaloğu sürdürün…",
+    loading: "Yükleniyor...",
+    saveToChart: "Doğum Haritasına Kaydet?",
+    saveToChartSubtitle:
+      "Doğum Haritası ile aynı protokol: isim ve doğum tarihi (gün, ay, yıl).",
+    namePlaceholder: "İsim",
+    goToBirthChart: "Doğum Haritasına Git →",
+    readonlyBadge: "Sohbet Geçmişi",
+    noBirthCharts:
+      "🪐 Henüz doğum haritanız yok. Birini eklemek ve haritasını oluşturmak için Doğum Haritası sekmesine gidin — sonra buraya geri dönün.",
+    selectBirthChart:
+      "🪐 Hangi doğum haritasını incelemek istersiniz? Aşağıdan bir isim seçin.",
+    noSelfChart:
+      "❤️ Haritaları karşılaştırmak için önce kendi doğum haritanıza ihtiyacım var. Haritanı oluşturmak için Doğum Haritası sekmesine git.",
+    noPartnerChart:
+      "❤️ Yörüngeye birini ekle ve doğum haritasını oluştur — sonra yıldızların bağlantınız hakkında ne söylediğini göster.",
+    whosOnYourMind:
+      "❤️ Aklında kim var? Aşağıdan ismini seç, yıldızların bağlantınız hakkında ne söylediğini göstereyim.",
+    noFriendChart:
+      "🤝 Yörüngeye birini ekle ve doğum haritasını oluştur — sonra arkadaşlık dinamiğini okuyabilirim.",
+    whosYourFriend:
+      "🤝 Hangi arkadaşın hakkında merak ediyorsun? İsmini seç, arkadaşlık dinamiğini okuyayım.",
+  },
+  tarot: {
+    past: "GEÇMİŞ",
+    today: "BUGÜN",
+    future: "GELECEK",
+    tap: "dokun",
+    readingCards: "✦  Kartlar okunuyor…  ✦",
+  },
+  onboarding: {
+    title: "Hakkınızda",
+    initialMessage:
+      "Merhaba! Ben LUNARA, yapay zeka fal bakarınız. Birbirimizi tanıyalım! Adın ne?",
+    nameCollected:
+      "Seninle tanıştığıma çok memnun oldum, {{name}}! ✨\n\nDoğum tarihini öğrenmem gerekiyor. \n\nLütfen aşağıdan doğum tarihini seç:",
+    nameError:
+      "Üzgünüm, adını kaydederken sorun yaşadım. Lütfen tekrar söyler misin?",
+    nameInvalid: "Tam olarak anlayamadım. Lütfen adını tekrar söyler misin?",
+    dateInvalid: "Bu geçerli bir tarih gibi görünmüyor. Lütfen seçiminizi kontrol edin.",
+    dateSaved:
+      "Mükemmel! Doğum tarihin {{month}} {{day}}, {{year}}. 🎂✨\n\nArtık her şeye sahibim \n\nProfilini oluşturuyorum...",
+    dateError:
+      "Üzgünüm, doğum tarihini kaydederken sorun yaşadım. Lütfen tekrar deneyin.",
+    selectBirthDate: "Doğum Tarihinizi Seçin",
+    selectTheirBirthDate: "Onun doğum tarihini seçin",
+    month: "Ay",
+    day: "Gün",
+    year: "Yıl",
+  },
+  timePicker: {
+    title: "Doğum Saatinizi Seçin",
+    hour: "Saat",
+    minute: "Dakika",
+  },
+  birthMap: {
+    title: "Doğum Haritası Oluştur",
+    complete: "✨ Natal Haritanız oluşturuldu ve kaydedildi!",
+  },
+  explore: {
+    general: "Aklında ne var?",
+    cosmicCrossroads: "Kozmik Kavşak",
+    someoneSpecial: "Özel Biri",
+    friendDynamics: "Arkadaşlık dinamikleri",
+    tarotReading: "Günlük Tarot Okuma",
+    birthChartAnalysis: "Doğum Haritası Analizi",
+    initialGeneral:
+      "✨ Aklında ne var? Özgürce konuş — dinlemek ve yol göstermek için buradayım.",
+    initialCrossroads:
+      "⟁ Kart çekildi. Sorunuzu sorun — yapmalı mısın, seçmeli misin, beklemeli misin — ve kavşaktaki kozmik rehberi açıklayayım.",
+    initialSomeoneSpecial:
+      "❤️ Aklındaki kişiyi anlat. Dinamikleri, uyumu ve yıldızların bağlantınız hakkında ne söylediğini anlamana yardımcı olabilirim.",
+    initialFriendDynamics:
+      "🤝 Hangi arkadaşın hakkında merak ediyorsun? İsmini seç, arkadaşlık dinamiğini okuyayım.",
+    initialTarot:
+      "🔮 Üç kart seni bekliyor. Evrenin geçmiş, şimdi ve geleceğin hakkında ne söylediğini öğrenmek için her birine dokun.",
+    initialBirthChart:
+      "🪐 Natal harita analizi — bu sohbeti açtığında liste ve isimler görünecek.",
+  },
+  crossroads: {
+    proceed: "İlerle",
+    pause: "Dur",
+    wait: "Bekle",
+    askYourQuestion: "sorunuzu yazın",
+    reading: "✦  Kavşak okunuyor…  ✦",
+  },
+  months: {
+    short: ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"],
+    full: [
+      "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+      "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
+    ],
+  },
+} as const;
+
+export default tr;

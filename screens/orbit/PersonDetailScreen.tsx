@@ -9,7 +9,10 @@ import {
   ScrollView,
   Dimensions,
   Platform,
+  StatusBar,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -19,6 +22,7 @@ import type { RootStackParamList } from "../../navigation/RootStack";
 import { getZodiacInfoFromBirthDate } from "./utils";
 import { Colors } from "../../utils/theme";
 import { usePersonDetail } from "./hooks/usePersonDetail";
+import { useTranslation } from "react-i18next";
 
 type Props = NativeStackScreenProps<MainStackParamList, "PersonDetail">;
 
@@ -84,7 +88,9 @@ function InterpretationSection({ text }: { text: string }) {
 }
 
 export default function PersonDetailScreen({ route }: Props) {
+  const { t } = useTranslation();
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const rootNavigation = navigation.getParent<NativeStackNavigationProp<RootStackParamList>>();
   const { name, birthDate } = route.params;
 
@@ -130,8 +136,27 @@ export default function PersonDetailScreen({ route }: Props) {
       style={styles.container}
       imageStyle={styles.backgroundImage}
     >
+      <TouchableOpacity
+        style={[styles.backButton, { top: insets.top + 12 }]}
+        onPress={() => {
+          // Navigate at root level so ChatSession/AddPerson are popped off the stack
+          if (rootNavigation) {
+            rootNavigation.navigate("MainApp" as any, {
+              screen: "MainTabs",
+              params: { screen: "Orbit" },
+            } as any);
+          } else {
+            (navigation as any).navigate("MainTabs", { screen: "Orbit" });
+          }
+        }}
+        hitSlop={12}
+        activeOpacity={0.7}
+      >
+        <MaterialCommunityIcons name="arrow-left" size={22} color={Colors.goldPrimary} />
+      </TouchableOpacity>
+
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 60 }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Zodiac symbol */}
@@ -173,34 +198,34 @@ export default function PersonDetailScreen({ route }: Props) {
           ) : (
             <TouchableOpacity activeOpacity={0.9} style={styles.ctaButton} onPress={openBirthMap}>
               <View style={styles.ctaGlow} />
-              <Text style={styles.ctaText}>Open Birth Map</Text>
+              <Text style={styles.ctaText}>{t("personDetail.openBirthMap")}</Text>
             </TouchableOpacity>
           )
         )}
 
         {!hasChart && !loadingChart && (
-          <Text style={styles.ctaSubText}>Requires birth date, time, and location</Text>
+          <Text style={styles.ctaSubText}>{t("personDetail.openBirthMapSubtitle")}</Text>
         )}
 
         {/* Analysis section — only shown when chart exists */}
         {hasChart && (
           <View style={styles.analysisWrapper}>
             <View style={styles.analysisTitleRow}>
-              <Text style={styles.analysisTitle}>✦ Natal Chart Reading</Text>
+              <Text style={styles.analysisTitle}>{t("personDetail.natalChartReading")}</Text>
             </View>
 
             {generatingInterpretation && (
               <View style={styles.loadingCard}>
                 <Text style={styles.loadingStars}>✦  ✦  ✦</Text>
                 <Text style={styles.loadingPhrase}>{loadingPhrase}</Text>
-                <Text style={styles.loadingNote}>Lunara is preparing your reading…</Text>
+                <Text style={styles.loadingNote}>{t("personDetail.preparingReading")}</Text>
               </View>
             )}
 
             {!generatingInterpretation && interpretationError && (
               <TouchableOpacity style={styles.errorCard} onPress={retryGeneration} activeOpacity={0.8}>
                 <Text style={styles.errorText}>{interpretationError}</Text>
-                <Text style={styles.retryText}>Tap to retry</Text>
+                <Text style={styles.retryText}>{t("personDetail.tapToRetry")}</Text>
               </TouchableOpacity>
             )}
 
@@ -213,7 +238,7 @@ export default function PersonDetailScreen({ route }: Props) {
             {/* Chat CTA */}
             {interpretation && !generatingInterpretation && (
               <TouchableOpacity style={styles.chatButton} onPress={openChartChat} activeOpacity={0.85}>
-                <Text style={styles.chatButtonText}>✦ Chat about this chart</Text>
+                <Text style={styles.chatButtonText}>{t("personDetail.chatAboutChart")}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -231,9 +256,21 @@ const styles = StyleSheet.create({
   backgroundImage: {
     opacity: 0.9,
   },
+  backButton: {
+    position: "absolute",
+    left: 20,
+    zIndex: 10,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "rgba(26,13,46,0.6)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(212,175,55,0.3)",
+  },
   scrollContent: {
     alignItems: "center",
-    paddingTop: 80,
     paddingHorizontal: 24,
     paddingBottom: 60,
   },

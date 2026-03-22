@@ -6,7 +6,11 @@
       "Bash(grep -r tarot /c/Users/PC/Documents/GitHub/AI_FAL --include=*.ts --include=*.tsx -i)",
       "Bash(find /c/Users/PC/Documents/GitHub/AI_FAL -path ./node_modules -prune -o -type f \\\\\\(-name *tarot* -o -name *card* \\\\\\) -print)",
       "Bash(grep -r \"Cards-jpg\\\\|tarot\\\\|card\" /c/Users/PC/Documents/GitHub/AI_FAL/screens --include=*.ts --include=*.tsx -i)",
-      "Bash(find /c/Users/PC/Documents/GitHub/AI_FAL/lib -type f \\\\\\(-name *.ts -o -name *.tsx \\\\\\))"
+      "Bash(find /c/Users/PC/Documents/GitHub/AI_FAL/lib -type f \\\\\\(-name *.ts -o -name *.tsx \\\\\\))",
+      "Bash(npm install:*)",
+      "Bash(npm list:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node -e \"const i18n = require\\(''''./lib/i18n''''\\); console.log\\(''''i18n loaded ok''''\\);\")"
     ]
   }
 }
