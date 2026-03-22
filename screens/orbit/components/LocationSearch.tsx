@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Linking, Platform } from "react-native";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
-const GOOGLE_PLACES_API_KEY = "AIzaSyAh7fHuXzW2sl7mItwWFFdIzzOZFOSCoSU";  
+import { ChatColors } from "../../../utils/theme";
+const GOOGLE_PLACES_API_KEY = "AIzaSyAh7fHuXzW2sl7mItwWFFdIzzOZFOSCoSU";
 
 type BirthLocation = {
   placeName: string;
@@ -52,6 +53,7 @@ export default function LocationSearch({ onLocationSelect, onConfirm }: Location
         <Text style={styles.title}>Enter Your Birth Location</Text>
       </View>
 
+
       <View style={styles.autocompleteContainer}>
         <GooglePlacesAutocomplete
           placeholder="Search for a place..."
@@ -90,10 +92,9 @@ export default function LocationSearch({ onLocationSelect, onConfirm }: Location
             value: queryText,
             onChangeText: (t) => {
               setQueryText(t);
-              // typing means selection is no longer confirmed
               if (selected) setSelected(null);
             },
-            placeholderTextColor: "rgba(212, 175, 55, 0.7)",
+            placeholderTextColor: ChatColors.placeholder,
           }}
           styles={{
             textInputContainer: {
@@ -102,33 +103,36 @@ export default function LocationSearch({ onLocationSelect, onConfirm }: Location
               borderBottomWidth: 0,
             },
             textInput: {
-              backgroundColor: "#2d1b3d",
-              borderWidth: 1,
-              borderColor: "rgba(212, 175, 55, 0.3)",
-              borderRadius: 12,
-              paddingHorizontal: 16,
+              backgroundColor: ChatColors.inputFieldBg,
+              borderWidth: 1.5,
+              borderColor: "rgba(100,80,40,0.25)",
+              borderRadius: 28,
+              paddingHorizontal: 20,
               paddingVertical: 12,
-              color: "#e5e5e5",
+              color: ChatColors.lunaraText,
               fontSize: 15,
-              fontWeight: "300",
+              fontWeight: "400",
               letterSpacing: 0.3,
             },
             listView: {
-              backgroundColor: "#2d1b3d",
+              backgroundColor: ChatColors.inputBarBg,
               borderRadius: 12,
               marginTop: 8,
             },
             row: {
+              backgroundColor: ChatColors.inputBarBg,
               paddingVertical: 12,
               paddingHorizontal: 16,
-              height: "auto",
+              minHeight: 48,
+              justifyContent: "center",
+              width: "100%",
             },
             separator: {
               height: 1,
-              backgroundColor: "rgba(212, 175, 55, 0.1)",
+              backgroundColor: ChatColors.divider,
             },
             description: {
-              color: "#f4d26a", // softer gold for suggestions
+              color: ChatColors.lunaraText,
               fontSize: 14,
               fontWeight: "400",
             },
@@ -156,17 +160,19 @@ export default function LocationSearch({ onLocationSelect, onConfirm }: Location
         </Text>
       </View>
 
-      <TouchableOpacity
-        style={[styles.confirmButton, !selected && styles.confirmButtonDisabled]}
-        onPress={() => {
-          if (!selected) return;
-          onConfirm();
-        }}
-        activeOpacity={0.8}
-        disabled={!selected}
-      >
-        <Text style={styles.confirmButtonText}>Continue</Text>
-      </TouchableOpacity>
+      <View style={styles.confirmWrapper}>
+        <TouchableOpacity
+          style={[styles.confirmButton, !selected && styles.confirmButtonDisabled]}
+          onPress={() => {
+            if (!selected) return;
+            onConfirm();
+          }}
+          activeOpacity={0.8}
+          disabled={!selected}
+        >
+          <Text style={styles.confirmButtonText}>Continue</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -178,45 +184,59 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "#1a0d2e",
+    backgroundColor: ChatColors.bg,
     paddingTop: 16,
     paddingHorizontal: 16,
     paddingBottom: 24,
   },
-  header: { marginBottom: 16, alignItems: "center" },
+  header: {
+    marginTop: -16,
+    marginBottom: 16,
+    marginHorizontal: -16,
+    backgroundColor: ChatColors.headerBg,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    alignItems: "center",
+  },
   title: { fontSize: 16, fontWeight: "600", color: "#d4af37", letterSpacing: 1 },
 
   autocompleteContainer: { flex: 1, marginTop: 8, marginBottom: 16 },
 
   mapsButton: {
     marginTop: 12,
-    borderRadius: 14,
+    borderRadius: 28,
     borderWidth: 1,
-    borderColor: "rgba(212, 175, 55, 0.35)",
+    borderColor: "rgba(100,80,40,0.30)",
     paddingVertical: 12,
     alignItems: "center",
-    backgroundColor: "rgba(212, 175, 55, 0.10)",
+    backgroundColor: ChatColors.inputBarBg,
   },
   mapsButtonDisabled: { opacity: 0.45 },
-  mapsButtonText: { color: "#d4af37", fontWeight: "600", letterSpacing: 0.6 },
+  mapsButtonText: { color: ChatColors.lunaraLabel, fontWeight: "600", letterSpacing: 0.6 },
 
   hintText: {
     marginTop: 10,
-    color: "rgba(229,229,229,0.75)",
+    color: ChatColors.loadingText,
     fontSize: 12,
     textAlign: "center",
   },
 
+  confirmWrapper: {
+    marginHorizontal: -16,
+    marginBottom: -24,
+    backgroundColor: ChatColors.headerBg,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+  },
   confirmButton: {
-    backgroundColor: "#d4af37",
-    borderRadius: 25,
+    backgroundColor: ChatColors.sendActive,
+    borderRadius: 28,
     paddingVertical: 14,
-    paddingHorizontal: 32,
     alignItems: "center",
   },
   confirmButtonDisabled: { opacity: 0.5 },
   confirmButtonText: {
-    color: "#1a0d2e",
+    color: ChatColors.headerBg,
     fontSize: 16,
     fontWeight: "600",
     letterSpacing: 1,
