@@ -191,7 +191,7 @@ export default function ChatSessionScreen() {
 
   const handleSendMessage = async (text: string) => {
     const service = serviceRef.current;
-    if (!service || !text.trim()) return;
+    if (!service || !text.trim() || isTyping) return;
 
     // Cosmic Crossroads: first user message triggers card reveal + oracle reading
     if (feature === FEATURE_COSMIC_CROSSROADS && !crossroads.revealed) {

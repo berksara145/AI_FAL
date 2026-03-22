@@ -142,6 +142,7 @@ export default function BirthMapChatWrapper(
     // birthDate step handled by picker, not text input
   };
 
+  const isStreaming = chat.messages.some((m) => m.isStreaming);
   const isDisabled =
     birthMap.showTimePicker ||
     birthMap.showLocationSearch ||
@@ -155,6 +156,7 @@ export default function BirthMapChatWrapper(
         messages={chat.messages}
         onSendMessage={handleSendMessage}
         isLoading={chat.isLoading}
+        isTyping={isStreaming}
         mode="interactive"
         disabled={isDisabled}
         onClose={() => navigateBack()}

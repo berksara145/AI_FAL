@@ -15,10 +15,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import type { MainStackParamList } from "../../navigation/MainTabs";
-import type { RootStackParamList } from "../../navigation/RootStack";
 import { getZodiacInfoFromBirthDate } from "./utils";
 import { Colors } from "../../utils/theme";
 import { usePersonDetail } from "./hooks/usePersonDetail";
@@ -91,7 +89,6 @@ export default function PersonDetailScreen({ route }: Props) {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const rootNavigation = navigation.getParent<NativeStackNavigationProp<RootStackParamList>>();
   const { name, birthDate } = route.params;
 
   const zodiacInfo = getZodiacInfoFromBirthDate(birthDate) ?? null;
@@ -111,9 +108,10 @@ export default function PersonDetailScreen({ route }: Props) {
   const { width: screenWidth } = Dimensions.get("window");
   const chartSize = Math.min(screenWidth - 48, 400);
 
+  const rootNavigation = navigation.getParent();
+
   const openBirthMap = () => {
-    const nav = rootNavigation ?? (navigation as any);
-    nav.navigate("ChatSession", {
+    (rootNavigation ?? navigation as any).navigate("ChatSession", {
       feature: "birthMap",
       mode: "interactive",
       birthDate,
@@ -122,8 +120,7 @@ export default function PersonDetailScreen({ route }: Props) {
   };
 
   const openChartChat = () => {
-    const nav = rootNavigation ?? (navigation as any);
-    nav.navigate("ChatSession", {
+    (rootNavigation ?? navigation as any).navigate("ChatSession", {
       feature: "natalChartAnalysis",
       mode: "interactive",
     } as any);
@@ -139,15 +136,8 @@ export default function PersonDetailScreen({ route }: Props) {
       <TouchableOpacity
         style={[styles.backButton, { top: insets.top + 12 }]}
         onPress={() => {
-          // Navigate at root level so ChatSession/AddPerson are popped off the stack
-          if (rootNavigation) {
-            rootNavigation.navigate("MainApp" as any, {
-              screen: "MainTabs",
-              params: { screen: "Orbit" },
-            } as any);
-          } else {
-            (navigation as any).navigate("MainTabs", { screen: "Orbit" });
-          }
+          // Navigate MainStack back to the tabs, ensuring Orbit tab is active
+          (navigation as any).navigate("MainTabs", { screen: "Orbit" });
         }}
         hitSlop={12}
         activeOpacity={0.7}

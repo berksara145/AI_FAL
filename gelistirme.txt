@@ -1,16 +1,3 @@
-renk sarı açık ton olabilir chat ekran
-yazı hızlandır
-gereksiz data json çıakr
-orbit yerine birth chart ve her yerde birth chart
-birth chart güzelleştir
-altına yorum ekle bide birth chart sayfası
-you ve kişi baılabilir olsun diye parıldasın
-kişi uyumu
-günlük fortune cookie
-3 tarot kartı çevirme
-birth chart ekle bide üstüne açıklama
-
-
 orbit yerine birth chart ekle her yere ##
 
 birth chart analiz ekle personal page sayfa altına
@@ -27,16 +14,34 @@ birth chart flow kolaylaştır ##
 düzgün göster yazdıktan sonra bekle ki anlasın
 daha az kolay kelimelerle analizi ekle
 add person özelliği anlaşılmıyor ona yönlendirmek için düzgün anlat
-animasyonlarla yönlendir
+animasyonlarla yönlendir ##
 birth chart kısmı kafa karıştırdı ve buttonlar gözükmedi
 location için nereye ne yazacağını anlamadı kafa karıştırdı
-arkadaş karşılaştırma
+arkadaş karşılaştırma ##
 arkadaş veya kendisi saat bilmiyorsa boşluk ekle
 şans kurabiyesi gibi fal cümlesi yaz
 tarot açılmada hepsine basmayı bilmesi lazım
-olcak mı olmicak mı dilek 
+olcak mı olmicak mı dilek #
 geri button ekle ##
 gereksiz bugı duruyor
 şans kurabiyesi ekleme lazım
-bi olay olcak mı binary event için ekle
+bi olay olcak mı binary event için ekle #
+konuşma devam edince patlıyo aq 6 cardlarda ##
+historyden chat girince hiçbir şey çalışmamalı ama çalışıyor onu düzelt##
+ayarlar sayfası book gibi tasarım ve içerik ##
+
 horary ekle ama MVP de değil
+
+
+in the you when back is clikced it goes to the caht page instead of orbit page
+
+settings page looks bad the settings and back button etc are added twice
+also the name birth date etc are sticking to the left of the scree also the data part
+also add buttons like contact us which opens chat to write things 
+also terms of service and privacy policy I dunno how these are implemented 
+you handle it ###
+
+settings page needs beauty
+
+
+
