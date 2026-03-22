@@ -112,10 +112,10 @@ export function useBirthMapFlow(
   const handleStreamingComplete = (messageId: string, content: string) => {
     const lower = content.toLowerCase();
     if (lower.includes("what time were you born") || (lower.includes("what time was ") && lower.includes(" born"))) {
-      setTimeout(() => setShowTimePicker(true), 100);
+      setTimeout(() => setShowTimePicker(true), 800);
     }
     if (lower.includes("location where you were born") || (lower.includes("location where") && lower.includes("born"))) {
-      setTimeout(() => setShowLocationSearch(true), 100);
+      setTimeout(() => setShowLocationSearch(true), 2000);
     }
   };
 

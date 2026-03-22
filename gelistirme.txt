@@ -1,19 +1,19 @@
 orbit yerine birth chart ekle her yere ##
 
-birth chart analiz ekle personal page sayfa altına
+birth chart analiz ekle personal page sayfa altına ##
 
-sohbet yerinde natal chart modunda yoksa oluşturma 
+sohbet yerinde natal chart modunda yoksa oluşturma
 yerine yönlendirsin eğer varsa da onları basılabilir 
-button olarak göstersin 
+button olarak göstersin  ##
 
 basınca analiz adam akıllı yapsın yani
 
 
 dil ekle ##
 birth chart flow kolaylaştır ##
-düzgün göster yazdıktan sonra bekle ki anlasın
-daha az kolay kelimelerle analizi ekle
-add person özelliği anlaşılmıyor ona yönlendirmek için düzgün anlat
+düzgün göster yazdıktan sonra bekle ki anlasın ##
+daha az kolay kelimelerle analizi ekle ##
+add person özelliği anlaşılmıyor ona yönlendirmek için düzgün anlat glow düzelt bide
 animasyonlarla yönlendir ##
 birth chart kısmı kafa karıştırdı ve buttonlar gözükmedi
 location için nereye ne yazacağını anlamadı kafa karıştırdı
@@ -29,7 +29,17 @@ bi olay olcak mı binary event için ekle #
 konuşma devam edince patlıyo aq 6 cardlarda ##
 historyden chat girince hiçbir şey çalışmamalı ama çalışıyor onu düzelt##
 ayarlar sayfası book gibi tasarım ve içerik ##
+ilk giriş sayfası
+genel button ve labellarda chat modunda görünmeme oluyo renkten dolayı
+locaiton ekelem renk açık yap bide yer dğeiştirielbilir nereye yazcağını anlamadı
+para istemeceeeeee sayfası lazım
 
+
+the color is werird when in chat different but quite close shades of purple
+
+
+android ve iphone için debug etmek lazım
+android alt buttonalr gir çık yapınca kafayı yemece
 horary ekle ama MVP de değil
 
 
@@ -45,3 +55,13 @@ settings page needs beauty
 
 
 
+ypting speed in the beginning
+weird lag in locaiton she prompted to wrong tpying part
+no intruduction mode in the main page first opening
+dont know how to return to the main page
+
+
+add slide
+hepsine basmayı aklına gelmedi
+natal chart uzat biraz
+natal analysis add buttons but dynamix buttons where ai selects how to goes

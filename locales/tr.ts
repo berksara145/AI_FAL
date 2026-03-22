@@ -93,9 +93,9 @@ const tr = {
     goToBirthChart: "Doğum Haritasına Git →",
     readonlyBadge: "Sohbet Geçmişi",
     noBirthCharts:
-      "🪐 Henüz doğum haritanız yok. Birini eklemek ve haritasını oluşturmak için Doğum Haritası sekmesine gidin — sonra buraya geri dönün.",
+      "🪐 Henüz hiç doğum haritası yok — okuyacak bir şey yok.\n\nDoğum Haritası sekmesine git, kendini veya tanıdığın birini ekle ve haritasını oluştur. Hazır olunca buraya dön, sana tam bir okuma yapayım:\n\n· Genel enerji özeti\n· Haritadan 3 önemli nokta\n· Dikkat edilmesi gereken bir zorluk\n· Herhangi bir gezegen, ev veya yaşam alanı hakkında soru-cevap",
     selectBirthChart:
-      "🪐 Hangi doğum haritasını incelemek istersiniz? Aşağıdan bir isim seçin.",
+      "🪐 Her haritanın merkezinde bir çelişki vardır — her şeyi açıklayan bir şey.\n\nBenimle o çelişkiyi bulacağız. Bir harita seç, yüzeyin altında gerçekte neler olduğunu göstereyim — sadece Güneş burcun değil, gerilimler, yetenekler, kör noktalar ve neden hep aynı kalıpları tekrarladığın.\n\nHangi haritayı okuyoruz? ↓",
     noSelfChart:
       "❤️ Haritaları karşılaştırmak için önce kendi doğum haritanıza ihtiyacım var. Haritanı oluşturmak için Doğum Haritası sekmesine git.",
     noPartnerChart:

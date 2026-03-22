@@ -88,8 +88,9 @@ const en = {
     goToBirthChart: "Go to Birth Chart →",
     readonlyBadge: "Chat History",
     noBirthCharts:
-      "🪐 You don't have any birth charts yet. Head to the Birth Chart tab to add someone and generate their chart — then come back here for a full analysis.",
-    selectBirthChart: "🪐 Whose birth chart would you like to explore? Tap a name below.",
+      "🪐 No birth charts yet — nothing to read.\n\nHead to the Birth Chart tab, add yourself or someone you know, and generate their chart. Once it's ready, come back here and I'll give you a full reading:\n\n· General overview of their energy\n· 3 key highlights from their chart\n· A challenge or shadow to be aware of\n· Open Q&A about any planet, house, or life area",
+    selectBirthChart:
+      "🪐 Every chart has a contradiction at its center — something that explains everything.\n\nI'm going to find yours. Pick a chart and I'll show you what's actually going on beneath the surface — not just your Sun sign, but the tensions, the gifts, the blind spots, and the patterns you keep repeating without knowing why.\n\nWhose chart are we reading? ↓",
     noSelfChart:
       "❤️ To compare charts, I need your birth chart first. Head to the Birth Chart tab to generate yours.",
     noPartnerChart:

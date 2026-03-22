@@ -72,7 +72,7 @@ export default function BirthMapChatWrapper(
 
   const chartCapture = useChartCapture(async () => {
     await chat.appendMessage("assistant", t("birthMap.complete"));
-    await new Promise((r) => setTimeout(r, 600));
+    await new Promise((r) => setTimeout(r, 1400));
 
     const name = effectivePersonNameRef.current ?? "";
     if (!name) { navigateBack(); return; }
@@ -116,7 +116,7 @@ export default function BirthMapChatWrapper(
         const content = msg.content.toLowerCase();
 
         if (isAddPersonFlow && addPerson.step === "birthDate" && content.includes("birth date") && content.includes("below")) {
-          setTimeout(() => addPerson.openBirthDatePicker(), 100);
+          setTimeout(() => addPerson.openBirthDatePicker(), 800);
         }
 
         birthMap.handleStreamingComplete(messageId, msg.content);

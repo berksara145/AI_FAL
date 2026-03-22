@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, CommonActions } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import type { MainStackParamList } from "../../navigation/MainTabs";
@@ -136,8 +136,13 @@ export default function PersonDetailScreen({ route }: Props) {
       <TouchableOpacity
         style={[styles.backButton, { top: insets.top + 12 }]}
         onPress={() => {
-          // Navigate MainStack back to the tabs, ensuring Orbit tab is active
-          (navigation as any).navigate("MainTabs", { screen: "Orbit" });
+          // Reset MainStack to just MainTabs/Orbit — cuts through any stale ChatSession history
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: "MainTabs" as any, params: { screen: "Orbit" } }],
+            })
+          );
         }}
         hitSlop={12}
         activeOpacity={0.7}
