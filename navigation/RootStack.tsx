@@ -7,6 +7,7 @@ import SplashScreen from "../screens/SplashScreen";
 import UserInfoChatScreen from "../screens/onboarding/UserInfoChatScreen";
 import ChatSessionScreen from "../screens/chat/ChatSessionScreen";
 import AddPersonScreen from "../screens/orbit/AddPersonScreen";
+import PremiumScreen from "../screens/premium/PremiumScreen";
 
 // Navigation
 import MainTabs from "./MainTabs";
@@ -19,6 +20,8 @@ export type RootStackParamList = {
   MainApp: undefined;
   // Add Person (full-screen form)
   AddPerson: undefined;
+  // Premium paywall
+  Premium: undefined;
   // Chat Session (full-screen, reusable)
   ChatSession: {
     sessionId?: string;
@@ -50,6 +53,17 @@ export default function RootStack() {
       <Stack.Screen
         name="AddPerson"
         component={AddPersonScreen}
+        options={Platform.select({
+          ios: { presentation: "fullScreenModal", headerShown: false },
+          android: { presentation: "card", animation: "slide_from_bottom", headerShown: false },
+          default: { presentation: "fullScreenModal", headerShown: false },
+        })}
+      />
+
+      {/* Premium paywall - slides up as modal */}
+      <Stack.Screen
+        name="Premium"
+        component={PremiumScreen}
         options={Platform.select({
           ios: { presentation: "fullScreenModal", headerShown: false },
           android: { presentation: "card", animation: "slide_from_bottom", headerShown: false },

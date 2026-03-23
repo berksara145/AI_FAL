@@ -65,3 +65,4 @@ add slide
 hepsine basmayı aklına gelmedi
 natal chart uzat biraz
 natal analysis add buttons but dynamix buttons where ai selects how to goes
+natal chart ve hepsi iliçn pormpt engineering etc lazım

@@ -96,6 +96,7 @@ export function useOnboarding(
           console.error("[useOnboarding] finalize error:", e);
         }
         navigation.replace("MainApp");
+        navigation.navigate("Premium");
       };
       setMessages((prev) => [...prev, msg]);
     } catch {

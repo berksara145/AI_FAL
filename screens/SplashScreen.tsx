@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import {
   View,
   Text,
+  Image,
   Pressable,
   StyleSheet,
   Animated,
@@ -27,11 +28,11 @@ const STARS = Array.from({ length: 55 }, (_, i) => {
   };
 });
 
-const ZODIAC_GLYPHS = [
-  { glyph: "♈", angle: -40 },
-  { glyph: "♋", angle: 50 },
-  { glyph: "♎", angle: 140 },
-  { glyph: "♑", angle: 230 },
+const ZODIAC_IMAGES = [
+  { source: require("../assets/zodiacs/zodiacSign1.png"),  angle: -40 },
+  { source: require("../assets/zodiacs/zodiacSign4.png"),  angle: 50 },
+  { source: require("../assets/zodiacs/zodiacSign7.png"),  angle: 140 },
+  { source: require("../assets/zodiacs/zodiacSign10.png"), angle: 230 },
 ];
 
 const OUTER_R = 130;
@@ -48,8 +49,6 @@ export default function SplashScreen() {
   const rotateAnim = useRef(new Animated.Value(0)).current;
   // Fade-in for whole screen
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  // Center pulse
-  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     getOrCreateUser().catch(() => {});
@@ -66,13 +65,6 @@ export default function SplashScreen() {
       })
     ).start();
 
-    // Center glow pulse
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.18, duration: 1800, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1,    duration: 1800, useNativeDriver: true }),
-      ])
-    ).start();
   }, []);
 
   const rotate = rotateAnim.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
@@ -113,21 +105,21 @@ export default function SplashScreen() {
 
           {/* Outer ring (rotating) with zodiac glyphs on it */}
           <Animated.View style={[styles.ring, styles.outerRing, { transform: [{ rotate }] }]}>
-            {ZODIAC_GLYPHS.map(({ glyph, angle }) => {
+            {ZODIAC_IMAGES.map(({ source, angle }) => {
               const rad = (angle * Math.PI) / 180;
               return (
-                <Text
-                  key={glyph}
+                <Image
+                  key={angle}
+                  source={source}
                   style={[
                     styles.zodiacGlyph,
                     {
-                      left: OUTER_R + Math.cos(rad) * OUTER_R - 10,
-                      top:  OUTER_R + Math.sin(rad) * OUTER_R - 10,
+                      left: OUTER_R + Math.cos(rad) * OUTER_R - 12,
+                      top:  OUTER_R + Math.sin(rad) * OUTER_R - 12,
                     },
                   ]}
-                >
-                  {glyph}
-                </Text>
+                  resizeMode="contain"
+                />
               );
             })}
           </Animated.View>
@@ -138,16 +130,14 @@ export default function SplashScreen() {
           {/* Inner ring */}
           <View style={[styles.ring, styles.innerRing]} />
 
-          {/* Center glow + star */}
-          <Animated.View style={[styles.centerGlow, { transform: [{ scale: pulseAnim }] }]} />
           <View style={styles.centerCircle}>
-            <Text style={styles.centerStar}>✦</Text>
+            <Image source={require("../assets/golden_star.jpeg")} style={styles.centerStar} resizeMode="contain" />
           </View>
 
         </View>
 
         {/* ── App name ── */}
-        <Text style={styles.appName}>AI FAL</Text>
+        <Text style={styles.appName}>LUNARA</Text>
         <Text style={styles.tagline}>Read the stars. Know yourself.</Text>
 
         {/* ── Divider ── */}
@@ -193,6 +183,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#050016",
   },
+
 
   centralGlow: {
     position: "absolute",
@@ -249,35 +240,24 @@ const styles = StyleSheet.create({
   },
   zodiacGlyph: {
     position: "absolute",
-    fontSize: 15,
-    color: "rgba(212,175,55,0.75)",
-    width: 20,
-    textAlign: "center",
-  },
-  centerGlow: {
-    position: "absolute",
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: "rgba(124,58,237,0.22)",
-    shadowColor: "#c9a84c",
-    shadowOpacity: 0.6,
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 0 },
+    width: 24,
+    height: 24,
+    opacity: 0.75,
   },
   centerCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     backgroundColor: "rgba(26,13,46,0.9)",
-    borderWidth: 1.5,
-    borderColor: "rgba(212,175,55,0.6)",
+    borderWidth: 2,
+    borderColor: "rgba(212,175,55,0.7)",
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
   },
   centerStar: {
-    fontSize: 20,
-    color: "#d4af37",
+    width: 120,
+    height: 120,
   },
 
   // ── Text ──
