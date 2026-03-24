@@ -6,50 +6,63 @@ sohbet yerinde natal chart modunda yoksa oluşturma
 yerine yönlendirsin eğer varsa da onları basılabilir 
 button olarak göstersin  ##
 
-basınca analiz adam akıllı yapsın yani
+
 
 
 dil ekle ##
 birth chart flow kolaylaştır ##
 düzgün göster yazdıktan sonra bekle ki anlasın ##
 daha az kolay kelimelerle analizi ekle ##
-add person özelliği anlaşılmıyor ona yönlendirmek için düzgün anlat glow düzelt bide
+add person özelliği anlaşılmıyor ona yönlendirmek için düzgün anlat glow düzelt bide #
 animasyonlarla yönlendir ##
-birth chart kısmı kafa karıştırdı ve buttonlar gözükmedi
-location için nereye ne yazacağını anlamadı kafa karıştırdı
+birth chart kısmı kafa karıştırdı ve buttonlar gözükmedi #
 arkadaş karşılaştırma ##
-arkadaş veya kendisi saat bilmiyorsa boşluk ekle
-şans kurabiyesi gibi fal cümlesi yaz
-tarot açılmada hepsine basmayı bilmesi lazım
+
 olcak mı olmicak mı dilek #
 geri button ekle ##
-gereksiz bugı duruyor
-şans kurabiyesi ekleme lazım
 bi olay olcak mı binary event için ekle #
 konuşma devam edince patlıyo aq 6 cardlarda ##
-historyden chat girince hiçbir şey çalışmamalı ama çalışıyor onu düzelt##
+historyden chat girince hiçbir şey çalışmamalı ama çalışıyor onu düzelt ##
 ayarlar sayfası book gibi tasarım ve içerik ##
-ilk giriş sayfası
-genel button ve labellarda chat modunda görünmeme oluyo renkten dolayı
-locaiton ekelem renk açık yap bide yer dğeiştirielbilir nereye yazcağını anlamadı
-para istemeceeeeee sayfası lazım
+ilk giriş sayfası ##
+genel button ve labellarda chat modunda görünmeme oluyo renkten dolayı ##
+para istemeceeeeee sayfası lazım ##
+android alt buttonalr gir çık yapınca kafayı yemece ###
+in the you when back is clikced it goes to the caht page instead of orbit page ##
+also terms of service and privacy policy I dunno how these are implemented 
+you handle it ###
 
+
+
+
+
+
+
+
+
+
+basınca analiz adam akıllı yapsın yani
+location için nereye ne yazacağını anlamadı kafa karıştırdı
+arkadaş veya kendisi saat bilmiyorsa boşluk ekle
+şans kurabiyesi gibi fal cümlesi yaz
+tarot açılmada hepsine basmayı bilmesi lazım 
+
+ilk sayfa güzelleştirme lazım
+türkçe olunca history içiçnde de türkçe olsun bide kozmik yavşakta
+açıklama da türkçe olsun binary decision
 
 the color is werird when in chat different but quite close shades of purple
 
 
 android ve iphone için debug etmek lazım
-android alt buttonalr gir çık yapınca kafayı yemece
 horary ekle ama MVP de değil
 
-
-in the you when back is clikced it goes to the caht page instead of orbit page
 
 settings page looks bad the settings and back button etc are added twice
 also the name birth date etc are sticking to the left of the scree also the data part
 also add buttons like contact us which opens chat to write things 
-also terms of service and privacy policy I dunno how these are implemented 
-you handle it ###
+
+
 
 settings page needs beauty
 

@@ -147,7 +147,7 @@ const en = {
     birthChartAnalysis: "Birth Chart Analysis",
     initialGeneral: "✨ What's on your mind? Speak freely — I'm here to listen and guide you.",
     initialCrossroads:
-      "⟁ The card has been drawn. Speak your question — should you, will you, do you choose — and I will reveal what stands at your crossroads.",
+      "⟁ The card is waiting. Type your question below — yes or no, should you or shouldn't you — and I will reveal what stands at your crossroads.",
     initialSomeoneSpecial:
       "❤️ Tell me about the person on your mind. I can help you understand the dynamics, compatibility, and what the stars reveal about your connection.",
     initialFriendDynamics:
@@ -163,6 +163,7 @@ const en = {
     wait: "Wait",
     askYourQuestion: "type your question",
     reading: "✦  Reading the crossroads…  ✦",
+    typeHint: "Type your question in the chat below\nto reveal what the card holds for you",
   },
   months: {
     short: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
@@ -170,6 +171,36 @@ const en = {
       "January", "February", "March", "April", "May", "June",
       "July", "August", "September", "October", "November", "December",
     ],
+  },
+  splash: {
+    tagline: "Read the stars. Know yourself.",
+    feature1: "Birth Chart",
+    feature2: "Tarot",
+    feature3: "Compatibility",
+    cta: "Begin Your Journey",
+  },
+  premium: {
+    headline: "Discover Your\nCosmic Guidance",
+    subheadline: "Open the doors to the universe's wisdom.",
+    popularBadge: "✦ MOST POPULAR",
+    plans: {
+      weekly:  { label: "Weekly",  sublabel: "Renewed each week",  period: "/ wk" },
+      monthly: { label: "Monthly", sublabel: "Renewed each month", period: "/ mo", savings: "30% off" },
+    },
+    featuresDesc: "Unlimited tarot & astrology readings, personalized birth charts, compatibility insights, and daily planetary transits — everything you need for your cosmic journey.",
+    cta: {
+      weekly:  "✦  Start Premium  ✦",
+      monthly: "✦  Monthly Premium  ✦",
+    },
+    trial: {
+      weekly:  "Cancel anytime, no questions asked.",
+      monthly: "3-day free trial · Cancel anytime.",
+    },
+    footer: {
+      privacy: "Privacy",
+      terms:   "Terms",
+      restore: "Restore",
+    },
   },
 } as const;
 

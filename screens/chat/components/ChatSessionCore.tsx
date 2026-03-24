@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   View,
   KeyboardAvoidingView,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   StatusBar,
   Text,
+  Keyboard,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import ChatHeader from "./ChatHeader";
@@ -57,6 +58,18 @@ export default function ChatSessionCore({
   const { t } = useTranslation();
   const scrollViewRef = useRef<ScrollView>(null);
   const insets = useSafeAreaInsets();
+  const [keyboardPadding, setKeyboardPadding] = useState(0);
+
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+    const show = Keyboard.addListener("keyboardDidShow", (e) => {
+      setKeyboardPadding(e.endCoordinates.height);
+    });
+    const hide = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardPadding(0);
+    });
+    return () => { show.remove(); hide.remove(); };
+  }, []);
 
   const content = (
     <>
@@ -85,9 +98,7 @@ export default function ChatSessionCore({
       </View>
 
       {mode === "interactive" && (
-        <View style={{ paddingBottom: Math.max(insets.bottom - 8, 0) }}>
-          <MessageInput onSend={onSendMessage} disabled={disabled || isTyping} />
-        </View>
+        <MessageInput onSend={onSendMessage} disabled={disabled || isTyping} bottomInset={insets.bottom} />
       )}
 
       {mode !== "readonly" && children}
@@ -95,14 +106,17 @@ export default function ChatSessionCore({
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: ChatColors.headerBg }} edges={["top", "bottom"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: ChatColors.headerBg }} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor={ChatColors.headerBg} />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior="padding"
+        enabled={Platform.OS === "ios"}
       >
-        {content}
+        <View style={{ flex: 1, paddingBottom: keyboardPadding }}>
+          {content}
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

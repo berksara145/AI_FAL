@@ -153,7 +153,7 @@ const tr = {
     initialGeneral:
       "✨ Aklında ne var? Özgürce konuş — dinlemek ve yol göstermek için buradayım.",
     initialCrossroads:
-      "⟁ Kart çekildi. Sorunuzu sorun — yapmalı mısın, seçmeli misin, beklemeli misin — ve kavşaktaki kozmik rehberi açıklayayım.",
+      "⟁ Kart seni bekliyor. Aşağıya sorunuzu yazın — yapmalı mısın, yapmamalı mısın — ve kavşaktaki cevabı açıklayayım.",
     initialSomeoneSpecial:
       "❤️ Aklındaki kişiyi anlat. Dinamikleri, uyumu ve yıldızların bağlantınız hakkında ne söylediğini anlamana yardımcı olabilirim.",
     initialFriendDynamics:
@@ -169,6 +169,7 @@ const tr = {
     wait: "Bekle",
     askYourQuestion: "sorunuzu yazın",
     reading: "✦  Kavşak okunuyor…  ✦",
+    typeHint: "Kartın sana ne söylediğini öğrenmek için\naşağıdaki sohbete sorunuzu yazın",
   },
   months: {
     short: ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"],
@@ -176,6 +177,36 @@ const tr = {
       "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
       "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
     ],
+  },
+  splash: {
+    tagline: "Yıldızları oku. Kendini tanı.",
+    feature1: "Doğum Haritası",
+    feature2: "Tarot",
+    feature3: "Uyumluluk",
+    cta: "Yolculuğuna Başla",
+  },
+  premium: {
+    headline: "Kozmik Rehberliğini\nKeşfet",
+    subheadline: "Evrenin bilgeliğine kapılarını aç.",
+    popularBadge: "✦ EN POPÜLER",
+    plans: {
+      weekly:  { label: "Haftalık", sublabel: "Her hafta yenilenir", period: "/ hafta" },
+      monthly: { label: "Aylık",    sublabel: "Her ay yenilenir",    period: "/ ay",    savings: "%30 tasarruf" },
+    },
+    featuresDesc: "Sınırsız tarot ve astroloji okumaları, kişisel doğum haritaları, uyumluluk analizleri ve günlük gezegen geçişleri — kozmik yolculuğun için ihtiyacın olan her şey.",
+    cta: {
+      weekly:  "✦  Premium'u Başlat  ✦",
+      monthly: "✦  Aylık Premium  ✦",
+    },
+    trial: {
+      weekly:  "İstediğin zaman iptal edebilirsin.",
+      monthly: "3 günlük deneme · İstediğin zaman iptal et.",
+    },
+    footer: {
+      privacy: "Gizlilik",
+      terms:   "Şartlar",
+      restore: "Geri Yükle",
+    },
   },
 } as const;
 

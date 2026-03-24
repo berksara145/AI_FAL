@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import IOSDatePicker from "../../../components/IOSDatePicker";
 import { useTranslation } from "react-i18next";
 
@@ -20,6 +21,7 @@ export default function TimePicker({
   showConfirm = true,
 }: TimePickerProps) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const handleHourChange = (newHour: number) => {
     onTimeChange({ hour: newHour });
   };
@@ -37,7 +39,7 @@ export default function TimePicker({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: Math.max(insets.bottom + 8, 20) }]}>
       <View style={styles.header}>
         <Text style={styles.title}>{t("timePicker.title")}</Text>
       </View>

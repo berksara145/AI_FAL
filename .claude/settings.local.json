@@ -10,7 +10,8 @@
       "Bash(npm install:*)",
       "Bash(npm list:*)",
       "Bash(npx tsc:*)",
-      "Bash(node -e \"const i18n = require\\(''''./lib/i18n''''\\); console.log\\(''''i18n loaded ok''''\\);\")"
+      "Bash(node -e \"const i18n = require\\(''''./lib/i18n''''\\); console.log\\(''''i18n loaded ok''''\\);\")",
+      "WebSearch"
     ]
   }
 }

@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { View, Text, ScrollView, KeyboardAvoidingView, Platform, StatusBar } from "react-native";
+import React, { useState, useRef, useEffect } from "react";
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, StatusBar, Keyboard } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import MessageList from "../screens/chat/components/MessageList";
 import MessageInput from "../screens/chat/components/MessageInput";
@@ -9,13 +9,13 @@ export type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
-  timestamp?: Date; // Optional timestamp
-  isStreaming?: boolean; // Whether the message is currently streaming
+  timestamp?: Date;
+  isStreaming?: boolean;
 };
 
 type BasicChatUIProps = {
   title: string;
-  initialMessage?: string; // Initial message from LUNARA (AI)
+  initialMessage?: string;
   onSendMessage: (text: string) => void | Promise<void>;
   messages?: ChatMessage[];
   disabled?: boolean;
@@ -33,90 +33,77 @@ export default function BasicChatUI({
   const insets = useSafeAreaInsets();
   const [internalMessages, setInternalMessages] = useState<ChatMessage[]>(() => {
     if (initialMessage && !externalMessages) {
-      return [
-        {
-          id: "1",
-          role: "assistant",
-          content: initialMessage,
-        },
-      ];
+      return [{ id: "1", role: "assistant", content: initialMessage }];
     }
     return [];
   });
+  const [keyboardPadding, setKeyboardPadding] = useState(0);
 
   const scrollViewRef = useRef<ScrollView>(null);
-  // Use external messages if provided, otherwise use internal state
   const messages = externalMessages !== undefined ? externalMessages : internalMessages;
+
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+    const show = Keyboard.addListener("keyboardDidShow", (e) => {
+      setKeyboardPadding(e.endCoordinates.height);
+    });
+    const hide = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardPadding(0);
+    });
+    return () => { show.remove(); hide.remove(); };
+  }, []);
 
   const handleSend = async (text: string) => {
     if (!text.trim() || disabled) return;
-
-    // If using internal state, add user message immediately for better UX
     if (externalMessages === undefined) {
-      const userMessage: ChatMessage = {
-        id: Date.now().toString(),
-        role: "user",
-        content: text,
-      };
+      const userMessage: ChatMessage = { id: Date.now().toString(), role: "user", content: text };
       setInternalMessages((prev) => [...prev, userMessage]);
     }
-
-    // Call the onSendMessage callback (parent should handle adding messages if using external state)
     await onSendMessage(text);
   };
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: ChatColors.headerBg }} edges={["top", "bottom"]}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: ChatColors.headerBg }} edges={["top"]}>
       <StatusBar barStyle="light-content" backgroundColor={ChatColors.headerBg} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1"
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
-      >
-        {/* Title - Theatre Script Style */}
-        <View 
-          style={{ 
-            paddingHorizontal: 24, 
-            paddingTop: 12,
-            paddingBottom: 18,
-            borderBottomWidth: 1,
-            borderBottomColor: ChatColors.border,
-            backgroundColor: ChatColors.headerBg,
-            alignItems: "center",
-          }}
-        >
-          <Text 
+      <KeyboardAvoidingView behavior="padding" enabled={Platform.OS === "ios"} className="flex-1">
+        <View style={{ flex: 1, paddingBottom: keyboardPadding }}>
+          {/* Title */}
+          <View
             style={{
-              fontSize: 18,
-              fontWeight: "400",
-              color: ChatColors.lunaraLabel,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              textAlign: "center",
+              paddingHorizontal: 24,
+              paddingTop: 12,
+              paddingBottom: 18,
+              borderBottomWidth: 1,
+              borderBottomColor: ChatColors.border,
+              backgroundColor: ChatColors.headerBg,
+              alignItems: "center",
             }}
           >
-            {title}
-          </Text>
-        </View>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "400",
+                color: ChatColors.lunaraLabel,
+                letterSpacing: 2,
+                textTransform: "uppercase",
+                textAlign: "center",
+              }}
+            >
+              {title}
+            </Text>
+          </View>
 
-        {/* Chat Messages - Script Style */}
-        <View className="flex-1" style={{ backgroundColor: ChatColors.bg }}>
-          <MessageList 
-            messages={messages} 
-            scrollViewRef={scrollViewRef} 
-            onStreamingComplete={onStreamingComplete}
-          />
-        </View>
+          {/* Chat Messages */}
+          <View className="flex-1" style={{ backgroundColor: ChatColors.bg }}>
+            <MessageList
+              messages={messages}
+              scrollViewRef={scrollViewRef}
+              onStreamingComplete={onStreamingComplete}
+            />
+          </View>
 
-        {/* Text Input - Minimal Theatre Style */}
-        <View 
-          style={{
-            backgroundColor: ChatColors.bg,
-            paddingTop: 12,
-            paddingBottom: Math.max(insets.bottom, Platform.OS === "android" ? 0 : 8),
-          }}
-        >
-          <MessageInput onSend={handleSend} disabled={disabled} />
+          {/* Text Input */}
+          <MessageInput onSend={handleSend} disabled={disabled} bottomInset={insets.bottom} />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

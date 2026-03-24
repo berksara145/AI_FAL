@@ -7,6 +7,7 @@ import FeatureCard from "./components/FeatureCard";
 import { EXPLORE_CLASSES, type ExploreClass, type ExploreClassId } from "./exploreClasses";
 import { Colors } from "../../utils/theme";
 import { useTranslation } from "react-i18next";
+import i18n from "../../lib/i18n";
 
 const EXPLORE_IMAGES: Record<ExploreClass["imageKey"], number> = {
   feature4: require("../../assets/feature4.png"),
@@ -43,11 +44,12 @@ export default function ExploreScreen() {
   const handleClassPress = (classId: ExploreClassId) => {
     const exploreClass = EXPLORE_CLASSES.find((c) => c.id === classId);
     if (!exploreClass) return;
+    const isTr = i18n.language === "tr";
     navigation.navigate("ChatSession", {
       feature: exploreClass.feature,
       mode: "interactive",
       initialMessage: t(EXPLORE_INITIAL_KEYS[classId]),
-      agenda: exploreClass.agenda,
+      agenda: isTr ? exploreClass.agendaTr : exploreClass.agenda,
     });
   };
 

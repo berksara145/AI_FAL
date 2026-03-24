@@ -14,6 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/RootStack";
 import { getOrCreateUser } from "../db/user.repo";
+import { useTranslation } from "react-i18next";
 
 const { width: W, height: H } = Dimensions.get("window");
 
@@ -42,6 +43,13 @@ const INNER_R = 56;
 export default function SplashScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
+
+  const FEATURES = [
+    { glyph: "☽", label: t("splash.feature1") },
+    { glyph: "✦", label: t("splash.feature2") },
+    { glyph: "♡", label: t("splash.feature3") },
+  ];
 
   // Button press scale
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -138,18 +146,14 @@ export default function SplashScreen() {
 
         {/* ── App name ── */}
         <Text style={styles.appName}>LUNARA</Text>
-        <Text style={styles.tagline}>Read the stars. Know yourself.</Text>
+        <Text style={styles.tagline}>{t("splash.tagline")}</Text>
 
         {/* ── Divider ── */}
         <View style={styles.divider} />
 
         {/* ── Feature trio ── */}
         <View style={styles.featureRow}>
-          {[
-            { glyph: "☽", label: "Birth Chart" },
-            { glyph: "✦", label: "Tarot" },
-            { glyph: "♡", label: "Compatibility" },
-          ].map(({ glyph, label }) => (
+          {FEATURES.map(({ glyph, label }) => (
             <View key={label} style={styles.featureItem}>
               <Text style={styles.featureGlyph}>{glyph}</Text>
               <Text style={styles.featureLabel}>{label}</Text>
@@ -169,7 +173,7 @@ export default function SplashScreen() {
             style={styles.button}
           >
             <View style={styles.buttonSheen} />
-            <Text style={styles.buttonText}>Begin Your Journey</Text>
+            <Text style={styles.buttonText}>{t("splash.cta")}</Text>
             <Text style={styles.buttonChevron}>›</Text>
           </Pressable>
         </Animated.View>

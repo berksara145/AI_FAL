@@ -11,12 +11,12 @@ import {
 } from "react-native";
 import type { TarotCard } from "../../../lib/tarotDeck";
 import { CARD_BACK } from "../../../lib/tarotDeck";
-import { Colors } from "../../../utils/theme";
+import { Colors, ChatColors } from "../../../utils/theme";
 import { useTranslation } from "react-i18next";
 const POSITION_COLORS = [
-  "rgba(180,140,255,0.9)",
-  "rgba(212,175,55,0.9)",
-  "rgba(100,210,190,0.9)",
+  "#6a3db0",   // dark purple — visible on parchment
+  "#8a6010",   // dark gold-brown
+  "#1a7060",   // dark teal
 ];
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -191,10 +191,11 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   cardName: {
-    fontSize: 10,
-    color: "rgba(245,234,200,0.7)",
+    fontSize: 13,
+    color: ChatColors.lunaraText,
     textAlign: "center",
     letterSpacing: 0.5,
+    fontWeight: "500",
     maxWidth: CARD_WIDTH,
   },
   readingRow: {
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
   },
   readingText: {
     fontSize: 13,
-    color: Colors.goldPrimary,
+    color: ChatColors.lunaraLabel,
     letterSpacing: 2,
     fontStyle: "italic",
   },

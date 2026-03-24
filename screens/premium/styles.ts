@@ -1,6 +1,6 @@
 import { StyleSheet, Dimensions } from "react-native";
 
-const { width: W } = Dimensions.get("window");
+const { width: W, height: H } = Dimensions.get("window");
 
 const GOLD = "#C9A84C";
 const GOLD_LIGHT = "#E8C97A";
@@ -8,7 +8,7 @@ const GOLD_DIM = "#7a6230";
 const DEEP = "#060412";
 const CREAM = "#F5EDD8";
 
-export { GOLD, GOLD_LIGHT, GOLD_DIM, DEEP, CREAM, W };
+export { GOLD, GOLD_LIGHT, GOLD_DIM, DEEP, CREAM, W, H };
 
 export default StyleSheet.create({
   container: {
@@ -16,27 +16,22 @@ export default StyleSheet.create({
     backgroundColor: DEEP,
   },
 
-  // ── Scroll ──────────────────────────────────────────
-  scrollContent: {
-    paddingBottom: 52,
+  page: {
+    flex: 1,
+    paddingHorizontal: 22,
+    paddingTop: 52,
+    paddingBottom: 28,
+    justifyContent: "space-between",
   },
 
-  // ── Header ──────────────────────────────────────────
-  header: {
-    alignItems: "center",
-    paddingTop: 58,
-    paddingHorizontal: 24,
-    paddingBottom: 8,
-    position: "relative",
-  },
-
+  // ── Close ────────────────────────────────────────────
   closeBtn: {
     position: "absolute",
-    top: 20,
-    left: 20,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    top: 16,
+    left: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     borderWidth: 1,
     borderColor: "rgba(201,168,76,0.25)",
     backgroundColor: "rgba(6,4,18,0.55)",
@@ -50,198 +45,128 @@ export default StyleSheet.create({
     fontWeight: "500",
   },
 
+  // ── Header ───────────────────────────────────────────
+  header: {
+    alignItems: "center",
+    paddingTop: 8,
+  },
+
   crownContainer: {
-    width: 92,
-    height: 92,
+    width: 76,
+    height: 76,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 22,
+    marginBottom: 14,
   },
   crownRing: {
     position: "absolute",
-    width: 74,
-    height: 74,
-    borderRadius: 37,
+    width: 62,
+    height: 62,
+    borderRadius: 31,
     borderWidth: 1,
     borderColor: "rgba(201,168,76,0.28)",
     backgroundColor: "rgba(6,4,18,0.55)",
   },
   crownIcon: {
-    fontSize: 30,
+    fontSize: 26,
     color: GOLD_LIGHT,
     zIndex: 1,
   },
 
   appName: {
-    fontSize: 11,
-    letterSpacing: 6,
+    fontSize: 10,
+    letterSpacing: 5.5,
     color: GOLD,
-    marginBottom: 10,
-    opacity: 0.72,
+    marginBottom: 8,
+    opacity: 0.7,
     fontWeight: "600",
   },
 
   headline: {
-    fontSize: 26,
+    fontSize: 22,
     fontWeight: "700",
     color: GOLD_LIGHT,
     textAlign: "center",
-    lineHeight: 34,
-    marginBottom: 13,
-    letterSpacing: 0.4,
+    lineHeight: 30,
+    letterSpacing: 0.3,
+    marginBottom: 6,
   },
 
   subheadline: {
-    fontSize: 15,
-    color: "rgba(245,237,216,0.48)",
+    fontSize: 13.5,
+    color: "rgba(245,237,216,0.42)",
     fontStyle: "italic",
     textAlign: "center",
-    lineHeight: 24,
+    lineHeight: 20,
   },
 
   // ── Ornament ─────────────────────────────────────────
   ornament: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 24,
-    marginVertical: 24,
+    marginVertical: 14,
   },
   ornLine: {
     flex: 1,
     height: 1,
-    backgroundColor: "rgba(201,168,76,0.35)",
+    backgroundColor: "rgba(201,168,76,0.3)",
   },
   ornCenter: {
     color: GOLD,
-    fontSize: 10,
-    opacity: 0.65,
+    fontSize: 9,
+    opacity: 0.6,
     letterSpacing: 4,
     marginHorizontal: 10,
   },
 
-  // ── Features ─────────────────────────────────────────
-  features: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
-    gap: 10,
-  },
-
-  featureItem: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    padding: 13,
-    paddingHorizontal: 16,
-    backgroundColor: "rgba(8,5,28,0.52)",
-    borderWidth: 1,
-    borderColor: "rgba(201,168,76,0.11)",
-    borderRadius: 14,
-  },
-
-  featureIcon: {
-    fontSize: 21,
-    marginTop: 1,
-    marginRight: 14,
-  },
-
-  featureText: {
-    flex: 1,
-  },
-
-  featureTitle: {
-    fontSize: 12.5,
-    fontWeight: "600",
-    color: GOLD_LIGHT,
-    marginBottom: 3,
-    letterSpacing: 0.4,
-  },
-
-  featureDesc: {
-    fontSize: 13,
-    color: "rgba(245,237,216,0.48)",
-    lineHeight: 18,
-  },
-
-  // ── Testimonial ──────────────────────────────────────
-  testimonial: {
-    marginHorizontal: 20,
-    marginBottom: 22,
-    padding: 14,
+  // ── Features description ─────────────────────────────
+  featuresDesc: {
+    paddingVertical: 14,
     paddingHorizontal: 18,
-    backgroundColor: "rgba(8,5,28,0.48)",
+    backgroundColor: "rgba(8,5,28,0.45)",
     borderWidth: 1,
-    borderColor: "rgba(201,168,76,0.1)",
+    borderColor: "rgba(201,168,76,0.12)",
     borderRadius: 14,
-    alignItems: "center",
   },
 
-  starsRow: {
-    color: GOLD,
-    fontSize: 12,
-    marginBottom: 7,
-    letterSpacing: 4,
-  },
-
-  testimonialText: {
-    fontSize: 13,
+  featuresDescText: {
+    fontSize: 13.5,
+    color: "rgba(245,237,216,0.58)",
     fontStyle: "italic",
-    color: "rgba(245,237,216,0.48)",
-    lineHeight: 20,
+    lineHeight: 21,
     textAlign: "center",
-  },
-
-  testimonialAuthor: {
-    fontSize: 10.5,
-    color: GOLD_DIM,
-    marginTop: 7,
-    letterSpacing: 1.2,
+    letterSpacing: 0.15,
   },
 
   // ── Pricing ──────────────────────────────────────────
-  pricingSection: {
-    paddingHorizontal: 20,
-    marginBottom: 22,
-  },
-
-  pricingLabel: {
-    fontSize: 10,
-    letterSpacing: 3.5,
-    color: GOLD,
-    textAlign: "center",
-    marginBottom: 14,
-    opacity: 0.62,
-    fontWeight: "600",
-  },
-
   pricingCards: {
     gap: 10,
+    marginTop: 2,
   },
 
+  planWrapperPopular: {
+    paddingTop: 13,
+  },
   planWrapper: {
     paddingTop: 0,
   },
 
-  planWrapperPopular: {
-    paddingTop: 12,
-  },
-
   planCard: {
     position: "relative",
-    paddingVertical: 15,
-    paddingHorizontal: 17,
-    borderRadius: 15,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: "rgba(201,168,76,0.16)",
-    backgroundColor: "rgba(8,5,28,0.68)",
+    backgroundColor: "rgba(8,5,28,0.65)",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-
   planCardSelected: {
-    borderColor: "rgba(201,168,76,0.68)",
-    backgroundColor: "rgba(12,6,36,0.82)",
+    borderColor: "rgba(201,168,76,0.65)",
+    backgroundColor: "rgba(12,6,36,0.8)",
   },
-
   planCardPopular: {
     borderColor: "rgba(201,168,76,0.28)",
   },
@@ -254,122 +179,101 @@ export default StyleSheet.create({
     alignItems: "center",
     zIndex: 10,
   },
-
   popularBadge: {
     backgroundColor: GOLD,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 3,
     borderRadius: 20,
   },
-
   popularBadgeText: {
     color: DEEP,
-    fontSize: 8.5,
+    fontSize: 8,
     fontWeight: "700",
-    letterSpacing: 1.5,
+    letterSpacing: 1.4,
   },
 
   planLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 11,
+    gap: 10,
   },
-
   radioRing: {
-    width: 19,
-    height: 19,
-    borderRadius: 9.5,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     borderWidth: 1.5,
     borderColor: "rgba(201,168,76,0.32)",
     alignItems: "center",
     justifyContent: "center",
   },
-
   radioRingSelected: {
     borderColor: GOLD,
   },
-
   radioDot: {
-    width: 9,
-    height: 9,
-    borderRadius: 4.5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: GOLD,
   },
-
   planLabel: {
-    fontSize: 12.5,
+    fontSize: 13,
     color: CREAM,
     fontWeight: "600",
-    marginBottom: 2,
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
-
   planSublabel: {
-    fontSize: 11.5,
-    color: "rgba(245,237,216,0.38)",
+    fontSize: 11,
+    color: "rgba(245,237,216,0.36)",
     fontStyle: "italic",
+    marginTop: 1,
   },
 
   planRight: {
     alignItems: "flex-end",
   },
-
   planPrice: {
     fontSize: 16,
     color: GOLD_LIGHT,
     fontWeight: "600",
-    lineHeight: 20,
   },
-
   planPeriod: {
-    fontSize: 10.5,
-    color: "rgba(245,237,216,0.36)",
-    marginTop: 2,
+    fontSize: 10,
+    color: "rgba(245,237,216,0.34)",
+    marginTop: 1,
   },
-
   savingsBadge: {
-    backgroundColor: "rgba(80,30,160,0.32)",
-    paddingHorizontal: 8,
+    backgroundColor: "rgba(80,30,160,0.3)",
+    paddingHorizontal: 7,
     paddingVertical: 2,
-    borderRadius: 10,
-    marginTop: 4,
+    borderRadius: 8,
+    marginTop: 3,
     borderWidth: 1,
     borderColor: "rgba(155,126,200,0.2)",
   },
-
   savingsText: {
     color: "#b899e8",
-    fontSize: 9.5,
+    fontSize: 9,
     fontWeight: "600",
-    letterSpacing: 0.3,
   },
 
   // ── CTA ──────────────────────────────────────────────
-  ctaSection: {
-    paddingHorizontal: 20,
-    marginBottom: 14,
-  },
-
   ctaBtn: {
     width: "100%",
-    height: 56,
-    borderRadius: 15,
+    height: 54,
+    borderRadius: 14,
     overflow: "hidden",
-    marginBottom: 10,
     shadowColor: GOLD,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.5,
-    shadowRadius: 18,
-    elevation: 14,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.45,
+    shadowRadius: 16,
+    elevation: 12,
   },
-
   ctaBtnContent: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
   },
-
   ctaShimmer: {
     position: "absolute",
     top: 0,
@@ -378,36 +282,33 @@ export default StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.22)",
     transform: [{ skewX: "-20deg" }],
   },
-
   ctaText: {
     color: DEEP,
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: "700",
-    letterSpacing: 1.8,
+    letterSpacing: 1.6,
     textTransform: "uppercase",
     zIndex: 1,
   },
 
   trialNote: {
     textAlign: "center",
-    fontSize: 12,
-    color: "rgba(245,237,216,0.32)",
+    fontSize: 11,
+    color: "rgba(245,237,216,0.28)",
     fontStyle: "italic",
+    marginTop: 8,
   },
 
   // ── Footer ───────────────────────────────────────────
   footerLinks: {
     flexDirection: "row",
     justifyContent: "center",
-    gap: 24,
-    paddingHorizontal: 24,
-    marginTop: 18,
+    gap: 22,
   },
-
   footerLink: {
-    fontSize: 10.5,
-    color: "rgba(245,237,216,0.22)",
-    letterSpacing: 0.6,
+    fontSize: 10,
+    color: "rgba(245,237,216,0.2)",
+    letterSpacing: 0.5,
     fontWeight: "500",
   },
 });

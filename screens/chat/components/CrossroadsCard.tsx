@@ -11,7 +11,7 @@ import {
 import { CARD_BACK } from "../../../lib/tarotDeck";
 import type { TarotCard } from "../../../lib/tarotDeck";
 import type { CrossroadsCard } from "../../../lib/cosmicCrossroads";
-import { Colors } from "../../../utils/theme";
+import { Colors, ChatColors } from "../../../utils/theme";
 import { useTranslation } from "react-i18next";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -19,9 +19,9 @@ const CARD_WIDTH = Math.min(Math.floor(SCREEN_WIDTH * 0.32), 130);
 const CARD_HEIGHT = Math.floor(CARD_WIDTH * 1.757);
 
 const DIRECTION_CONFIG = {
-  proceed: { color: "rgba(100,210,150,0.9)", key: "crossroads.proceed" },
-  pause:   { color: "rgba(212,175,55,0.9)",  key: "crossroads.pause" },
-  wait:    { color: "rgba(180,140,255,0.9)", key: "crossroads.wait" },
+  proceed: { color: "#1a6b40", key: "crossroads.proceed" },  // dark green
+  pause:   { color: "#8a6010", key: "crossroads.pause" },   // dark gold-brown
+  wait:    { color: "#5a2da0", key: "crossroads.wait" },    // dark purple
 };
 
 interface Props {
@@ -182,19 +182,19 @@ const styles = StyleSheet.create({
   },
   cardName: {
     fontSize: 15,
-    color: Colors.goldPale,
+    color: ChatColors.lunaraLabel,
     letterSpacing: 0.5,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   verdict: {
     fontSize: 13,
-    color: "rgba(245,234,200,0.75)",
+    color: ChatColors.lunaraText,
     lineHeight: 20,
     fontStyle: "italic",
   },
   generatingText: {
     fontSize: 12,
-    color: Colors.goldPrimary,
+    color: ChatColors.lunaraLabel,
     letterSpacing: 2,
     fontStyle: "italic",
   },

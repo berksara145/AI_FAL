@@ -20,6 +20,7 @@ import { useTarotReading } from "./hooks/useTarotReading";
 import { useCrossroadsReading } from "./hooks/useCrossroadsReading";
 import { Colors } from "../../utils/theme";
 import { useTranslation } from "react-i18next";
+import i18n from "../../lib/i18n";
 
 type ChatSessionRouteProp = RouteProp<RootStackParamList, "ChatSession">;
 
@@ -244,11 +245,16 @@ export default function ChatSessionScreen() {
     const service = serviceRef.current;
     if (!service || isTyping) return;
 
-    const parts = [
-      `Give a very short birth chart reading for ${person.name}. Pick 3 highlights max — one sentence each. Bold header per point. Plain simple language. Under 100 words total.`,
-    ];
+    const isTr = i18n.language === "tr";
+    const parts = isTr
+      ? [
+          `${person.name} için çok kısa bir doğum haritası okuması yap. En fazla 3 önemli nokta — her biri için bir cümle. Her nokta için kalın başlık. Sade ve anlaşılır dil. Toplamda 100 kelimeden az. Türkçe yanıt ver.`,
+        ]
+      : [
+          `Give a very short birth chart reading for ${person.name}. Pick 3 highlights max — one sentence each. Bold header per point. Plain simple language. Under 100 words total.`,
+        ];
     if (person.chart_gpt_json) {
-      parts.push("[Attached chart data — use only this for analysis]");
+      parts.push(isTr ? "[Ekli harita verileri — yalnızca bunu analiz için kullan]" : "[Attached chart data — use only this for analysis]");
       parts.push(`--- ${person.name} ---\n${person.chart_gpt_json}`);
     }
     const messageToSend = parts.join("\n\n");
@@ -257,7 +263,7 @@ export default function ChatSessionScreen() {
     setPersonSelected(true);
     activeChartPersonRef.current = person;
     try {
-      await service.sendMessage(messageToSend, { displayContent: `Analyze ${person.name}'s birth chart.` });
+      await service.sendMessage(messageToSend, { displayContent: isTr ? `${person.name}'in doğum haritasını analiz et.` : `Analyze ${person.name}'s birth chart.` });
       await refreshMessages();
     } catch (e) {
       console.error("[ChatSessionScreen] chart analysis error:", e);
@@ -272,14 +278,19 @@ export default function ChatSessionScreen() {
     const selfPerson = selfPersonRef.current;
     if (!service || isTyping || !selfPerson?.chart_gpt_json || !person.chart_gpt_json) return;
 
-    const prompt = feature === FEATURE_FRIEND_DYNAMICS
-      ? `Give a short friendship compatibility reading between ${selfPerson.name} and ${person.name}. What makes their friendship work and where friction might arise. Pick 3 key points max — one sentence each. Bold header per point. Simple plain language. Under 100 words total.`
-      : `Give a short compatibility reading between ${selfPerson.name} and ${person.name}. Pick 3 key connection points max — one sentence each. Bold header per point. Simple plain language. Under 100 words total.`;
+    const isTrCompat = i18n.language === "tr";
+    const prompt = isTrCompat
+      ? feature === FEATURE_FRIEND_DYNAMICS
+        ? `${selfPerson.name} ile ${person.name} arasında kısa bir arkadaşlık uyumluluk okuması yap. Arkadaşlıklarını işleten şeyleri ve sürtüşmenin nerede çıkabileceğini göster. En fazla 3 temel nokta — her biri için bir cümle. Her nokta için kalın başlık. Sade ve anlaşılır dil. 100 kelimeden az. Türkçe yanıt ver.`
+        : `${selfPerson.name} ile ${person.name} arasında kısa bir uyumluluk okuması yap. En fazla 3 temel bağlantı noktası — her biri için bir cümle. Her nokta için kalın başlık. Sade ve anlaşılır dil. 100 kelimeden az. Türkçe yanıt ver.`
+      : feature === FEATURE_FRIEND_DYNAMICS
+        ? `Give a short friendship compatibility reading between ${selfPerson.name} and ${person.name}. What makes their friendship work and where friction might arise. Pick 3 key points max — one sentence each. Bold header per point. Simple plain language. Under 100 words total.`
+        : `Give a short compatibility reading between ${selfPerson.name} and ${person.name}. Pick 3 key connection points max — one sentence each. Bold header per point. Simple plain language. Under 100 words total.`;
 
     const parts = [
       prompt,
-      "[Attached chart data — compare both charts for the reading]",
-      `--- ${selfPerson.name} (You) ---\n${selfPerson.chart_gpt_json}`,
+      isTrCompat ? "[Ekli harita verileri — okuma için her iki haritayı karşılaştır]" : "[Attached chart data — compare both charts for the reading]",
+      `--- ${selfPerson.name} (${isTrCompat ? "Sen" : "You"}) ---\n${selfPerson.chart_gpt_json}`,
       `--- ${person.name} ---\n${person.chart_gpt_json}`,
     ];
 
@@ -287,9 +298,13 @@ export default function ChatSessionScreen() {
     setCompatibilityPersonSelected(true);
     activeChartPersonRef.current = person;
     try {
-      const displayMsg = feature === FEATURE_FRIEND_DYNAMICS
-        ? `Tell me about my friendship dynamic with ${person.name}.`
-        : `Tell me about my compatibility with ${person.name}.`;
+      const displayMsg = isTrCompat
+        ? feature === FEATURE_FRIEND_DYNAMICS
+          ? `${person.name} ile arkadaşlık dinamiğim hakkında bilgi ver.`
+          : `${person.name} ile uyumluluğum hakkında bilgi ver.`
+        : feature === FEATURE_FRIEND_DYNAMICS
+          ? `Tell me about my friendship dynamic with ${person.name}.`
+          : `Tell me about my compatibility with ${person.name}.`;
       await service.sendMessage(parts.join("\n\n"), { displayContent: displayMsg });
       await refreshMessages();
     } catch (e) {
@@ -508,11 +523,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "rgba(201,168,76,0.45)",
-    backgroundColor: "rgba(15,9,32,0.72)",
+    borderColor: "rgba(120,80,200,0.35)",
+    backgroundColor: "#2d1f5e",
   },
   createChartButton: {
-    backgroundColor: "rgba(15,9,32,0.85)",
+    backgroundColor: "#2d1f5e",
   },
   personButtonText: {
     color: Colors.goldPrimary,

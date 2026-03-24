@@ -9,6 +9,7 @@
 
 import type { ChatMsg } from "./gptClient";
 import { sendChatToOpenAI } from "./gptClient";
+import { getLangInstruction } from "./i18n";
 import {
   createChatSession,
   getChatSession,
@@ -208,9 +209,9 @@ export class ChatSessionService {
       content: m.content,
     }));
     const systemContent =
-      this.enableSavePersonHint
+      (this.enableSavePersonHint
         ? this.agenda + SAVE_PERSON_INSTRUCTION
-        : this.agenda;
+        : this.agenda) + getLangInstruction();
     return [
       { role: "system", content: systemContent },
       ...historyForGpt,

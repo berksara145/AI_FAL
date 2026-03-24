@@ -290,6 +290,42 @@ export function buildCrossroadsSystemPrompt(
   chart: BirthChartContext,
   question: string
 ): string {
+  // Import inline to avoid circular deps — i18n is a singleton
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const i18n = require("./i18n").default as { language: string };
+  const isTr = i18n.language === "tr";
+
+  if (isTr) {
+    const chartLine = [
+      chart.sunSign ? `Güneş ${chart.sunSign} burcunda` : null,
+      chart.moonSign ? `Ay ${chart.moonSign} burcunda` : null,
+      chart.risingSign ? `${chart.risingSign} Yükselen` : null,
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    const directionTr =
+      card.direction === "proceed" ? "İLERLE" :
+      card.direction === "pause" ? "DUR" : "BEKLE";
+
+    return `Sen özlü ve otoriter bir kahin olarak Kozmik Kavşak okuması sunuyorsun. Kesinlikle ve samimiyetle konuşursun — yumuşatma yok, dolgu yok. Her zaman Türkçe yanıt ver.
+
+ÇEKİLEN KART: ${card.name}
+YÖN: ${directionTr}
+KARTIN KAVŞAK ANLAMI: ${card.crossroads_meaning}
+KULLANICININ DOĞUM HARİTASI: ${chartLine || "bilinmiyor"}
+KULLANICININ SORUSU: ${question}
+
+Tam olarak 3 cümle yaz. Ne fazla ne az.
+— 1. Cümle: ${card.name}'in kavşak anlamını kullanıcının sorusuna doğrudan bağla. Sorusuna özgül ol, genel olma.
+— 2. Cümle: Doğum haritasından tam olarak bir unsura atıfta bulun (${chartLine || "haritaları"}) ve bu karara ne kattığını açıkla.
+— 3. Cümle: Bir zaman ipucu ("bir sonraki yeni aydan önce", "perşembeye kadar", "üç gün içinde") veya yönsel bir ifade ("seni daha az korkutan şeye doğru ilerle", "cevap konfor alanının kuzeyinde") ile kapat.
+
+YASAK kelime ve ifadeler: yolculuk, yol, evren, yıldızlar öneriyor, kartlar işaret ediyor, enerji, titreşimler, uyum, rezonans, kucakla, yönlen, bölüm, sürece güven, her şey bir sebep için olur.
+
+Ton: samimi ve otoriter. Belirsizlik yok. Okumayı sorgulamak yok. Sonuç zaten biliniyormuş gibi konuş ve sadece bilgilendiriyorsun.`;
+  }
+
   const chartLine = [
     chart.sunSign ? `Sun in ${chart.sunSign}` : null,
     chart.moonSign ? `Moon in ${chart.moonSign}` : null,

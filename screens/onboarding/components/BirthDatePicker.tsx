@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import IOSDatePicker from "../../../components/IOSDatePicker";
 import { getMaxDays } from "../utils";
 import type { BirthDateState } from "../hooks/useOnboardingState";
@@ -23,6 +24,7 @@ export default function BirthDatePicker({
   showConfirm = true,
 }: BirthDatePickerProps) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const resolvedTitle = title ?? t("onboarding.selectBirthDate");
   const currentYear = new Date().getFullYear();
   const currentMonth = birthDateState.month || 1;
@@ -50,7 +52,7 @@ export default function BirthDatePicker({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: Math.max(insets.bottom + 8, 20) }]}>
       <View style={styles.header}>
         <Text style={styles.title}>{resolvedTitle}</Text>
       </View>

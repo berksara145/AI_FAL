@@ -31,6 +31,16 @@ export async function changeAppLanguage(lang: SupportedLanguage): Promise<void> 
   await i18n.changeLanguage(lang);
 }
 
+/**
+ * Returns a language instruction to append to any GPT system prompt.
+ * Empty string for English (model default), explicit Turkish instruction otherwise.
+ */
+export function getLangInstruction(): string {
+  return i18n.language === "tr"
+    ? "\n\nYou must respond entirely in Turkish. Use natural, fluent Turkish throughout. Do not switch to English for any reason."
+    : "";
+}
+
 i18n.use(initReactI18next).init({
   resources: {
     en: { translation: en },

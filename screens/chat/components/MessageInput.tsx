@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, TextInput, TouchableOpacity } from "react-native";
+import { View, TextInput, TouchableOpacity, Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ChatColors } from "../../../utils/theme";
 import { useTranslation } from "react-i18next";
@@ -7,11 +8,14 @@ import { useTranslation } from "react-i18next";
 type MessageInputProps = {
   onSend: (text: string) => void;
   disabled?: boolean;
+  bottomInset?: number;
 };
 
-export default function MessageInput({ onSend, disabled = false }: MessageInputProps) {
+export default function MessageInput({ onSend, disabled = false, bottomInset = 0 }: MessageInputProps) {
   const { t } = useTranslation();
   const [text, setText] = useState("");
+  const ownInsets = useSafeAreaInsets();
+  const resolvedBottom = Math.max(bottomInset, ownInsets.bottom, Platform.OS === "android" ? 16 : 8);
 
   const handleSend = () => {
     if (text.trim() && !disabled) {
@@ -29,7 +33,7 @@ export default function MessageInput({ onSend, disabled = false }: MessageInputP
       borderTopColor: "rgba(100,80,40,0.15)",
       paddingHorizontal: 16,
       paddingTop: 13,
-      paddingBottom: 26,
+      paddingBottom: resolvedBottom,
       flexDirection: "row",
       alignItems: "flex-end",
       gap: 10,

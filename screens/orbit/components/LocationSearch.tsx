@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Linking, Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import { ChatColors } from "../../../utils/theme";
 const GOOGLE_PLACES_API_KEY = "AIzaSyAh7fHuXzW2sl7mItwWFFdIzzOZFOSCoSU";
@@ -19,6 +20,7 @@ interface LocationSearchProps {
 export default function LocationSearch({ onLocationSelect, onConfirm }: LocationSearchProps) {
   const [selected, setSelected] = useState<BirthLocation | null>(null);
   const [queryText, setQueryText] = useState<string>("");
+  const insets = useSafeAreaInsets();
 
   const canOpenMaps = useMemo(() => queryText.trim().length >= 2, [queryText]);
 
@@ -160,7 +162,7 @@ export default function LocationSearch({ onLocationSelect, onConfirm }: Location
         </Text>
       </View>
 
-      <View style={styles.confirmWrapper}>
+      <View style={[styles.confirmWrapper, { paddingBottom: Math.max(insets.bottom + 8, 16) }]}>
         <TouchableOpacity
           style={[styles.confirmButton, !selected && styles.confirmButtonDisabled]}
           onPress={() => {
