@@ -71,6 +71,7 @@ dont know how to return to the main page
 
 time scroll düzelt akmıyo
 the glow of add person is weird
+make the chat button be accessable from anywhere when pressed not jsut the typign aprt
 
 add slide
 hepsine basmayı aklına gelmedi

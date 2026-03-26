@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, {
   Circle,
   Defs,
@@ -29,6 +30,7 @@ const PLANS = [
 export default function PremiumScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const [selectedPlan, setSelectedPlan] = useState<"weekly" | "monthly">("weekly");
 
   const glowAnim    = useRef(new Animated.Value(0)).current;
@@ -66,7 +68,7 @@ export default function PremiumScreen() {
 
       <View style={styles.page}>
         {/* Close */}
-        <TouchableOpacity style={styles.closeBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={[styles.closeBtn, { top: insets.top + 12 }]} onPress={() => navigation.goBack()}>
           <Text style={styles.closeBtnText}>✕</Text>
         </TouchableOpacity>
 
