@@ -114,6 +114,14 @@ const tr = {
     natalSuggestPatterns: "Tekrar eden kalıplarım",
     natalSuggestPartner: "İlişkide neye ihtiyacım var?",
     natalSuggestPurpose: "Hayatımın amacı",
+    someoneSuggestConnection: "En güçlü bağlantımız ne?",
+    someoneSuggestLongevity: "Bu uzun vadeli sürebilir mi?",
+    someoneSuggestChallenges: "Bizi en çok zorlayan ne?",
+    someoneSuggestChemistry: "Aramızdaki kimyayı açıkla",
+    friendSuggestBond: "Bizi en çok ne bağlıyor?",
+    friendSuggestClash: "Nerede çatışıyoruz?",
+    friendSuggestGrow: "Birlikte nasıl büyüyebiliriz?",
+    friendSuggestMakeWork: "İlişkimizi işleten ne?",
   },
   tarot: {
     past: "GEÇMİŞ",
@@ -158,11 +166,11 @@ const tr = {
   },
   explore: {
     general: "Aklında ne var?",
-    cosmicCrossroads: "Kozmik Kavşak",
-    someoneSpecial: "Özel Biri",
-    friendDynamics: "Arkadaşlık dinamikleri",
+    cosmicCrossroads: "Kader Seçimi",
+    someoneSpecial: "Kalp Haritası",
+    friendDynamics: "Arkadaşlık ilişkileri",
     tarotReading: "Tarot Okuma",
-    birthChartAnalysis: "Doğum Haritası Analizi",
+    birthChartAnalysis: "Doğum Haritası",
     initialGeneral:
       "✨ Aklında ne var? Özgürce konuş — dinlemek ve yol göstermek için buradayım.",
     initialCrossroads:

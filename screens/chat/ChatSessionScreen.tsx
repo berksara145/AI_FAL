@@ -34,6 +34,7 @@ const FEATURE_FRIEND_DYNAMICS = "Friend Dynamics";
 const FEATURE_NATAL_CHART_ANALYSIS = "Natal Chart Analysis";
 const FEATURE_TAROT = "Tarot Reading";
 const FEATURE_COSMIC_CROSSROADS = "Cosmic Crossroads";
+const FEATURE_GENERAL = "What's on your mind?";
 
 export default function ChatSessionScreen() {
   const { t } = useTranslation();
@@ -67,6 +68,8 @@ export default function ChatSessionScreen() {
   const [tarotChips, setTarotChips] = useState<string[]>([]);
   const tarotChipsInitRef = useRef(false);
   const [crossroadsChips, setCrossroadsChips] = useState<string[]>([]);
+  const [compatibilityChips, setCompatibilityChips] = useState<string[]>([]);
+  const [generalChips, setGeneralChips] = useState<string[]>([]);
   const crossroadsChipsInitRef = useRef(false);
   const [readonlyTarotCards, setReadonlyTarotCards] = useState<[TarotCard, TarotCard, TarotCard] | null>(null);
   const [readonlyCrossroadsCard, setReadonlyCrossroadsCard] = useState<CrossroadsCardData | null>(null);
@@ -288,6 +291,21 @@ export default function ChatSessionScreen() {
           if (chips.length > 0) setCrossroadsChips(chips);
         });
       }
+      if (feature === FEATURE_GENERAL) {
+        generateFollowUpChips(displayText, result.reply, "general").then((chips) => {
+          if (chips.length > 0) setGeneralChips(chips);
+        });
+      }
+      if (feature === FEATURE_SOMEONE_SPECIAL && compatibilityPersonSelected) {
+        generateFollowUpChips(displayText, result.reply, "romantic").then((chips) => {
+          if (chips.length > 0) setCompatibilityChips(chips);
+        });
+      }
+      if (feature === FEATURE_FRIEND_DYNAMICS && compatibilityPersonSelected) {
+        generateFollowUpChips(displayText, result.reply, "friendship").then((chips) => {
+          if (chips.length > 0) setCompatibilityChips(chips);
+        });
+      }
     } catch (e) {
       console.error("[ChatSessionScreen] send error:", e);
       await refreshMessages();
@@ -338,11 +356,11 @@ export default function ChatSessionScreen() {
     const isTrCompat = i18n.language === "tr";
     const prompt = isTrCompat
       ? feature === FEATURE_FRIEND_DYNAMICS
-        ? `${selfPerson.name} ile ${person.name} arasında kısa bir arkadaşlık uyumluluk okuması yap. Arkadaşlıklarını işleten şeyleri ve sürtüşmenin nerede çıkabileceğini göster. En fazla 3 temel nokta — her biri için bir cümle. Her nokta için kalın başlık. Sade ve anlaşılır dil. 100 kelimeden az. Türkçe yanıt ver.`
-        : `${selfPerson.name} ile ${person.name} arasında kısa bir uyumluluk okuması yap. En fazla 3 temel bağlantı noktası — her biri için bir cümle. Her nokta için kalın başlık. Sade ve anlaşılır dil. 100 kelimeden az. Türkçe yanıt ver.`
+        ? `${selfPerson.name} ile ${person.name} arasındaki arkadaşlık uyumluluğunu oku. Her iki haritayı da analiz et ve gerçek yerleşimlere dayanarak derinlemesine bir okuma yap. Türkçe yanıt ver.`
+        : `${selfPerson.name} ile ${person.name} arasındaki romantik uyumluluğu oku. Her iki haritayı da analiz et ve gerçek yerleşimlere dayanarak derinlemesine bir okuma yap. Türkçe yanıt ver.`
       : feature === FEATURE_FRIEND_DYNAMICS
-        ? `Give a short friendship compatibility reading between ${selfPerson.name} and ${person.name}. What makes their friendship work and where friction might arise. Pick 3 key points max — one sentence each. Bold header per point. Simple plain language. Under 100 words total.`
-        : `Give a short compatibility reading between ${selfPerson.name} and ${person.name}. Pick 3 key connection points max — one sentence each. Bold header per point. Simple plain language. Under 100 words total.`;
+        ? `Read the friendship compatibility between ${selfPerson.name} and ${person.name}. Analyze both charts and give a full, in-depth reading based on their actual placements.`
+        : `Read the romantic compatibility between ${selfPerson.name} and ${person.name}. Analyze both charts and give a full, in-depth reading based on their actual placements.`;
 
     const parts = [
       prompt,
@@ -354,6 +372,21 @@ export default function ChatSessionScreen() {
     setIsTyping(true);
     setCompatibilityPersonSelected(true);
     activeChartPersonRef.current = person;
+    if (feature === FEATURE_SOMEONE_SPECIAL) {
+      setCompatibilityChips([
+        t("chat.someoneSuggestConnection"),
+        t("chat.someoneSuggestLongevity"),
+        t("chat.someoneSuggestChallenges"),
+        t("chat.someoneSuggestChemistry"),
+      ]);
+    } else if (feature === FEATURE_FRIEND_DYNAMICS) {
+      setCompatibilityChips([
+        t("chat.friendSuggestBond"),
+        t("chat.friendSuggestClash"),
+        t("chat.friendSuggestGrow"),
+        t("chat.friendSuggestMakeWork"),
+      ]);
+    }
     try {
       const displayMsg = isTrCompat
         ? feature === FEATURE_FRIEND_DYNAMICS
@@ -373,8 +406,29 @@ export default function ChatSessionScreen() {
 
   const lastMessageIsAssistant = messages.length > 0 && messages[messages.length - 1]?.role === "assistant";
   const activeNatalChips = natalChips.map((text, i) => ({ id: String(i), text }));
+  const activeCompatibilityChips = compatibilityChips.map((text, i) => ({ id: String(i), text }));
+  const activeGeneralChips = generalChips.map((text, i) => ({ id: String(i), text }));
 
   const activeCrossroadsChips = crossroadsChips.map((text, i) => ({ id: String(i), text }));
+
+  const generalSuggestionsBar = feature === FEATURE_GENERAL && !isTyping && lastMessageIsAssistant && activeGeneralChips.length > 0
+    ? (
+      <SuggestionChips
+        suggestions={activeGeneralChips}
+        onSelect={(s) => handleSendMessage(s.text)}
+      />
+    )
+    : null;
+
+  const compatibilitySuggestionsBar = (feature === FEATURE_SOMEONE_SPECIAL || feature === FEATURE_FRIEND_DYNAMICS) && compatibilityPersonSelected && !isTyping && lastMessageIsAssistant && activeCompatibilityChips.length > 0
+    ? (
+      <SuggestionChips
+        suggestions={activeCompatibilityChips}
+        onSelect={(s) => handleSendMessage(s.text)}
+      />
+    )
+    : null;
+
   const crossroadsSuggestionsBar = feature === FEATURE_COSMIC_CROSSROADS && crossroads.revealed && !crossroads.generating && !isTyping && lastMessageIsAssistant && activeCrossroadsChips.length > 0
     ? (
       <SuggestionChips
@@ -410,10 +464,7 @@ export default function ChatSessionScreen() {
           <TouchableOpacity
             style={[styles.personButton, styles.createChartButton]}
             onPress={() =>
-              navigation.navigate("MainApp" as any, {
-                screen: "MainTabs",
-                params: { screen: "Orbit" },
-              } as any)
+              navigation.navigate("MainApp" as any, { initialTab: 1 })
             }
             activeOpacity={0.7}
           >
@@ -445,10 +496,7 @@ export default function ChatSessionScreen() {
           <TouchableOpacity
             style={[styles.personButton, styles.createChartButton]}
             onPress={() =>
-              navigation.navigate("MainApp" as any, {
-                screen: "MainTabs",
-                params: { screen: "Orbit" },
-              } as any)
+              navigation.navigate("MainApp" as any, { initialTab: 1 })
             }
             activeOpacity={0.7}
           >
@@ -480,10 +528,7 @@ export default function ChatSessionScreen() {
           <TouchableOpacity
             style={[styles.personButton, styles.createChartButton]}
             onPress={() =>
-              navigation.navigate("MainApp" as any, {
-                screen: "MainTabs",
-                params: { screen: "Orbit" },
-              } as any)
+              navigation.navigate("MainApp" as any, { initialTab: 1 })
             }
             activeOpacity={0.7}
           >
@@ -563,7 +608,7 @@ export default function ChatSessionScreen() {
       mode={mode}
       disabled={savePerson.pendingSavePerson !== null || (feature === FEATURE_TAROT && !tarot.allRevealed)}
       onClose={() => navigation.goBack()}
-      trailingContent={natalChartBar ?? someoneSpecialBar ?? friendDynamicsBar ?? suggestionsBar ?? tarotSuggestionsBar ?? crossroadsSuggestionsBar ?? undefined}
+      trailingContent={natalChartBar ?? someoneSpecialBar ?? friendDynamicsBar ?? suggestionsBar ?? compatibilitySuggestionsBar ?? tarotSuggestionsBar ?? crossroadsSuggestionsBar ?? generalSuggestionsBar ?? undefined}
       headerContent={tarotBar ?? crossroadsBar ?? readonlyTarotBar ?? readonlyCrossroadsBar ?? undefined}
     >
 

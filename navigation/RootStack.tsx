@@ -17,7 +17,7 @@ export type RootStackParamList = {
   // Onboarding
   UserInfoChat: undefined;
   // Main App (contains bottom tabs)
-  MainApp: undefined;
+  MainApp: { initialTab?: number } | undefined;
   // Add Person (full-screen form)
   AddPerson: undefined;
   // Premium paywall

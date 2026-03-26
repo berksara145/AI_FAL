@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { TouchableOpacity, View, Text, StyleSheet, Dimensions } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { RouteProp } from "@react-navigation/native";
+import type { RootStackParamList } from "./RootStack";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
@@ -68,10 +70,12 @@ function HeaderRight() {
 function BottomTabs() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const [activeTab, setActiveTab] = useState(0);
+  const route = useRoute<RouteProp<RootStackParamList, "MainApp">>();
+  const initialTab = (route.params as any)?.initialTab ?? 0;
+  const [activeTab, setActiveTab] = useState(initialTab);
 
-  const translateX = useSharedValue(0);
-  const activeTabShared = useSharedValue(0);
+  const translateX = useSharedValue(-initialTab * SCREEN_WIDTH);
+  const activeTabShared = useSharedValue(initialTab);
 
   const gesture = Gesture.Pan()
     .activeOffsetX([-12, 12])
