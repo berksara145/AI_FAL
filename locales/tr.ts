@@ -120,6 +120,7 @@ const tr = {
     today: "BUGÜN",
     future: "GELECEK",
     tap: "dokun",
+    revealHint: "Her karta dokun · 3'ü de gerekli",
     readingCards: "✦  Kartlar okunuyor",
     suggestMeaning: "Bu benim için ne anlama geliyor?",
     suggestPast: "Geçmiş kart hakkında anlat",

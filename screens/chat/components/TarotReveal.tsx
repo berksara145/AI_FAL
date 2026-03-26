@@ -153,9 +153,16 @@ function BouncingDots() {
 export default function TarotReveal({ cards, revealed, onReveal, generatingInterpretation }: TarotRevealProps) {
   const { t } = useTranslation();
   const positions = [t("tarot.past"), t("tarot.today"), t("tarot.future")];
+  const allRevealed = revealed.every(Boolean);
+  const revealedCount = revealed.filter(Boolean).length;
 
   return (
     <View style={styles.container}>
+      {!allRevealed && !generatingInterpretation && (
+        <Text style={styles.revealHint}>
+          {t("tarot.revealHint")} ({revealedCount}/3)
+        </Text>
+      )}
       <View style={styles.row}>
         {cards.map((card, i) => (
           <FlipCard
@@ -231,6 +238,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     fontWeight: "500",
     maxWidth: CARD_WIDTH,
+  },
+  revealHint: {
+    fontSize: 11,
+    color: "rgba(160,120,10,1)",
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    textAlign: "center",
+    marginBottom: 10,
   },
   readingRow: {
     marginTop: 20,

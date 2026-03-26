@@ -115,6 +115,7 @@ const en = {
     today: "TODAY",
     future: "FUTURE",
     tap: "tap",
+    revealHint: "Tap each card to reveal · all 3 needed",
     readingCards: "✦  Reading the cards",
     suggestMeaning: "What does this mean for me?",
     suggestPast: "Tell me about the past card",
