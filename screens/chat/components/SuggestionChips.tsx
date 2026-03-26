@@ -1,10 +1,10 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { Colors } from "../../../utils/theme";
 
 type SuggestionChip = {
   id: string;
   text: string;
-  action?: () => void;
 };
 
 type SuggestionChipsProps = {
@@ -19,21 +19,43 @@ export default function SuggestionChips({ suggestions, onSelect }: SuggestionChi
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      className="px-4 py-2"
-      contentContainerClassName="gap-2"
+      style={styles.scroll}
+      contentContainerStyle={styles.container}
     >
       {suggestions.map((suggestion) => (
         <TouchableOpacity
           key={suggestion.id}
           onPress={() => onSelect(suggestion)}
-          className="bg-purple-100 border border-purple-300 rounded-full px-4 py-2"
+          style={styles.chip}
           activeOpacity={0.7}
         >
-          <Text className="text-purple-700 text-sm font-medium">
-            {suggestion.text}
-          </Text>
+          <Text style={styles.chipText}>{suggestion.text}</Text>
         </TouchableOpacity>
       ))}
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  scroll: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  container: {
+    gap: 8,
+    paddingRight: 16,
+  },
+  chip: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(120,80,200,0.35)",
+    backgroundColor: "#2d1f5e",
+  },
+  chipText: {
+    color: Colors.goldPrimary,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+});

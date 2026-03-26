@@ -315,6 +315,8 @@ export const generateAndSaveNatalChart = async (
     // Generate chart data (optionally for a specific person)
     console.log("[generateAndSaveNatalChart] 📊 Calling generateNatalChartFromUserData()...", { personName });
     const chartData = await generateNatalChartFromUserData(personName);
+    console.log("chart data:")
+    console.log(chartData)
     console.log("[generateAndSaveNatalChart] ✅ Chart data received");
 
     console.log("[generateAndSaveNatalChart] 📈 Chart stats:", {

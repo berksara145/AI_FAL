@@ -59,6 +59,7 @@ const SAVE_PERSON_INSTRUCTION =
   "1) When the user mentions a specific person they might want to save (e.g. by name), ask if they want to add them to Birth Chart. End your reply with exactly one line: [SAVE_PERSON: FirstName]. Use only the person's first name. Omit if they are not clearly referring to a specific person.\n" +
   "2) When the user then agrees (yes, sure, let's do it, etc.), reply briefly and positively, then end with exactly one line: [OPEN_SAVE_PERSON: FirstName]. Use the same first name. That line is for the system only and will not be shown. Omit if the user declined.";
 
+
 /** Regex: tag at end of reply, optional newline/space before. Strip so no [SAVE_PERSON] / [OPEN_SAVE_PERSON] ever stored. */
 const OPEN_SAVE_PERSON_RE = /\s*\[\s*OPEN_SAVE_PERSON\s*:\s*(.+?)\]\s*$/s;
 const SAVE_PERSON_RE = /\s*\[\s*SAVE_PERSON\s*:\s*(.+?)\]\s*$/s;
@@ -208,10 +209,9 @@ export class ChatSessionService {
       role: m.role as "user" | "assistant",
       content: m.content,
     }));
-    const systemContent =
-      (this.enableSavePersonHint
-        ? this.agenda + SAVE_PERSON_INSTRUCTION
-        : this.agenda) + getLangInstruction();
+    let systemContent = this.agenda;
+    if (this.enableSavePersonHint) systemContent += SAVE_PERSON_INSTRUCTION;
+    systemContent += getLangInstruction();
     return [
       { role: "system", content: systemContent },
       ...historyForGpt,
@@ -291,5 +291,30 @@ export class ChatSessionService {
    */
   async initiateUserCreation?(_params?: { name?: string }): Promise<void> {
     // Placeholder: e.g. open user onboarding or create person
+  }
+}
+
+/**
+ * Generates 3 short follow-up chip questions based on what the user just said and the AI's reply.
+ * Runs as a separate lightweight GPT call so it never interferes with the main chat response.
+ */
+export async function generateFollowUpChips(userMessage: string, aiReply: string): Promise<string[]> {
+  try {
+    const messages: ChatMsg[] = [
+      {
+        role: "system",
+        content:
+          "You generate follow-up questions for a birth chart astrology chat. Based on what the user just asked and what the astrologer just said, write exactly 3 short follow-up questions the user might want to ask next. Each question must be 5-7 words max. Return only the 3 questions separated by | with no numbering, no extra text, nothing else.",
+      },
+      {
+        role: "user",
+        content: `User said: "${userMessage}"\n\nAstrologer replied: "${aiReply.slice(0, 500)}"\n\nGenerate 3 follow-up questions:`,
+      },
+    ];
+    const reply = await sendChatToOpenAI(messages);
+    const chips = reply.split("|").map((s) => s.trim()).filter(Boolean).slice(0, 3);
+    return chips.length > 0 ? chips : [];
+  } catch {
+    return [];
   }
 }

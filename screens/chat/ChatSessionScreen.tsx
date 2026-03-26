@@ -6,11 +6,12 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/RootStack";
 
 import ChatSessionCore, { type ChatMessage } from "./components/ChatSessionCore";
+import SuggestionChips from "./components/SuggestionChips";
 import BirthMapChatWrapper from "../../screens/orbit/BirthMapChatWrapper";
 import BirthDatePicker from "../onboarding/components/BirthDatePicker";
 import TarotReveal from "./components/TarotReveal";
 import CrossroadsCard from "./components/CrossroadsCard";
-import { ChatSessionService, type ChatSessionMessage } from "../../lib/chatSessionService";
+import { ChatSessionService, generateFollowUpChips, type ChatSessionMessage } from "../../lib/chatSessionService";
 import { getPersonsWithChartData, getSelfPerson, type Person } from "../../db/person.repo";
 import { getReadingByDate, getReadingBySessionId } from "../../db/tarot.repo";
 import { getCardById, type TarotCard } from "../../lib/tarotDeck";
@@ -62,6 +63,7 @@ export default function ChatSessionScreen() {
   const [noCharts, setNoCharts] = useState(false);
   const [personSelected, setPersonSelected] = useState(false);
   const [compatibilityPersonSelected, setCompatibilityPersonSelected] = useState(false);
+  const [natalChips, setNatalChips] = useState<string[]>([]);
   const [readonlyTarotCards, setReadonlyTarotCards] = useState<[TarotCard, TarotCard, TarotCard] | null>(null);
   const [readonlyCrossroadsCard, setReadonlyCrossroadsCard] = useState<CrossroadsCardData | null>(null);
 
@@ -233,6 +235,11 @@ export default function ChatSessionScreen() {
       if (result.suggestedSavePerson != null) {
         savePerson.suggest(result.suggestedSavePerson);
       }
+      if (feature === FEATURE_NATAL_CHART_ANALYSIS) {
+        generateFollowUpChips(displayText, result.reply).then((chips) => {
+          if (chips.length > 0) setNatalChips(chips);
+        });
+      }
     } catch (e) {
       console.error("[ChatSessionScreen] send error:", e);
       await refreshMessages();
@@ -247,12 +254,8 @@ export default function ChatSessionScreen() {
 
     const isTr = i18n.language === "tr";
     const parts = isTr
-      ? [
-          `${person.name} için çok kısa bir doğum haritası okuması yap. En fazla 3 önemli nokta — her biri için bir cümle. Her nokta için kalın başlık. Sade ve anlaşılır dil. Toplamda 100 kelimeden az. Türkçe yanıt ver.`,
-        ]
-      : [
-          `Give a very short birth chart reading for ${person.name}. Pick 3 highlights max — one sentence each. Bold header per point. Plain simple language. Under 100 words total.`,
-        ];
+      ? [`${person.name}'nin doğum haritasını oku.`]
+      : [`Read ${person.name}'s birth chart.`];
     if (person.chart_gpt_json) {
       parts.push(isTr ? "[Ekli harita verileri — yalnızca bunu analiz için kullan]" : "[Attached chart data — use only this for analysis]");
       parts.push(`--- ${person.name} ---\n${person.chart_gpt_json}`);
@@ -261,6 +264,12 @@ export default function ChatSessionScreen() {
 
     setIsTyping(true);
     setPersonSelected(true);
+    setNatalChips([
+      t("chat.natalSuggestLove"),
+      t("chat.natalSuggestCareer"),
+      t("chat.natalSuggestEmotions"),
+      t("chat.natalSuggestChallenge"),
+    ]);
     activeChartPersonRef.current = person;
     try {
       await service.sendMessage(messageToSend, { displayContent: isTr ? `${person.name}'in doğum haritasını analiz et.` : `Analyze ${person.name}'s birth chart.` });
@@ -313,6 +322,18 @@ export default function ChatSessionScreen() {
       setIsTyping(false);
     }
   };
+
+  const lastMessageIsAssistant = messages.length > 0 && messages[messages.length - 1]?.role === "assistant";
+  const activeNatalChips = natalChips.map((text, i) => ({ id: String(i), text }));
+
+  const suggestionsBar = feature === FEATURE_NATAL_CHART_ANALYSIS && personSelected && !isTyping && lastMessageIsAssistant && activeNatalChips.length > 0
+    ? (
+      <SuggestionChips
+        suggestions={activeNatalChips}
+        onSelect={(s) => handleSendMessage(s.text)}
+      />
+    )
+    : null;
 
   const natalChartBar = feature === FEATURE_NATAL_CHART_ANALYSIS && !isLoading && !personSelected && savePerson.pendingSavePerson === null
     ? noCharts
@@ -474,7 +495,7 @@ export default function ChatSessionScreen() {
       mode={mode}
       disabled={savePerson.pendingSavePerson !== null || (feature === FEATURE_TAROT && !tarot.allRevealed)}
       onClose={() => navigation.goBack()}
-      trailingContent={natalChartBar ?? someoneSpecialBar ?? friendDynamicsBar ?? undefined}
+      trailingContent={natalChartBar ?? someoneSpecialBar ?? friendDynamicsBar ?? suggestionsBar ?? undefined}
       headerContent={tarotBar ?? crossroadsBar ?? readonlyTarotBar ?? readonlyCrossroadsBar ?? undefined}
     >
 

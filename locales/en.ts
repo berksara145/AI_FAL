@@ -101,6 +101,14 @@ const en = {
       "🤝 Add someone to your orbit and generate their birth chart — then I can read your friendship dynamic.",
     whosYourFriend:
       "🤝 Which friend are you curious about? Tap their name and I'll read your friendship dynamic.",
+    natalSuggestLove: "Love & relationships",
+    natalSuggestCareer: "Career & purpose",
+    natalSuggestEmotions: "Emotional patterns",
+    natalSuggestChallenge: "My biggest challenge",
+    natalSuggestStrengths: "My hidden strengths",
+    natalSuggestPatterns: "Patterns I keep repeating",
+    natalSuggestPartner: "What I need in a partner",
+    natalSuggestPurpose: "My life purpose",
   },
   tarot: {
     past: "PAST",

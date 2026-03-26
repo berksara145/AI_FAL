@@ -62,17 +62,15 @@ settings page looks bad the settings and back button etc are added twice
 also the name birth date etc are sticking to the left of the scree also the data part
 also add buttons like contact us which opens chat to write things 
 
-
-
 settings page needs beauty
-
-
 
 ypting speed in the beginning
 weird lag in locaiton she prompted to wrong tpying part
 no intruduction mode in the main page first opening
 dont know how to return to the main page
 
+time scroll düzelt akmıyo
+the glow of add person is weird
 
 add slide
 hepsine basmayı aklına gelmedi

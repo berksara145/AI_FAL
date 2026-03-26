@@ -21,6 +21,8 @@ import { getZodiacInfoFromBirthDate } from "./utils";
 import { Colors } from "../../utils/theme";
 import { usePersonDetail } from "./hooks/usePersonDetail";
 import { useTranslation } from "react-i18next";
+import { EXPLORE_CLASSES } from "../explore/exploreClasses";
+import i18n from "../../lib/i18n";
 
 type Props = NativeStackScreenProps<MainStackParamList, "PersonDetail">;
 
@@ -120,9 +122,14 @@ export default function PersonDetailScreen({ route }: Props) {
   };
 
   const openChartChat = () => {
+    const natalClass = EXPLORE_CLASSES.find((c) => c.id === "natal-chart-analysis");
+    if (!natalClass) return;
+    const isTr = i18n.language === "tr";
     (rootNavigation ?? navigation as any).navigate("ChatSession", {
-      feature: "natalChartAnalysis",
+      feature: natalClass.feature,
       mode: "interactive",
+      initialMessage: t("explore.initialBirthChart"),
+      agenda: isTr ? natalClass.agendaTr : natalClass.agenda,
     } as any);
   };
 

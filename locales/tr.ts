@@ -106,6 +106,14 @@ const tr = {
       "🤝 Yörüngeye birini ekle ve doğum haritasını oluştur — sonra arkadaşlık dinamiğini okuyabilirim.",
     whosYourFriend:
       "🤝 Hangi arkadaşın hakkında merak ediyorsun? İsmini seç, arkadaşlık dinamiğini okuyayım.",
+    natalSuggestLove: "Aşk ve ilişkiler",
+    natalSuggestCareer: "Kariyer ve amaç",
+    natalSuggestEmotions: "Duygusal kalıplarım",
+    natalSuggestChallenge: "En büyük zorluğum",
+    natalSuggestStrengths: "Gizli güçlerim",
+    natalSuggestPatterns: "Tekrar eden kalıplarım",
+    natalSuggestPartner: "İlişkide neye ihtiyacım var?",
+    natalSuggestPurpose: "Hayatımın amacı",
   },
   tarot: {
     past: "GEÇMİŞ",
