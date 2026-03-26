@@ -298,17 +298,18 @@ export class ChatSessionService {
  * Generates 3 short follow-up chip questions based on what the user just said and the AI's reply.
  * Runs as a separate lightweight GPT call so it never interferes with the main chat response.
  */
-export async function generateFollowUpChips(userMessage: string, aiReply: string): Promise<string[]> {
+export async function generateFollowUpChips(userMessage: string, aiReply: string, feature?: string): Promise<string[]> {
+  const context = feature === "tarot" ? "tarot card reading" : "birth chart astrology";
   try {
     const messages: ChatMsg[] = [
       {
         role: "system",
         content:
-          "You generate follow-up questions for a birth chart astrology chat. Based on what the user just asked and what the astrologer just said, write exactly 3 short follow-up questions the user might want to ask next. Each question must be 5-7 words max. Return only the 3 questions separated by | with no numbering, no extra text, nothing else.",
+          `You generate follow-up questions for a ${context} chat. Based on what the user just said and what the reader just replied, write exactly 3 short follow-up questions the user might want to ask next. Each question must be 5-7 words max. Return only the 3 questions separated by | with no numbering, no extra text, nothing else.`,
       },
       {
         role: "user",
-        content: `User said: "${userMessage}"\n\nAstrologer replied: "${aiReply.slice(0, 500)}"\n\nGenerate 3 follow-up questions:`,
+        content: `User said: "${userMessage}"\n\nReader replied: "${aiReply.slice(0, 500)}"\n\nGenerate 3 follow-up questions:`,
       },
     ];
     const reply = await sendChatToOpenAI(messages);

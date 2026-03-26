@@ -120,7 +120,11 @@ const tr = {
     today: "BUGÜN",
     future: "GELECEK",
     tap: "dokun",
-    readingCards: "✦  Kartlar okunuyor…  ✦",
+    readingCards: "✦  Kartlar okunuyor",
+    suggestMeaning: "Bu benim için ne anlama geliyor?",
+    suggestPast: "Geçmiş kart hakkında anlat",
+    suggestAction: "Bunu nasıl eyleme dökürsün?",
+    suggestMessage: "Ana mesaj nedir?",
   },
   onboarding: {
     title: "Hakkınızda",
@@ -156,7 +160,7 @@ const tr = {
     cosmicCrossroads: "Kozmik Kavşak",
     someoneSpecial: "Özel Biri",
     friendDynamics: "Arkadaşlık dinamikleri",
-    tarotReading: "Günlük Tarot Okuma",
+    tarotReading: "Tarot Okuma",
     birthChartAnalysis: "Doğum Haritası Analizi",
     initialGeneral:
       "✨ Aklında ne var? Özgürce konuş — dinlemek ve yol göstermek için buradayım.",

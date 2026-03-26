@@ -115,7 +115,11 @@ const en = {
     today: "TODAY",
     future: "FUTURE",
     tap: "tap",
-    readingCards: "✦  Reading the cards…  ✦",
+    readingCards: "✦  Reading the cards",
+    suggestMeaning: "What does this mean for me?",
+    suggestPast: "Tell me about the past card",
+    suggestAction: "How should I act on this?",
+    suggestMessage: "What's the key message?",
   },
   onboarding: {
     title: "About You",
@@ -151,7 +155,7 @@ const en = {
     cosmicCrossroads: "Cosmic Crossroads",
     someoneSpecial: "Someone Special",
     friendDynamics: "Friend dynamics",
-    tarotReading: "Daily Tarot Reading",
+    tarotReading: "Tarot Reading",
     birthChartAnalysis: "Birth Chart Analysis",
     initialGeneral: "✨ What's on your mind? Speak freely — I'm here to listen and guide you.",
     initialCrossroads:
