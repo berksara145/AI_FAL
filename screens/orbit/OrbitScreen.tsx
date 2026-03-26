@@ -33,8 +33,8 @@ export default function OrbitScreen() {
     if (showYouFirst || showAddPrompt) {
       loopRef.current = Animated.loop(
         Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1, duration: 1300, useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 0, duration: 1300, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 900, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 0, duration: 900, useNativeDriver: true }),
         ])
       );
       loopRef.current.start();
