@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import * as NavigationBar from "expo-navigation-bar";
 import { Platform, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import RootStack from "./navigation/RootStack";
 import "./global.css";
@@ -20,13 +21,15 @@ export default function App() {
   }, []);
 
   return (
-    <SafeAreaProvider>
-      <View style={{ flex: 1, backgroundColor: "#050016" }}>
-        <NavigationContainer>
-          <RootStack />
-          <StatusBar style="light" />
-        </NavigationContainer>
-      </View>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <View style={{ flex: 1, backgroundColor: "#050016" }}>
+          <NavigationContainer>
+            <RootStack />
+            <StatusBar style="light" />
+          </NavigationContainer>
+        </View>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

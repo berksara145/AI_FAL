@@ -13,7 +13,7 @@ import { useOrbitNodes, personToBirthDate } from "./hooks/useOrbitNodes";
 export default function OrbitScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
-  const rootNav = navigation.getParent?.()?.getParent?.() as
+  const rootNav = (navigation.getParent?.()?.getParent?.() ?? navigation.getParent?.()) as
     | NativeStackNavigationProp<RootStackParamList>
     | undefined;
 
