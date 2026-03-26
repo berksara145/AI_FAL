@@ -180,7 +180,11 @@ const tr = {
     pause: "Dur",
     wait: "Bekle",
     askYourQuestion: "sorunuzu yazın",
-    reading: "✦  Kavşak okunuyor…  ✦",
+    reading: "✦  Kavşak okunuyor",
+    suggestMore: "Bu konuda daha fazla anlat",
+    suggestWatch: "Neye dikkat etmeliyim?",
+    suggestForward: "Nasıl ilerlemeliyim?",
+    suggestCard: "Kart ne anlama geliyor?",
     typeHint: "Kartın sana ne söylediğini öğrenmek için\naşağıdaki sohbete sorunuzu yazın",
   },
   months: {

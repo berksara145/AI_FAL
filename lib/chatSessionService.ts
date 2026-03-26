@@ -299,7 +299,7 @@ export class ChatSessionService {
  * Runs as a separate lightweight GPT call so it never interferes with the main chat response.
  */
 export async function generateFollowUpChips(userMessage: string, aiReply: string, feature?: string): Promise<string[]> {
-  const context = feature === "tarot" ? "tarot card reading" : "birth chart astrology";
+  const context = feature === "tarot" ? "tarot card reading" : feature === "crossroads" ? "cosmic crossroads oracle reading" : "birth chart astrology";
   try {
     const messages: ChatMsg[] = [
       {

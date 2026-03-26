@@ -31,6 +31,39 @@ interface Props {
   generating: boolean;
 }
 
+function BouncingDots() {
+  const dot1 = useRef(new Animated.Value(0)).current;
+  const dot2 = useRef(new Animated.Value(0)).current;
+  const dot3 = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const bounce = (val: Animated.Value, delay: number) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(val, { toValue: -5, duration: 280, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+          Animated.timing(val, { toValue: 0, duration: 280, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+          Animated.delay(500),
+        ])
+      );
+    const a1 = bounce(dot1, 0);
+    const a2 = bounce(dot2, 160);
+    const a3 = bounce(dot3, 320);
+    a1.start(); a2.start(); a3.start();
+    return () => { a1.stop(); a2.stop(); a3.stop(); };
+  }, []);
+
+  return (
+    <View style={styles.dotsRow}>
+      {[dot1, dot2, dot3].map((dot, i) => (
+        <Animated.View key={i} style={{ transform: [{ translateY: dot }] }}>
+          <Text style={styles.dot}>•</Text>
+        </Animated.View>
+      ))}
+    </View>
+  );
+}
+
 export default function CrossroadsCard({ card, tarotCard, revealed, generating }: Props) {
   const { t } = useTranslation();
   const flipAnim = useRef(new Animated.Value(revealed ? 180 : 0)).current;
@@ -115,7 +148,10 @@ export default function CrossroadsCard({ card, tarotCard, revealed, generating }
       </View>
 
       {generating && (
-        <Text style={styles.generatingText}>{t("crossroads.reading")}</Text>
+        <View style={styles.generatingRow}>
+          <Text style={styles.generatingText}>{t("crossroads.reading")}</Text>
+          <BouncingDots />
+        </View>
       )}
     </View>
   );
@@ -192,10 +228,26 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontStyle: "italic",
   },
+  generatingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
   generatingText: {
     fontSize: 12,
     color: ChatColors.lunaraLabel,
     letterSpacing: 2,
     fontStyle: "italic",
+  },
+  dotsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    paddingBottom: 2,
+  },
+  dot: {
+    fontSize: 16,
+    color: ChatColors.lunaraLabel,
+    lineHeight: 16,
   },
 });

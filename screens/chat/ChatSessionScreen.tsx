@@ -66,6 +66,8 @@ export default function ChatSessionScreen() {
   const [natalChips, setNatalChips] = useState<string[]>([]);
   const [tarotChips, setTarotChips] = useState<string[]>([]);
   const tarotChipsInitRef = useRef(false);
+  const [crossroadsChips, setCrossroadsChips] = useState<string[]>([]);
+  const crossroadsChipsInitRef = useRef(false);
   const [readonlyTarotCards, setReadonlyTarotCards] = useState<[TarotCard, TarotCard, TarotCard] | null>(null);
   const [readonlyCrossroadsCard, setReadonlyCrossroadsCard] = useState<CrossroadsCardData | null>(null);
 
@@ -100,6 +102,23 @@ export default function ChatSessionScreen() {
       ]);
     }
   }, [tarot.allRevealed, tarot.generatingInterpretation]);
+
+  useEffect(() => {
+    if (
+      feature === FEATURE_COSMIC_CROSSROADS &&
+      crossroads.revealed &&
+      !crossroads.generating &&
+      !crossroadsChipsInitRef.current
+    ) {
+      crossroadsChipsInitRef.current = true;
+      setCrossroadsChips([
+        t("crossroads.suggestMore"),
+        t("crossroads.suggestWatch"),
+        t("crossroads.suggestForward"),
+        t("crossroads.suggestCard"),
+      ]);
+    }
+  }, [crossroads.revealed, crossroads.generating]);
 
   useEffect(() => {
     const init = async () => {
@@ -264,6 +283,11 @@ export default function ChatSessionScreen() {
           if (chips.length > 0) setTarotChips(chips);
         });
       }
+      if (feature === FEATURE_COSMIC_CROSSROADS) {
+        generateFollowUpChips(displayText, result.reply, "crossroads").then((chips) => {
+          if (chips.length > 0) setCrossroadsChips(chips);
+        });
+      }
     } catch (e) {
       console.error("[ChatSessionScreen] send error:", e);
       await refreshMessages();
@@ -349,6 +373,16 @@ export default function ChatSessionScreen() {
 
   const lastMessageIsAssistant = messages.length > 0 && messages[messages.length - 1]?.role === "assistant";
   const activeNatalChips = natalChips.map((text, i) => ({ id: String(i), text }));
+
+  const activeCrossroadsChips = crossroadsChips.map((text, i) => ({ id: String(i), text }));
+  const crossroadsSuggestionsBar = feature === FEATURE_COSMIC_CROSSROADS && crossroads.revealed && !crossroads.generating && !isTyping && lastMessageIsAssistant && activeCrossroadsChips.length > 0
+    ? (
+      <SuggestionChips
+        suggestions={activeCrossroadsChips}
+        onSelect={(s) => handleSendMessage(s.text)}
+      />
+    )
+    : null;
 
   const activeTarotChips = tarotChips.map((text, i) => ({ id: String(i), text }));
   const tarotSuggestionsBar = feature === FEATURE_TAROT && tarot.allRevealed && !tarot.generatingInterpretation && !isTyping && lastMessageIsAssistant && activeTarotChips.length > 0
@@ -529,7 +563,7 @@ export default function ChatSessionScreen() {
       mode={mode}
       disabled={savePerson.pendingSavePerson !== null || (feature === FEATURE_TAROT && !tarot.allRevealed)}
       onClose={() => navigation.goBack()}
-      trailingContent={natalChartBar ?? someoneSpecialBar ?? friendDynamicsBar ?? suggestionsBar ?? tarotSuggestionsBar ?? undefined}
+      trailingContent={natalChartBar ?? someoneSpecialBar ?? friendDynamicsBar ?? suggestionsBar ?? tarotSuggestionsBar ?? crossroadsSuggestionsBar ?? undefined}
       headerContent={tarotBar ?? crossroadsBar ?? readonlyTarotBar ?? readonlyCrossroadsBar ?? undefined}
     >
 

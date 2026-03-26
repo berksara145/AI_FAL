@@ -174,7 +174,11 @@ const en = {
     pause: "Pause",
     wait: "Wait",
     askYourQuestion: "type your question",
-    reading: "✦  Reading the crossroads…  ✦",
+    reading: "✦  Reading the crossroads",
+    suggestMore: "Tell me more about this",
+    suggestWatch: "What should I watch for?",
+    suggestForward: "How do I move forward?",
+    suggestCard: "What does the card mean?",
     typeHint: "Type your question in the chat below\nto reveal what the card holds for you",
   },
   months: {
