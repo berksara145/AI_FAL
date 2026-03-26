@@ -1,16 +1,19 @@
-import React, { useRef, useEffect } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-} from "react-native";
+import React, { useEffect, useRef } from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  runOnJS,
+} from "react-native-reanimated";
 
 const ITEM_HEIGHT = 50;
 const VISIBLE_ITEMS = 5;
 const PICKER_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
+const CENTER = Math.floor(VISIBLE_ITEMS / 2); // 2
+
+const SNAP_CFG = { damping: 32, stiffness: 260, mass: 0.5 };
 
 interface IOSDatePickerProps {
   value: number;
@@ -29,69 +32,85 @@ export default function IOSDatePicker({
   label,
   formatter = (v) => v.toString(),
 }: IOSDatePickerProps) {
-  const scrollRef = useRef<ScrollView>(null);
-
   const items = Array.from({ length: max - min + 1 }, (_, i) => min + i);
-  const centerIndexOffset = Math.floor(VISIBLE_ITEMS / 2);
-  const padding = centerIndexOffset * ITEM_HEIGHT;
-  const selectedIndex = items.indexOf(value);
+  const count = items.length;
+  const minOffset = -(count - 1) * ITEM_HEIGHT;
 
-  // Update scroll position when value changes (matches WheelPicker logic)
-  useEffect(() => {
-    if (selectedIndex >= 0) {
-      scrollRef.current?.scrollTo({
-        y: selectedIndex * ITEM_HEIGHT,
-        animated: false,
-      });
-    }
-  }, [selectedIndex]);
+  const offsetY   = useSharedValue(-(items.indexOf(value)) * ITEM_HEIGHT);
+  const startY    = useSharedValue(0);
 
-  // Scrolling physics logic from WheelPicker
-  const onScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const index = Math.round(e.nativeEvent.contentOffset.y / ITEM_HEIGHT);
-    if (index !== selectedIndex && index >= 0 && index < items.length) {
-      onValueChange(items[index]);
-    }
+  // Prevent useEffect from re-scrolling when WE triggered the value change
+  const internalRef = useRef(false);
+
+  const commitValue = (idx: number) => {
+    internalRef.current = true;
+    onValueChange(items[idx]);
   };
+
+  // Sync when value is changed externally (e.g. month → day max shrinks)
+  useEffect(() => {
+    if (internalRef.current) {
+      internalRef.current = false;
+      return;
+    }
+    const idx = items.indexOf(value);
+    if (idx >= 0) {
+      offsetY.value = withSpring(-idx * ITEM_HEIGHT, SNAP_CFG);
+    }
+  }, [value, min, max]);
+
+  // ── Gesture ────────────────────────────────────────────────────────────────
+  const gesture = Gesture.Pan()
+    .onBegin(() => {
+      "worklet";
+      startY.value = offsetY.value;
+    })
+    .onUpdate((e) => {
+      "worklet";
+      offsetY.value = Math.max(minOffset, Math.min(0, startY.value + e.translationY));
+    })
+    .onEnd((e) => {
+      "worklet";
+      // Project landing position from velocity, snap there immediately with spring.
+      // This gives Apple-like momentum feel with zero end-of-scroll lag.
+      const projected = offsetY.value + e.velocityY * 0.18;
+      const clamped   = Math.max(minOffset, Math.min(0, projected));
+      const idx       = Math.max(0, Math.min(count - 1, Math.round(-clamped / ITEM_HEIGHT)));
+      const target    = -idx * ITEM_HEIGHT;
+      offsetY.value   = withSpring(target, { ...SNAP_CFG, velocity: e.velocityY });
+      runOnJS(commitValue)(idx);
+    });
+
+  const listStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: offsetY.value + CENTER * ITEM_HEIGHT }],
+  }));
 
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
 
       <View style={styles.pickerWrapper}>
-        {/* Selection indicator */}
+        {/* Selection band — same as original */}
         <View style={styles.selectionIndicator} pointerEvents="none" />
 
-        <ScrollView
-          ref={scrollRef}
-          showsVerticalScrollIndicator={false}
-          decelerationRate="fast"
-          snapToInterval={ITEM_HEIGHT}
-          onMomentumScrollEnd={onScrollEnd}
-          contentContainerStyle={{
-            paddingVertical: padding,
-          }}
-        >
-          {items.map((item) => {
-            const isSelected = item === value;
-            return (
-              <View key={item} style={styles.item}>
-                <Text
-                  style={[
-                    styles.itemText,
-                    isSelected && styles.selectedItemText,
-                  ]}
-                >
-                  {formatter(item)}
-                </Text>
-              </View>
-            );
-          })}
-        </ScrollView>
+        <GestureDetector gesture={gesture}>
+          <View style={styles.gestureArea}>
+            <Animated.View style={listStyle}>
+              {items.map((item) => (
+                <View key={item} style={styles.item}>
+                  <Text style={[styles.itemText, item === value && styles.selectedItemText]}>
+                    {formatter(item)}
+                  </Text>
+                </View>
+              ))}
+            </Animated.View>
+          </View>
+        </GestureDetector>
       </View>
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -105,11 +124,11 @@ const styles = StyleSheet.create({
   },
   pickerWrapper: {
     height: PICKER_HEIGHT,
-    overflow: "hidden",
+    position: "relative",
   },
   selectionIndicator: {
     position: "absolute",
-    top: ITEM_HEIGHT * 2,
+    top: ITEM_HEIGHT * CENTER,
     height: ITEM_HEIGHT,
     left: 0,
     right: 0,
@@ -117,7 +136,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: "rgba(212,175,55,0.4)",
     backgroundColor: "rgba(212,175,55,0.08)",
-    zIndex: 1,
+    zIndex: 2,
+  },
+  gestureArea: {
+    height: PICKER_HEIGHT,
+    overflow: "hidden",
   },
   item: {
     height: ITEM_HEIGHT,
