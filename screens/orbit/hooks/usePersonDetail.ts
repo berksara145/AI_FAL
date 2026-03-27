@@ -20,6 +20,7 @@ export function usePersonDetail(name: string) {
   const [generatingInterpretation, setGeneratingInterpretation] = useState(false);
   const [interpretationError, setInterpretationError] = useState<string | null>(null);
   const [loadingPhrase, setLoadingPhrase] = useState(LOADING_PHRASES[0]);
+  const [birthTimeKnown, setBirthTimeKnown] = useState(true);
 
   const chartGptJsonRef = useRef<string | null>(null);
   const phraseIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -90,6 +91,7 @@ export function usePersonDetail(name: string) {
               setPngUri(person.png_path ?? null);
               setInterpretation(person.chart_interpretation ?? null);
               chartGptJsonRef.current = person.chart_gpt_json ?? null;
+              setBirthTimeKnown(person.birth_time_known !== 0);
               setLoadingChart(false);
 
               // Auto-generate if chart exists but no interpretation yet
@@ -120,6 +122,7 @@ export function usePersonDetail(name: string) {
     interpretationError,
     loadingPhrase,
     hasChart: !!chartGptJsonRef.current,
+    birthTimeKnown,
     retryGeneration,
   };
 }

@@ -71,6 +71,11 @@ const tr = {
     preparingReading: "Lunara yorumunuzu hazırlıyor…",
     tapToRetry: "Tekrar denemek için dokun",
     chatAboutChart: "✦ Bu harita hakkında sohbet et",
+    birthTimeUnknownTitle: "Yükselen Burç & Evler Mevcut Değil",
+    birthTimeUnknownDesc: "Tam haritayı açmak için doğum saatini ekle",
+    birthTimeUnknownRising: "Yükselen Burç",
+    birthTimeUnknownHouses: "Ev Konumları",
+    birthTimeUnknownMC: "Orta Gökyüzü",
   },
   history: {
     title: "Sohbet Geçmişi",
@@ -146,7 +151,7 @@ const tr = {
     nameInvalid: "Tam olarak anlayamadım. Lütfen adını tekrar söyler misin?",
     dateInvalid: "Bu geçerli bir tarih gibi görünmüyor. Lütfen seçiminizi kontrol edin.",
     dateSaved:
-      "Mükemmel! Doğum tarihin {{month}} {{day}}, {{year}}. 🎂✨\n\nArtık her şeye sahibim \n\nProfilini oluşturuyorum...",
+      "Mükemmel! Doğum tarihin {{month}} {{day}}, {{year}}. 🎂✨\nArtık her şeye sahibim \n\nProfilini oluşturuyorum...",
     dateError:
       "Üzgünüm, doğum tarihini kaydederken sorun yaşadım. Lütfen tekrar deneyin.",
     selectBirthDate: "Doğum Tarihinizi Seçin",
@@ -159,6 +164,7 @@ const tr = {
     title: "Doğum Saatinizi Seçin",
     hour: "Saat",
     minute: "Dakika",
+    dontKnow: "Doğum saatimi bilmiyorum",
   },
   birthMap: {
     title: "Doğum Haritası Oluştur",
@@ -208,6 +214,11 @@ const tr = {
     feature1: "Doğum Haritası",
     feature2: "Tarot",
     feature3: "Uyumluluk",
+    feature4: "Kavşak",
+    featureDesc1: "Doğduğun anda çizilen gök haritanı keşfet — gezegenler, evler ve senin kim olduğunun kozmik planı.",
+    featureDesc2: "Kadim kartların konuşmasına izin ver. Falını çek ve evrenin arketiplerinden rehberlik al.",
+    featureDesc3: "İki ruhun kaderini keşfet. İki doğum haritası arasındaki uyum, gerilim ve alın yazısını gör.",
+    featureDesc4: "Seçim ile kaderin kesişiminde dur. Yıldızlar, en gerçek benliğine giden yolu aydınlatıyor.",
     cta: "Yolculuğuna Başla",
   },
   premium: {

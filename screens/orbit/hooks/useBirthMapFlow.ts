@@ -45,7 +45,7 @@ export function useBirthMapFlow(
     const timeString = `${birthTime.hour.toString().padStart(2, "0")}:${birthTime.minute.toString().padStart(2, "0")}`;
 
     try {
-      await updateBirthTime(birthTime.hour, birthTime.minute, personName ?? undefined);
+      await updateBirthTime(birthTime.hour, birthTime.minute, personName ?? undefined, true);
     } catch (error) {
       console.error("[useBirthMapFlow] Error saving birth time:", error);
     }
@@ -54,6 +54,23 @@ export function useBirthMapFlow(
     await appendMessage(
       "assistant",
       `Thank you! You were born at ${timeString}. Now, please enter the location where you were born.`,
+      true
+    );
+  };
+
+  const handleTimeUnknown = async () => {
+    setShowTimePicker(false);
+
+    try {
+      await updateBirthTime(12, 0, personName ?? undefined, false);
+    } catch (error) {
+      console.error("[useBirthMapFlow] Error saving unknown birth time:", error);
+    }
+
+    await appendMessage("user", "I don't know my birth time");
+    await appendMessage(
+      "assistant",
+      "No problem! We'll use a noon chart — you'll still get accurate planetary positions and aspects. Now, please enter the location where you were born.",
       true
     );
   };
@@ -128,6 +145,7 @@ export function useBirthMapFlow(
     setBirthLocation,
     isGenerating,
     handleTimeConfirm,
+    handleTimeUnknown,
     handleLocationConfirm,
     handleStreamingComplete,
   };

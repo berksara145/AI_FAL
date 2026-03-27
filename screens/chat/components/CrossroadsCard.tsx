@@ -13,6 +13,7 @@ import type { TarotCard } from "../../../lib/tarotDeck";
 import type { CrossroadsCard } from "../../../lib/cosmicCrossroads";
 import { Colors, ChatColors } from "../../../utils/theme";
 import { useTranslation } from "react-i18next";
+import i18n from "../../../lib/i18n";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CARD_WIDTH = Math.min(Math.floor(SCREEN_WIDTH * 0.32), 130);
@@ -66,6 +67,9 @@ function BouncingDots() {
 
 export default function CrossroadsCard({ card, tarotCard, revealed, generating }: Props) {
   const { t } = useTranslation();
+  const isTr = i18n.language === "tr";
+  const cardName = isTr ? card.nameTr : card.name;
+  const cardVerdict = isTr ? card.verdictTr : card.verdict;
   const flipAnim = useRef(new Animated.Value(revealed ? 180 : 0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -141,8 +145,8 @@ export default function CrossroadsCard({ card, tarotCard, revealed, generating }
                 {t(dirConfig.key).toUpperCase()}
               </Text>
             </View>
-            <Text style={styles.cardName}>{card.name}</Text>
-            <Text style={styles.verdict}>{card.verdict}</Text>
+            <Text style={styles.cardName}>{cardName}</Text>
+            <Text style={styles.verdict}>{cardVerdict}</Text>
           </View>
         )}
       </View>

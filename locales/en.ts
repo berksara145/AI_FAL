@@ -67,6 +67,11 @@ const en = {
     preparingReading: "Lunara is preparing your reading…",
     tapToRetry: "Tap to retry",
     chatAboutChart: "✦ Chat about this chart",
+    birthTimeUnknownTitle: "Rising Sign & Houses Unavailable",
+    birthTimeUnknownDesc: "Add your birth time to unlock the full chart",
+    birthTimeUnknownRising: "Rising Sign",
+    birthTimeUnknownHouses: "House Positions",
+    birthTimeUnknownMC: "Midheaven",
   },
   history: {
     title: "Chat History",
@@ -141,7 +146,7 @@ const en = {
     nameInvalid: "I didn't quite catch that. Could you please tell me your name?",
     dateInvalid: "That doesn't seem like a valid date. Please check your selection.",
     dateSaved:
-      "Perfect! Your birth date is {{month}} {{day}}, {{year}}. 🎂✨\n\nI now have everything \n\nLet me finish setting up your profile...",
+      "Perfect! Your birth date is {{month}} {{day}}, {{year}}. 🎂✨\nI now have everything \n\nLet me finish setting up your profile...",
     dateError:
       "I'm sorry, I had trouble saving your birth date. Please try again.",
     selectBirthDate: "Select Your Birth Date",
@@ -154,6 +159,7 @@ const en = {
     title: "Select Your Birth Time",
     hour: "Hour",
     minute: "Minute",
+    dontKnow: "I don't know my birth time",
   },
   birthMap: {
     title: "Generate Birth Map",
@@ -202,6 +208,11 @@ const en = {
     feature1: "Birth Chart",
     feature2: "Tarot",
     feature3: "Compatibility",
+    feature4: "Crossroads",
+    featureDesc1: "Uncover the celestial map drawn at your birth — your planets, houses, and the cosmic blueprint of who you are.",
+    featureDesc2: "Let the ancient cards speak. Draw your spread and receive guidance from the archetypes of the universe.",
+    featureDesc3: "Discover how two souls align in the cosmos. Explore the harmony, tension, and destiny between charts.",
+    featureDesc4: "Stand at the intersection of choice and fate. The stars illuminate which path leads to your truest self.",
     cta: "Begin Your Journey",
   },
   premium: {

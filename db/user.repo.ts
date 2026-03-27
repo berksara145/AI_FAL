@@ -12,6 +12,7 @@ export interface User {
   birth_lng: number | null;
   birth_hour: number | null;
   birth_minute: number | null;
+  birth_time_known: number | null; // 1 = known, 0 = unknown (noon chart used)
   onboarding_completed: number; // 0 = false, 1 = true (SQLite doesn't have boolean)
   created_at: string;
   updated_at: string;
@@ -203,7 +204,7 @@ export const updateBirthDate = async (
  * Update user's birth time (hour, minute)
  * Automatically gets the user from database (there's only one user)
  */
-export const updateBirthTime = async (hour: number, minute: number, personName?: string): Promise<void> => {
+export const updateBirthTime = async (hour: number, minute: number, personName?: string, timeKnown = true): Promise<void> => {
   await ensureDatabaseInitialized();
 
   try {
@@ -216,8 +217,8 @@ export const updateBirthTime = async (hour: number, minute: number, personName?:
       ]);
       if (existing.length > 0) {
         await executeSql(
-          "UPDATE persons SET birth_hour = ?, birth_minute = ?, updated_at = datetime('now') WHERE id = ?",
-          [hour, minute, existing[0].id]
+          "UPDATE persons SET birth_hour = ?, birth_minute = ?, birth_time_known = ?, updated_at = datetime('now') WHERE id = ?",
+          [hour, minute, timeKnown ? 1 : 0, existing[0].id]
         );
         console.log("Person birth time updated successfully for", personName);
       } else {
@@ -230,8 +231,8 @@ export const updateBirthTime = async (hour: number, minute: number, personName?:
       }
     } else {
       await executeSql(
-        "UPDATE users SET birth_hour = ?, birth_minute = ?, updated_at = datetime('now') WHERE id = ?",
-        [hour, minute, user.id]
+        "UPDATE users SET birth_hour = ?, birth_minute = ?, birth_time_known = ?, updated_at = datetime('now') WHERE id = ?",
+        [hour, minute, timeKnown ? 1 : 0, user.id]
       );
       const updated = await querySql<User>("SELECT * FROM users WHERE id = ?", [user.id]);
       if (updated.length > 0) {

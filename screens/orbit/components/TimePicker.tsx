@@ -9,6 +9,7 @@ interface TimePickerProps {
   minute: number;
   onTimeChange: (updates: { hour?: number; minute?: number }) => void;
   onConfirm: () => void;
+  onDontKnow?: () => void;
   /** Whether to show the confirm button (default true) */
   showConfirm?: boolean;
 }
@@ -18,6 +19,7 @@ export default function TimePicker({
   minute,
   onTimeChange,
   onConfirm,
+  onDontKnow,
   showConfirm = true,
 }: TimePickerProps) {
   const { t } = useTranslation();
@@ -73,6 +75,16 @@ export default function TimePicker({
           <Text style={styles.confirmButtonText}>{t("common.continue")}</Text>
         </TouchableOpacity>
       )}
+
+      {onDontKnow && (
+        <TouchableOpacity
+          style={styles.dontKnowButton}
+          onPress={onDontKnow}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.dontKnowText}>{t("timePicker.dontKnow")}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -114,5 +126,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     letterSpacing: 1,
+  },
+  dontKnowButton: {
+    alignItems: "center",
+    paddingVertical: 12,
+    marginTop: 4,
+  },
+  dontKnowText: {
+    color: "rgba(212,175,55,0.55)",
+    fontSize: 13,
+    letterSpacing: 0.5,
   },
 });

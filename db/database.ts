@@ -77,6 +77,11 @@ export const initDatabase = (): Promise<void> => {
       } catch (e) {
         // Column already exists, ignore
       }
+      try {
+        db.execSync(`ALTER TABLE users ADD COLUMN birth_time_known INTEGER DEFAULT 1;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
 
       // Chat sessions table
       db.execSync(`
@@ -189,6 +194,11 @@ export const initDatabase = (): Promise<void> => {
       }
       try {
         db.execSync(`ALTER TABLE persons ADD COLUMN chart_interpretation TEXT;`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
+      try {
+        db.execSync(`ALTER TABLE persons ADD COLUMN birth_time_known INTEGER DEFAULT 1;`);
       } catch (e) {
         // Column already exists, ignore
       }

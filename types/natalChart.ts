@@ -18,6 +18,8 @@ export interface BirthData {
     latitude: number;
     longitude: number;
   };
+  /** False when birth time was not provided — noon was used as fallback. Houses and rising sign are unreliable. */
+  birthTimeKnown?: boolean;
 }
 
 export interface PlanetPosition {

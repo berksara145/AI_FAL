@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   Modal,
+  Animated,
+  Easing,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -22,6 +24,7 @@ import { useSettings } from "./hooks/useSettings";
 import { useTranslation } from "react-i18next";
 import i18n, { SUPPORTED_LANGUAGES, changeAppLanguage, type SupportedLanguage } from "../../lib/i18n";
 import type { RootStackParamList } from "../../navigation/RootStack";
+import { getZodiacInfoForMonthDay } from "../orbit/utils";
 
 function formatDate(year: number | null, month: number | null, day: number | null, notSet: string): string {
   if (!year || !month || !day) return notSet;
@@ -34,118 +37,128 @@ function formatTime(hour: number | null, minute: number | null, notSet: string):
   return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
 }
 
-// ── Small components ──────────────────────────────────────────────────────────
+// ── Spinning avatar ring ──────────────────────────────────────────────────────
+
+function AvatarRing({ initial }: { initial: string }) {
+  const rotation = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(rotation, {
+        toValue: 1,
+        duration: 9000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  }, []);
+
+  const spin = rotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+
+  return (
+    <View style={styles.avatarWrap}>
+      <Animated.View style={[styles.avatarRing, { transform: [{ rotate: spin }] }]} />
+      <View style={styles.avatarCircle}>
+        <Text style={styles.avatarInitial}>{initial.toUpperCase()}</Text>
+      </View>
+    </View>
+  );
+}
+
+// ── Section header ────────────────────────────────────────────────────────────
 
 function SectionTitle({ label }: { label: string }) {
   return <Text style={styles.sectionTitle}>{label}</Text>;
 }
 
-function Card({ children }: { children: React.ReactNode }) {
-  return <View style={styles.card}>{children}</View>;
-}
+// ── Action row (icon + text + chevron) ────────────────────────────────────────
 
-function Divider() {
-  return <View style={styles.divider} />;
-}
-
-/** Centered profile field — label above, value below, pencil in corner. */
-function ProfileRow({
+function ActionRow({
+  icon,
+  iconBg,
   label,
-  value,
-  onEdit,
-  notSet,
+  subtitle,
+  onPress,
+  danger,
+  hideChevron,
 }: {
+  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  iconBg: string;
   label: string;
-  value?: string;
-  onEdit?: () => void;
-  notSet: string;
+  subtitle?: string;
+  onPress?: () => void;
+  danger?: boolean;
+  hideChevron?: boolean;
 }) {
+  const labelColor = danger ? "#b33b3b" : ChatColors.lunaraText;
+  const subtitleColor = danger ? "#b33b3b88" : "rgba(15,9,32,0.52)";
+
   return (
     <Pressable
-      style={({ pressed }) => [styles.profileRow, pressed && onEdit ? styles.rowPressed : null]}
-      onPress={onEdit}
-      disabled={!onEdit}
+      style={({ pressed }) => [styles.actionRow, pressed && onPress ? styles.rowPressed : null]}
+      onPress={onPress}
+      disabled={!onPress}
     >
-      <Text style={styles.profileLabel}>{label.toUpperCase()}</Text>
-      <Text style={[styles.profileValue, !value && styles.profileValueUnset]}>
-        {value || notSet}
-      </Text>
-      {onEdit && (
+      <View style={[styles.iconBox, { backgroundColor: iconBg }]}>
+        <MaterialCommunityIcons name={icon} size={18} color={danger ? "#b33b3b" : ChatColors.lunaraLabel} />
+      </View>
+      <View style={styles.actionContent}>
+        <Text style={[styles.actionLabel, { color: labelColor }]}>{label}</Text>
+        {subtitle ? <Text style={[styles.actionSubtitle, { color: subtitleColor }]}>{subtitle}</Text> : null}
+      </View>
+      {!hideChevron && (
         <MaterialCommunityIcons
-          name="pencil-outline"
-          size={14}
-          color="rgba(15,9,32,0.28)"
-          style={styles.profilePencil}
+          name="chevron-right"
+          size={18}
+          color={danger ? "#b33b3b55" : "rgba(15,9,32,0.25)"}
         />
       )}
     </Pressable>
   );
 }
 
-/** Centered single-column action row — label + optional subtitle, all centered. */
-function CenteredRow({
-  label,
-  subtitle,
-  onPress,
-  danger,
-}: {
-  label: string;
-  subtitle?: string;
-  onPress?: () => void;
-  danger?: boolean;
-}) {
-  return (
-    <Pressable
-      style={({ pressed }) => [styles.centeredRow, pressed && onPress ? styles.rowPressed : null]}
-      onPress={onPress}
-      disabled={!onPress}
-    >
-      <Text style={[styles.centeredRowLabel, danger && { color: "#b33b3b" }]}>{label}</Text>
-      {subtitle ? (
-        <Text style={[styles.centeredRowSubtitle, danger && { color: "#b33b3b88" }]}>{subtitle}</Text>
-      ) : null}
-    </Pressable>
-  );
-}
+// ── Field card (for birth time / birth place grid) ────────────────────────────
 
-/** Standard left-aligned row for non-profile sections. */
-function InfoRow({
+function FieldCard({
   icon,
   label,
   value,
-  onEdit,
-  iconColor,
-  danger,
+  notSet,
+  onPress,
 }: {
   icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
   label: string;
   value?: string;
-  onEdit?: () => void;
-  iconColor?: string;
-  danger?: boolean;
+  notSet: string;
+  onPress?: () => void;
 }) {
-  const accent = danger ? "#b33b3b" : (iconColor ?? ChatColors.lunaraLabel);
+  const isSet = !!value;
   return (
     <Pressable
-      style={({ pressed }) => [styles.infoRow, pressed && onEdit ? styles.rowPressed : null]}
-      onPress={onEdit}
-      disabled={!onEdit}
+      style={({ pressed }) => [styles.fieldCard, pressed && onPress ? styles.rowPressed : null]}
+      onPress={onPress}
+      disabled={!onPress}
     >
-      <View style={[styles.iconBox, { backgroundColor: accent + "22" }]}>
-        <MaterialCommunityIcons name={icon} size={18} color={accent} />
+      <View style={styles.fieldCardIcon}>
+        <MaterialCommunityIcons name={icon} size={16} color={ChatColors.lunaraLabel} />
       </View>
-      <View style={styles.infoContent}>
-        <Text style={[styles.infoLabel, danger && { color: "#b33b3b" }]}>{label}</Text>
-        {value ? <Text style={styles.infoValue} numberOfLines={1}>{value}</Text> : null}
-      </View>
-      <MaterialCommunityIcons
-        name="chevron-right"
-        size={16}
-        color={danger ? "#b33b3b88" : "rgba(15,9,32,0.25)"}
-      />
+      <Text style={styles.fieldCardLabel}>{label}</Text>
+      <Text style={[styles.fieldCardValue, !isSet && styles.fieldCardValueUnset]}>
+        {isSet ? value : notSet}
+      </Text>
+      {onPress && (
+        <View style={styles.fieldCardPencil}>
+          <MaterialCommunityIcons name="pencil-outline" size={12} color="rgba(15,9,32,0.28)" />
+        </View>
+      )}
     </Pressable>
   );
 }
+
+// ── Inline edit panel ─────────────────────────────────────────────────────────
 
 function EditPanel({
   children,
@@ -178,6 +191,8 @@ function EditPanel({
     </View>
   );
 }
+
+// ── Legal modal ───────────────────────────────────────────────────────────────
 
 function LegalModal({
   visible,
@@ -218,6 +233,18 @@ export default function SettingsScreen() {
   const currentLang = i18nInstance.language as SupportedLanguage;
   const [legalModal, setLegalModal] = useState<"terms" | "privacy" | null>(null);
 
+  const notSet = t("common.notSet");
+
+  const zodiacInfo =
+    s.user?.birth_month != null && s.user?.birth_day != null
+      ? getZodiacInfoForMonthDay(s.user.birth_month, s.user.birth_day)
+      : null;
+
+  const initial = s.user?.name?.[0] ?? "✦";
+  const birthDateStr = formatDate(s.user?.birth_year ?? null, s.user?.birth_month ?? null, s.user?.birth_day ?? null, "");
+  const birthTimeStr = formatTime(s.user?.birth_hour ?? null, s.user?.birth_minute ?? null, notSet);
+  const birthPlaceStr = s.user?.birth_place_name ?? undefined;
+
   const handleClearHistory = () => {
     Alert.alert(
       t("settings.clearHistoryAlertTitle"),
@@ -245,8 +272,6 @@ export default function SettingsScreen() {
     });
   };
 
-  const notSet = t("common.notSet");
-
   if (s.loading) {
     return (
       <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
@@ -268,6 +293,7 @@ export default function SettingsScreen() {
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
       <StatusBar barStyle="light-content" backgroundColor={ChatColors.headerBg} />
 
+      {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={styles.headerSide}>
           <MaterialCommunityIcons name="arrow-left" size={22} color={ChatColors.sendActive} />
@@ -286,52 +312,65 @@ export default function SettingsScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* ── Your Profile ── */}
-          <SectionTitle label={t("settings.yourProfile")} />
-          <Card>
-            {/* 2-column grid for name + birth date */}
-            <View style={styles.profileGrid}>
-              <View style={styles.profileGridCell}>
-                <ProfileRow
-                  label={t("settings.name")}
-                  value={s.user?.name ?? undefined}
-                  onEdit={s.editingField === "name" ? undefined : () => s.startEditing("name")}
-                  notSet={notSet}
-                />
-              </View>
-              <View style={styles.profileGridDividerV} />
-              <View style={styles.profileGridCell}>
-                <ProfileRow
-                  label={t("settings.birthDate")}
-                  value={formatDate(s.user?.birth_year ?? null, s.user?.birth_month ?? null, s.user?.birth_day ?? null, notSet) !== notSet
-                    ? formatDate(s.user?.birth_year ?? null, s.user?.birth_month ?? null, s.user?.birth_day ?? null, notSet)
-                    : undefined}
-                  onEdit={s.editingField === "date" ? undefined : () => s.startEditing("date")}
-                  notSet={notSet}
-                />
-              </View>
-            </View>
 
-            {/* Edit panels for name / date */}
+          {/* ── Profile card ── */}
+          <View style={styles.profileCard}>
+            <AvatarRing initial={initial} />
+
+            <Pressable
+              onPress={s.editingField === "name" ? undefined : () => s.startEditing("name")}
+              style={styles.profileNameWrap}
+            >
+              <Text style={[styles.profileName, !s.user?.name && styles.profileNameUnset]}>
+                {s.user?.name || notSet}
+              </Text>
+              {s.user?.name ? (
+                <MaterialCommunityIcons name="pencil-outline" size={13} color="rgba(15,9,32,0.28)" style={{ marginLeft: 6, marginTop: 2 }} />
+              ) : null}
+            </Pressable>
+
+            {zodiacInfo ? (
+              <Text style={styles.profileZodiac}>
+                {zodiacInfo.symbol}  {zodiacInfo.name}
+              </Text>
+            ) : null}
+
+            {birthDateStr ? (
+              <Pressable
+                onPress={s.editingField === "date" ? undefined : () => s.startEditing("date")}
+                style={styles.profileDatePill}
+              >
+                <Text style={styles.profileDateText}>{birthDateStr}</Text>
+              </Pressable>
+            ) : (
+              <Pressable
+                onPress={s.editingField === "date" ? undefined : () => s.startEditing("date")}
+                style={[styles.profileDatePill, styles.profileDatePillUnset]}
+              >
+                <Text style={styles.profileDateTextUnset}>{t("settings.birthDate")}</Text>
+              </Pressable>
+            )}
+
+            {/* Edit: name */}
             {s.editingField === "name" && (
-              <>
-                <View style={styles.profileGridDividerH} />
+              <View style={styles.profileEditWrap}>
                 <EditPanel onSave={s.saveName} onCancel={s.cancelEditing} saving={s.saving} error={s.error}>
                   <TextInput
                     style={styles.textInput}
                     value={s.nameBuffer}
                     onChangeText={s.setNameBuffer}
                     placeholder={t("settings.namePlaceholder")}
-                    placeholderTextColor={ChatColors.placeholder}
-                    selectionColor={ChatColors.lunaraLabel}
+                    placeholderTextColor="rgba(212,175,55,0.35)"
+                    selectionColor={ChatColors.sendActive}
                     autoFocus
                   />
                 </EditPanel>
-              </>
+              </View>
             )}
+
+            {/* Edit: birth date */}
             {s.editingField === "date" && (
-              <>
-                <View style={styles.profileGridDividerH} />
+              <View style={styles.profileEditWrap}>
                 <EditPanel onSave={s.saveDate} onCancel={s.cancelEditing} saving={s.saving} error={s.error}>
                   <Text style={styles.editHint}>{t("settings.birthDateHint")}</Text>
                   <View style={styles.dateRow}>
@@ -340,8 +379,8 @@ export default function SettingsScreen() {
                       value={s.dateBuffer.day}
                       onChangeText={(v) => s.setDateBuffer({ ...s.dateBuffer, day: v })}
                       placeholder="DD"
-                      placeholderTextColor={ChatColors.placeholder}
-                      selectionColor={ChatColors.lunaraLabel}
+                      placeholderTextColor="rgba(212,175,55,0.35)"
+                      selectionColor={ChatColors.sendActive}
                       keyboardType="number-pad"
                       maxLength={2}
                       textAlign="center"
@@ -352,8 +391,8 @@ export default function SettingsScreen() {
                       value={s.dateBuffer.month}
                       onChangeText={(v) => s.setDateBuffer({ ...s.dateBuffer, month: v })}
                       placeholder="MM"
-                      placeholderTextColor={ChatColors.placeholder}
-                      selectionColor={ChatColors.lunaraLabel}
+                      placeholderTextColor="rgba(212,175,55,0.35)"
+                      selectionColor={ChatColors.sendActive}
                       keyboardType="number-pad"
                       maxLength={2}
                       textAlign="center"
@@ -363,44 +402,42 @@ export default function SettingsScreen() {
                       value={s.dateBuffer.year}
                       onChangeText={(v) => s.setDateBuffer({ ...s.dateBuffer, year: v })}
                       placeholder="YYYY"
-                      placeholderTextColor={ChatColors.placeholder}
-                      selectionColor={ChatColors.lunaraLabel}
+                      placeholderTextColor="rgba(212,175,55,0.35)"
+                      selectionColor={ChatColors.sendActive}
                       keyboardType="number-pad"
                       maxLength={4}
                       textAlign="center"
                     />
                   </View>
                 </EditPanel>
-              </>
+              </View>
             )}
 
-            <View style={styles.profileGridDividerH} />
-
-            {/* 2-column grid for time + place */}
-            <View style={styles.profileGrid}>
-              <View style={styles.profileGridCell}>
-                <ProfileRow
+            {/* ── Birth time + place inside profile card ── */}
+            <View style={styles.profileInnerDivider} />
+            <View style={styles.fieldGrid}>
+              <View style={styles.fieldGridCell}>
+                <FieldCard
+                  icon="clock-outline"
                   label={t("settings.birthTime")}
-                  value={formatTime(s.user?.birth_hour ?? null, s.user?.birth_minute ?? null, notSet) !== notSet
-                    ? formatTime(s.user?.birth_hour ?? null, s.user?.birth_minute ?? null, notSet)
-                    : undefined}
-                  onEdit={s.editingField === "time" ? undefined : () => s.startEditing("time")}
+                  value={birthTimeStr !== notSet ? birthTimeStr : undefined}
                   notSet={notSet}
+                  onPress={s.editingField === "time" ? undefined : () => s.startEditing("time")}
                 />
               </View>
-              <View style={styles.profileGridDividerV} />
-              <View style={styles.profileGridCell}>
-                <ProfileRow
+              <View style={styles.fieldGridCell}>
+                <FieldCard
+                  icon="map-marker-outline"
                   label={t("settings.birthPlace")}
-                  value={s.user?.birth_place_name ?? undefined}
+                  value={birthPlaceStr}
                   notSet={notSet}
                 />
               </View>
             </View>
 
+            {/* Edit: birth time */}
             {s.editingField === "time" && (
-              <>
-                <View style={styles.profileGridDividerH} />
+              <View style={styles.profileEditWrap}>
                 <EditPanel onSave={s.saveTime} onCancel={s.cancelEditing} saving={s.saving} error={s.error}>
                   <Text style={styles.editHint}>{t("settings.birthTimeHint")}</Text>
                   <View style={styles.dateRow}>
@@ -409,8 +446,8 @@ export default function SettingsScreen() {
                       value={s.timeBuffer.hour}
                       onChangeText={(v) => s.setTimeBuffer({ ...s.timeBuffer, hour: v })}
                       placeholder="HH"
-                      placeholderTextColor={ChatColors.placeholder}
-                      selectionColor={ChatColors.lunaraLabel}
+                      placeholderTextColor="rgba(212,175,55,0.35)"
+                      selectionColor={ChatColors.sendActive}
                       keyboardType="number-pad"
                       maxLength={2}
                       textAlign="center"
@@ -422,21 +459,21 @@ export default function SettingsScreen() {
                       value={s.timeBuffer.minute}
                       onChangeText={(v) => s.setTimeBuffer({ ...s.timeBuffer, minute: v })}
                       placeholder="MM"
-                      placeholderTextColor={ChatColors.placeholder}
-                      selectionColor={ChatColors.lunaraLabel}
+                      placeholderTextColor="rgba(212,175,55,0.35)"
+                      selectionColor={ChatColors.sendActive}
                       keyboardType="number-pad"
                       maxLength={2}
                       textAlign="center"
                     />
                   </View>
                 </EditPanel>
-              </>
+              </View>
             )}
-          </Card>
+          </View>
 
           {/* ── Language ── */}
           <SectionTitle label={t("settings.language")} />
-          <Card>
+          <View style={styles.card}>
             <View style={styles.languageRow}>
               {SUPPORTED_LANGUAGES.map((lang, idx) => (
                 <Pressable
@@ -454,48 +491,56 @@ export default function SettingsScreen() {
                 </Pressable>
               ))}
             </View>
-          </Card>
+          </View>
 
           {/* ── Data ── */}
           <SectionTitle label={t("settings.data")} />
-          <Card>
-            <CenteredRow
-              label={`🗑️  ${t("settings.clearHistory")}`}
+          <View style={styles.card}>
+            <ActionRow
+              icon="delete-outline"
+              iconBg="rgba(229,115,115,0.12)"
+              label={t("settings.clearHistory")}
               subtitle={t("settings.clearHistoryDesc")}
               onPress={handleClearHistory}
               danger
             />
-          </Card>
+          </View>
 
           {/* ── Support ── */}
           <SectionTitle label={t("settings.support")} />
-          <Card>
-            <CenteredRow
-              label={`💬  ${t("settings.contactUs")}`}
+          <View style={styles.card}>
+            <ActionRow
+              icon="message-outline"
+              iconBg="rgba(212,175,55,0.12)"
+              label={t("settings.contactUs")}
               subtitle={t("settings.contactUsDesc")}
               onPress={handleContactUs}
             />
-          </Card>
-          <View style={styles.supportRow}>
+          </View>
+
+          {/* Legal side-by-side */}
+          <View style={styles.legalRow}>
             <Pressable
-              style={({ pressed }) => [styles.supportCard, pressed && styles.rowPressed]}
+              style={({ pressed }) => [styles.legalCard, pressed && styles.rowPressed]}
               onPress={() => setLegalModal("terms")}
             >
-              <Text style={styles.supportEmoji}>📄</Text>
-              <Text style={styles.supportCardLabel}>{t("settings.termsOfService")}</Text>
+              <Text style={styles.legalEmoji}>📄</Text>
+              <Text style={styles.legalLabel}>{t("settings.termsOfService")}</Text>
+              <MaterialCommunityIcons name="chevron-right" size={14} color="rgba(15,9,32,0.25)" />
             </Pressable>
             <Pressable
-              style={({ pressed }) => [styles.supportCard, pressed && styles.rowPressed]}
+              style={({ pressed }) => [styles.legalCard, pressed && styles.rowPressed]}
               onPress={() => setLegalModal("privacy")}
             >
-              <Text style={styles.supportEmoji}>🔒</Text>
-              <Text style={styles.supportCardLabel}>{t("settings.privacyPolicy")}</Text>
+              <Text style={styles.legalEmoji}>🔒</Text>
+              <Text style={styles.legalLabel}>{t("settings.privacyPolicy")}</Text>
+              <MaterialCommunityIcons name="chevron-right" size={14} color="rgba(15,9,32,0.25)" />
             </Pressable>
           </View>
 
           {/* ── About ── */}
           <SectionTitle label={t("settings.about")} />
-          <Card>
+          <View style={styles.card}>
             <View style={styles.aboutContent}>
               <Text style={styles.aboutStar}>✦</Text>
               <Text style={styles.aboutApp}>LUNARA</Text>
@@ -503,13 +548,12 @@ export default function SettingsScreen() {
               <View style={styles.aboutRule} />
               <Text style={styles.aboutSub}>{t("settings.credit")}</Text>
             </View>
-          </Card>
+          </View>
 
           <View style={{ height: 48 }} />
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Legal modals */}
       <LegalModal
         visible={legalModal === "terms"}
         title={t("settings.termsTitle")}
@@ -566,159 +610,301 @@ const styles = StyleSheet.create({
   },
 
   scroll: { flex: 1, backgroundColor: ChatColors.bg },
-  scrollContent: { paddingHorizontal: 20, paddingTop: 8 },
+  scrollContent: { paddingHorizontal: 18, paddingTop: 20 },
 
   sectionTitle: {
-    fontSize: 11,
-    fontWeight: "600",
+    fontSize: 10,
+    fontWeight: "700",
     color: ChatColors.lunaraLabel,
-    letterSpacing: 1.6,
+    letterSpacing: 2.2,
     textTransform: "uppercase",
     marginTop: 28,
     marginBottom: 10,
+    opacity: 0.8,
   },
 
   card: {
     backgroundColor: ChatColors.inputBarBg,
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: "rgba(100,80,40,0.22)",
     overflow: "hidden",
   },
-  divider: {
-    height: 1,
-    backgroundColor: ChatColors.divider,
-    marginLeft: 56,
-  },
 
-  // Support side-by-side cards
-  supportRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 12,
-  },
-  supportCard: {
-    flex: 1,
+  rowPressed: { backgroundColor: "rgba(100,80,40,0.08)" },
+
+  // ── Profile card ──
+  profileCard: {
     backgroundColor: ChatColors.inputBarBg,
-    borderRadius: 16,
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: "rgba(100,80,40,0.22)",
     alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 22,
-    paddingHorizontal: 8,
-    gap: 8,
-  },
-  supportEmoji: {
-    fontSize: 28,
-  },
-  supportCardLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: ChatColors.lunaraText,
-    textAlign: "center",
-    letterSpacing: 0.2,
+    paddingVertical: 32,
+    paddingHorizontal: 20,
+    gap: 10,
   },
 
-  // Centered action row
-  centeredRow: {
+  // Avatar
+  avatarWrap: {
+    width: 88,
+    height: 88,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 22,
-    paddingHorizontal: 16,
+    marginBottom: 4,
   },
-  centeredRowLabel: {
+  avatarRing: {
+    position: "absolute",
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    borderWidth: 1.5,
+    borderColor: ChatColors.lunaraLabel,
+    borderStyle: "dashed",
+    opacity: 0.5,
+  },
+  avatarCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: "rgba(122,88,16,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(122,88,16,0.3)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarInitial: {
+    fontSize: 30,
+    fontWeight: "700",
+    color: ChatColors.lunaraLabel,
+  },
+
+  // Profile info
+  profileNameWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  profileName: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: ChatColors.lunaraText,
+    letterSpacing: 0.5,
+    textAlign: "center",
+  },
+  profileNameUnset: {
+    color: "rgba(15,9,32,0.3)",
+    fontStyle: "italic",
+    fontSize: 18,
+    fontWeight: "400",
+  },
+  profileZodiac: {
+    fontSize: 14,
+    color: "rgba(15,9,32,0.55)",
+    letterSpacing: 0.3,
+  },
+  profileDatePill: {
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderRadius: 20,
+    backgroundColor: "rgba(122,88,16,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(122,88,16,0.25)",
+  },
+  profileDatePillUnset: {
+    backgroundColor: "rgba(122,88,16,0.05)",
+    borderColor: "rgba(122,88,16,0.15)",
+  },
+  profileDateText: {
+    fontSize: 13,
+    color: ChatColors.lunaraLabel,
+    letterSpacing: 0.3,
+  },
+  profileDateTextUnset: {
+    fontSize: 13,
+    color: "rgba(15,9,32,0.3)",
+    letterSpacing: 0.3,
+    fontStyle: "italic",
+  },
+  profileEditWrap: {
+    width: "100%",
+    marginTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: ChatColors.divider,
+    paddingTop: 14,
+  },
+  profileInnerDivider: {
+    width: "100%",
+    height: 1,
+    backgroundColor: ChatColors.divider,
+    marginTop: 6,
+  },
+
+  // ── Field grid (birth time + place) ──
+  fieldGrid: {
+    flexDirection: "row",
+    gap: 10,
+    width: "100%",
+    marginTop: 12,
+  },
+  fieldGridCell: {
+    flex: 1,
+  },
+  fieldCard: {
+    backgroundColor: "rgba(100,80,40,0.08)",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(100,80,40,0.18)",
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    gap: 4,
+  },
+  fieldCardIcon: {
+    marginBottom: 4,
+  },
+  fieldCardLabel: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: ChatColors.lunaraLabel,
+    letterSpacing: 1.6,
+    textTransform: "uppercase",
+    opacity: 0.7,
+  },
+  fieldCardValue: {
     fontSize: 14,
     fontWeight: "600",
     color: ChatColors.lunaraText,
-    letterSpacing: 0.2,
-    textAlign: "center",
+    marginTop: 2,
   },
-  centeredRowSubtitle: {
-    fontSize: 12,
-    color: "rgba(15,9,32,0.45)",
-    textAlign: "center",
-    marginTop: 3,
-  },
-
-  // Profile grid
-  profileGrid: {
-    flexDirection: "row",
-  },
-  profileGridCell: {
-    flex: 1,
-  },
-  profileGridDividerV: {
-    width: 1,
-    backgroundColor: ChatColors.divider,
-  },
-  profileGridDividerH: {
-    height: 1,
-    backgroundColor: ChatColors.divider,
-  },
-  profileRow: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 20,
-    paddingHorizontal: 12,
-  },
-  profileLabel: {
-    fontSize: 10,
-    fontWeight: "600",
-    color: ChatColors.lunaraLabel,
-    letterSpacing: 1.8,
-    marginBottom: 6,
-    opacity: 0.7,
-  },
-  profileValue: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: ChatColors.lunaraText,
-    textAlign: "center",
-  },
-  profileValueUnset: {
+  fieldCardValueUnset: {
     color: "rgba(15,9,32,0.3)",
-    fontWeight: "400",
     fontStyle: "italic",
+    fontWeight: "400",
     fontSize: 13,
   },
-  profilePencil: {
+  fieldCardPencil: {
     position: "absolute",
     top: 10,
     right: 10,
   },
 
-  infoRow: {
+  // ── Language ──
+  languageRow: { flexDirection: "row" },
+  langButton: {
+    flex: 1,
+    paddingVertical: 15,
+    alignItems: "center",
+  },
+  langButtonBorder: {
+    borderLeftWidth: 1,
+    borderLeftColor: "rgba(100,80,40,0.22)",
+  },
+  langButtonActive: {
+    backgroundColor: ChatColors.headerBg,
+  },
+  langButtonText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "rgba(15,9,32,0.45)",
+  },
+  langButtonTextActive: {
+    color: ChatColors.sendActive,
+    fontWeight: "700",
+  },
+
+  // ── Action rows ──
+  actionRow: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 12,
+    paddingVertical: 15,
+    gap: 14,
   },
-  rowPressed: { backgroundColor: "rgba(100,80,40,0.08)" },
   iconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 38,
+    height: 38,
+    borderRadius: 11,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
   },
-  infoContent: { flex: 1, gap: 2 },
-  infoLabel: {
+  actionContent: { flex: 1, gap: 2 },
+  actionLabel: {
     fontSize: 14,
+    fontWeight: "600",
+    letterSpacing: 0.1,
+  },
+  actionSubtitle: {
+    fontSize: 12,
+    letterSpacing: 0.1,
+  },
+
+  // ── Legal side-by-side ──
+  legalRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 10,
+  },
+  legalCard: {
+    flex: 1,
+    backgroundColor: ChatColors.inputBarBg,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(100,80,40,0.22)",
+    paddingVertical: 18,
+    paddingHorizontal: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  legalEmoji: {
+    fontSize: 20,
+  },
+  legalLabel: {
+    flex: 1,
+    fontSize: 12,
     fontWeight: "600",
     color: ChatColors.lunaraText,
     letterSpacing: 0.1,
   },
-  infoValue: {
-    fontSize: 13,
-    color: "rgba(15,9,32,0.52)",
+
+  // ── About ──
+  aboutContent: {
+    alignItems: "center",
+    paddingVertical: 32,
+    gap: 6,
+  },
+  aboutStar: {
+    fontSize: 28,
+    color: ChatColors.lunaraLabel,
+    marginBottom: 2,
+  },
+  aboutApp: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: ChatColors.lunaraLabel,
+    letterSpacing: 6,
+    marginTop: 2,
+  },
+  aboutTagline: {
+    fontSize: 14,
+    color: ChatColors.lunaraText,
+    letterSpacing: 0.3,
+    opacity: 0.7,
+  },
+  aboutRule: {
+    width: 40,
+    height: 1,
+    backgroundColor: ChatColors.divider,
+    marginVertical: 6,
+  },
+  aboutSub: {
+    fontSize: 12,
+    color: "rgba(15,9,32,0.40)",
+    letterSpacing: 0.3,
   },
 
+  // ── Edit panels ──
   editPanel: {
-    paddingHorizontal: 16,
-    paddingBottom: 14,
     gap: 10,
   },
   editHint: {
@@ -778,65 +964,7 @@ const styles = StyleSheet.create({
     color: "#b33b3b",
   },
 
-  languageRow: { flexDirection: "row" },
-  langButton: {
-    flex: 1,
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-  langButtonBorder: {
-    borderLeftWidth: 1,
-    borderLeftColor: "rgba(100,80,40,0.22)",
-  },
-  langButtonActive: {
-    backgroundColor: ChatColors.headerBg,
-  },
-  langButtonText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "rgba(15,9,32,0.55)",
-  },
-  langButtonTextActive: {
-    color: ChatColors.sendActive,
-    fontWeight: "700",
-  },
-
-  aboutContent: {
-    alignItems: "center",
-    paddingVertical: 32,
-    gap: 6,
-  },
-  aboutStar: {
-    fontSize: 26,
-    color: ChatColors.lunaraLabel,
-    marginBottom: 2,
-  },
-  aboutApp: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: ChatColors.lunaraLabel,
-    letterSpacing: 5,
-    marginTop: 2,
-  },
-  aboutTagline: {
-    fontSize: 14,
-    color: ChatColors.lunaraText,
-    letterSpacing: 0.3,
-    opacity: 0.7,
-  },
-  aboutRule: {
-    width: 40,
-    height: 1,
-    backgroundColor: ChatColors.divider,
-    marginVertical: 6,
-  },
-  aboutSub: {
-    fontSize: 12,
-    color: "rgba(15,9,32,0.40)",
-    letterSpacing: 0.3,
-  },
-
-  // Legal modal
+  // ── Legal modal ──
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.55)",

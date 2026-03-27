@@ -104,6 +104,7 @@ export default function PersonDetailScreen({ route }: Props) {
     interpretationError,
     loadingPhrase,
     hasChart,
+    birthTimeKnown,
     retryGeneration,
   } = usePersonDetail(name);
 
@@ -147,7 +148,7 @@ export default function PersonDetailScreen({ route }: Props) {
           navigation.dispatch(
             CommonActions.reset({
               index: 0,
-              routes: [{ name: "MainTabs" as any, params: { screen: "Orbit" } }],
+              routes: [{ name: "MainTabs" as any, params: { initialTab: 1 } }],
             })
           );
         }}
@@ -186,6 +187,30 @@ export default function PersonDetailScreen({ route }: Props) {
         </View>
 
         <View style={styles.separator} />
+
+        {/* Birth time unknown banner */}
+        {hasChart && !birthTimeKnown && (
+          <View style={styles.unknownTimeWrapper}>
+            <View style={styles.unknownTimeBanner}>
+              <MaterialCommunityIcons name="clock-outline" size={14} color="rgba(212,175,55,0.6)" />
+              <Text style={styles.unknownTimeBannerTitle}>{t("personDetail.birthTimeUnknownTitle")}</Text>
+            </View>
+            <Text style={styles.unknownTimeBannerDesc}>{t("personDetail.birthTimeUnknownDesc")}</Text>
+            <View style={styles.lockedCardsRow}>
+              {[
+                { label: t("personDetail.birthTimeUnknownRising"), icon: "arrow-up-circle-outline" },
+                { label: t("personDetail.birthTimeUnknownHouses"), icon: "home-outline" },
+                { label: t("personDetail.birthTimeUnknownMC"), icon: "star-outline" },
+              ].map(({ label, icon }) => (
+                <View key={label} style={styles.lockedCard}>
+                  <MaterialCommunityIcons name={icon as any} size={20} color="rgba(212,175,55,0.3)" />
+                  <MaterialCommunityIcons name="lock-outline" size={11} color="rgba(212,175,55,0.3)" style={styles.lockIcon} />
+                  <Text style={styles.lockedCardLabel}>{label}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
 
         {/* Chart or CTA */}
         {!loadingChart && (
@@ -347,6 +372,58 @@ const styles = StyleSheet.create({
     width: "70%",
     height: StyleSheet.hairlineWidth,
     backgroundColor: "rgba(250, 218, 134, 0.5)",
+  },
+  unknownTimeWrapper: {
+    width: "100%",
+    marginBottom: 20,
+    gap: 8,
+  },
+  unknownTimeBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  unknownTimeBannerTitle: {
+    fontSize: 12,
+    color: "rgba(212,175,55,0.6)",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    fontWeight: "600",
+  },
+  unknownTimeBannerDesc: {
+    fontSize: 12,
+    color: "rgba(245,234,200,0.4)",
+    letterSpacing: 0.3,
+    marginBottom: 4,
+  },
+  lockedCardsRow: {
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "center",
+  },
+  lockedCard: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(212,175,55,0.12)",
+    backgroundColor: "rgba(26,13,46,0.5)",
+    position: "relative",
+  },
+  lockIcon: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+  },
+  lockedCardLabel: {
+    fontSize: 10,
+    color: "rgba(212,175,55,0.3)",
+    letterSpacing: 0.8,
+    textAlign: "center",
+    textTransform: "uppercase",
   },
   ctaButton: {
     width: "80%",

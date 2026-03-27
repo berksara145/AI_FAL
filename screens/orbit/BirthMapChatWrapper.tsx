@@ -1,5 +1,5 @@
 import React, { useRef, useCallback } from "react";
-import { View, StyleSheet, Animated } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -45,15 +45,10 @@ export default function BirthMapChatWrapper(
   const sessionIdParam = (route.params as any)?.sessionId;
   const isAddPersonFlow = !personNameFromParams;
 
-  const screenOpacity = useRef(new Animated.Value(1)).current;
   const effectivePersonNameRef = useRef<string | null>(null);
   const navigateBack = useCallback(() => {
-    Animated.timing(screenOpacity, {
-      toValue: 0,
-      duration: 400,
-      useNativeDriver: true,
-    }).start(() => navigation.goBack());
-  }, [navigation, screenOpacity]);
+    navigation.goBack();
+  }, [navigation]);
 
   // --- Hooks ---
   const chat = useChatSession({
@@ -150,7 +145,7 @@ export default function BirthMapChatWrapper(
     birthMap.isGenerating;
 
   return (
-    <Animated.View style={{ flex: 1, opacity: screenOpacity }}>
+    <View style={{ flex: 1 }}>
       <ChatSessionCore
         title={t("birthMap.title")}
         messages={chat.messages}
@@ -181,6 +176,7 @@ export default function BirthMapChatWrapper(
               birthMap.setBirthTime((prev) => ({ ...prev, ...updates }))
             }
             onConfirm={birthMap.handleTimeConfirm}
+            onDontKnow={birthMap.handleTimeUnknown}
           />
         )}
 
@@ -207,7 +203,7 @@ export default function BirthMapChatWrapper(
           </ViewShot>
         </View>
       )}
-    </Animated.View>
+    </View>
   );
 }
 

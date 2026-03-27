@@ -95,12 +95,15 @@ export const buildBirthDataFromUser = (user: User): BirthData => {
 export const buildBirthDataFromPerson = (person: Person): BirthData => {
   console.log("[buildBirthDataFromPerson] Validating person birth data fields...", person);
 
+  const birthTimeKnown = person.birth_time_known !== 0;
+  // When time is unknown, fall back to noon (12:00) — valid chart minus houses/rising
+  const effectiveHour = (person.birth_hour !== null && person.birth_hour !== undefined) ? person.birth_hour : 12;
+  const effectiveMinute = (person.birth_minute !== null && person.birth_minute !== undefined) ? person.birth_minute : 0;
+
   if (
     !person.birth_year ||
     !person.birth_month ||
     !person.birth_day ||
-    person.birth_hour === null ||
-    person.birth_minute === null ||
     !person.birth_lat ||
     !person.birth_lng ||
     !person.birth_place_name
@@ -109,8 +112,6 @@ export const buildBirthDataFromPerson = (person: Person): BirthData => {
     if (!person.birth_year) missing.push("birth_year");
     if (!person.birth_month) missing.push("birth_month");
     if (!person.birth_day) missing.push("birth_day");
-    if (person.birth_hour === null) missing.push("birth_hour");
-    if (person.birth_minute === null) missing.push("birth_minute");
     if (!person.birth_lat) missing.push("birth_lat");
     if (!person.birth_lng) missing.push("birth_lng");
     if (!person.birth_place_name) missing.push("birth_place_name");
@@ -127,8 +128,8 @@ export const buildBirthDataFromPerson = (person: Person): BirthData => {
     year: person.birth_year!,
     month: person.birth_month!,
     day: person.birth_day!,
-    hour: person.birth_hour!,
-    minute: person.birth_minute!,
+    hour: effectiveHour,
+    minute: effectiveMinute,
     longitude: person.birth_lng!,
   });
 
@@ -136,8 +137,8 @@ export const buildBirthDataFromPerson = (person: Person): BirthData => {
     name: person.name || undefined,
     birthDate,
     birthTime: {
-      hour: person.birth_hour!,
-      minute: person.birth_minute!,
+      hour: effectiveHour,
+      minute: effectiveMinute,
     },
     birthLocation: {
       placeName: person.birth_place_name!,
@@ -145,9 +146,10 @@ export const buildBirthDataFromPerson = (person: Person): BirthData => {
       latitude: person.birth_lat!,
       longitude: person.birth_lng!,
     },
+    birthTimeKnown,
   };
 
-  console.log("[buildBirthDataFromPerson] ✅ BirthData created for person:", person.name);
+  console.log("[buildBirthDataFromPerson] ✅ BirthData created for person:", person.name, "birthTimeKnown:", birthTimeKnown);
   return birthData;
 };
 
@@ -335,7 +337,7 @@ export const generateAndSaveNatalChart = async (
     const rawChart = (chartData as NatalChartData & { rawChart?: ReturnType<typeof generateApproxChart> }).rawChart;
     let chartGptJson: string | null = null;
     if (rawChart) {
-      const gptFormat = generateChartForGpt(rawChart, chartData.birthData.birthLocation.placeName);
+      const gptFormat = generateChartForGpt(rawChart, chartData.birthData.birthLocation.placeName, chartData.birthData.birthTimeKnown ?? true);
       chartGptJson = JSON.stringify(gptFormat, null, 2);
       console.log("[generateAndSaveNatalChart] Natal chart (GPT format):", chartGptJson);
     }
@@ -355,8 +357,9 @@ export const generateAndSaveNatalChart = async (
           birth_year: person.birth_year!,
           birth_month: person.birth_month!,
           birth_day: person.birth_day!,
-          birth_hour: person.birth_hour!,
-          birth_minute: person.birth_minute!,
+          birth_hour: person.birth_hour ?? 12,
+          birth_minute: person.birth_minute ?? 0,
+          birth_time_known: person.birth_time_known ?? 1,
           birth_place_name: chartData.birthData.birthLocation.placeName,
           birth_place_id: chartData.birthData.birthLocation.placeId || null,
           birth_lat: chartData.birthData.birthLocation.latitude,

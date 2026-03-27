@@ -43,7 +43,8 @@ const LUMINARIES: Set<string> = new Set(["Sun", "Moon"]);
 
 export function generateChartForGpt(
   chart: ReturnType<typeof generateApproxChart>,
-  locationName: string
+  locationName: string,
+  birthTimeKnown = true
 ): ChartForGpt {
   const signIndex = (lon: number) => Math.floor(normalizeDeg(lon) / 30) % 12;
   const signName = (lon: number) => ZODIAC_SYMBOLS[signIndex(lon)].name;
@@ -97,7 +98,9 @@ export function generateChartForGpt(
       zodiac: "tropical",
       houseSystem: "equal_house",
       location: locationName,
-      note: "All degrees are ecliptic longitude. Houses are equal (30° each, 1st cusp = Ascendant).",
+      note: birthTimeKnown
+        ? "All degrees are ecliptic longitude. Houses are equal (30° each, 1st cusp = Ascendant)."
+        : "All degrees are ecliptic longitude. Houses are equal (30° each, 1st cusp = Ascendant). IMPORTANT: Birth time was not provided — a noon chart was used as fallback. Rising sign and house placements are unreliable and must NOT be interpreted. Focus only on planetary signs and aspects.",
     },
     angles: {
       asc: angleEntry(chart.angles.asc),

@@ -23,6 +23,7 @@ export type Person = {
   generated_at: string | null;
   chart_interpretation: string | null;
   orbit_avatar_index: number | null;
+  birth_time_known: number | null; // 1 = known, 0 = unknown (noon chart used)
   created_at: string;
   updated_at: string;
 };
@@ -212,6 +213,7 @@ export const upsertPersonWithChart = async (person: {
   birth_day: number;
   birth_hour: number;
   birth_minute: number;
+  birth_time_known?: number | null;
   birth_place_name: string;
   birth_place_id?: string | null;
   birth_lat: number;
@@ -230,7 +232,7 @@ export const upsertPersonWithChart = async (person: {
       await executeSql(
         `UPDATE persons SET
           birth_year = ?, birth_month = ?, birth_day = ?,
-          birth_hour = ?, birth_minute = ?,
+          birth_hour = ?, birth_minute = ?, birth_time_known = ?,
           birth_place_name = ?, birth_place_id = ?, birth_lat = ?, birth_lng = ?,
           svg_content = ?, png_path = ?, style = ?, chart_gpt_json = ?, generated_at = ?, updated_at = datetime('now')
          WHERE id = ?`,
@@ -240,6 +242,7 @@ export const upsertPersonWithChart = async (person: {
           person.birth_day,
           person.birth_hour,
           person.birth_minute,
+          person.birth_time_known ?? 1,
           person.birth_place_name,
           person.birth_place_id || null,
           person.birth_lat,
@@ -261,9 +264,9 @@ export const upsertPersonWithChart = async (person: {
   await executeSql(
     `INSERT INTO persons (
       owner_user_id, name, birth_year, birth_month, birth_day,
-      birth_hour, birth_minute, birth_place_name, birth_place_id, birth_lat,
+      birth_hour, birth_minute, birth_time_known, birth_place_name, birth_place_id, birth_lat,
       birth_lng, svg_content, png_path, style, chart_gpt_json, generated_at, orbit_avatar_index, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
     [
       user.id,
       person.name || null,
@@ -272,6 +275,7 @@ export const upsertPersonWithChart = async (person: {
       person.birth_day,
       person.birth_hour,
       person.birth_minute,
+      person.birth_time_known ?? 1,
       person.birth_place_name,
       person.birth_place_id || null,
       person.birth_lat,
