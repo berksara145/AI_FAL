@@ -13,6 +13,7 @@ import TarotReveal from "./components/TarotReveal";
 import CrossroadsCard from "./components/CrossroadsCard";
 import { ChatSessionService, generateFollowUpChips, type ChatSessionMessage } from "../../lib/chatSessionService";
 import { getPersonsWithChartData, getSelfPerson, type Person } from "../../db/person.repo";
+import { personToBirthDate } from "../orbit/hooks/useOrbitNodes";
 import { getReadingByDate, getReadingBySessionId } from "../../db/tarot.repo";
 import { getCardById, type TarotCard } from "../../lib/tarotDeck";
 import { drawCrossroadsCardForDate, resolveTarotCard, type CrossroadsCard as CrossroadsCardData } from "../../lib/cosmicCrossroads";
@@ -62,6 +63,7 @@ export default function ChatSessionScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [chartPersons, setChartPersons] = useState<Person[]>([]);
   const [noCharts, setNoCharts] = useState(false);
+  const [noChartsReason, setNoChartsReason] = useState<"noSelfChart" | "noOtherChart" | null>(null);
   const [personSelected, setPersonSelected] = useState(false);
   const [compatibilityPersonSelected, setCompatibilityPersonSelected] = useState(false);
   const [natalChips, setNatalChips] = useState<string[]>([]);
@@ -132,6 +134,9 @@ export default function ChatSessionScreen() {
         chartPersonsRef.current = personsWithCharts;
         if (personsWithCharts.length === 0) {
           setNoCharts(true);
+          const selfPerson = await getSelfPerson();
+          selfPersonRef.current = selfPerson ?? null;
+          setNoChartsReason(!selfPerson?.chart_gpt_json ? "noSelfChart" : "noOtherChart");
           effectiveInitialMessage = t("chat.noBirthCharts");
         } else {
           setChartPersons(personsWithCharts);
@@ -144,6 +149,7 @@ export default function ChatSessionScreen() {
         selfPersonRef.current = selfPerson ?? null;
         if (!selfPerson?.chart_gpt_json) {
           setNoCharts(true);
+          setNoChartsReason("noSelfChart");
           effectiveInitialMessage = t("chat.noSelfChart");
         } else {
           const personsWithCharts = await getPersonsWithChartData();
@@ -153,6 +159,7 @@ export default function ChatSessionScreen() {
           chartPersonsRef.current = others;
           if (others.length === 0) {
             setNoCharts(true);
+            setNoChartsReason("noOtherChart");
             effectiveInitialMessage = t("chat.noPartnerChart");
           } else {
             setChartPersons(others);
@@ -166,6 +173,7 @@ export default function ChatSessionScreen() {
         selfPersonRef.current = selfPerson ?? null;
         if (!selfPerson?.chart_gpt_json) {
           setNoCharts(true);
+          setNoChartsReason("noSelfChart");
           effectiveInitialMessage = t("chat.noSelfChart");
         } else {
           const personsWithCharts = await getPersonsWithChartData();
@@ -175,6 +183,7 @@ export default function ChatSessionScreen() {
           chartPersonsRef.current = others;
           if (others.length === 0) {
             setNoCharts(true);
+            setNoChartsReason("noOtherChart");
             effectiveInitialMessage = t("chat.noFriendChart");
           } else {
             setChartPersons(others);
@@ -457,15 +466,30 @@ export default function ChatSessionScreen() {
     )
     : null;
 
+  const navigateToBirthMap = () => {
+    const self = selfPersonRef.current;
+    if (noChartsReason === "noSelfChart" && self) {
+      navigation.replace("ChatSession", {
+        feature: "birthMap",
+        mode: "interactive",
+        personName: self.name ?? undefined,
+        birthDate: personToBirthDate(self),
+      });
+    } else {
+      navigation.replace("ChatSession", {
+        feature: "birthMap",
+        mode: "interactive",
+      });
+    }
+  };
+
   const natalChartBar = feature === FEATURE_NATAL_CHART_ANALYSIS && !isLoading && !personSelected && savePerson.pendingSavePerson === null
     ? noCharts
       ? (
         <View style={styles.personButtonsRow}>
           <TouchableOpacity
             style={[styles.personButton, styles.createChartButton]}
-            onPress={() =>
-              navigation.navigate("MainApp" as any, { initialTab: 1 })
-            }
+            onPress={navigateToBirthMap}
             activeOpacity={0.7}
           >
             <Text style={styles.personButtonText}>{t("chat.goToBirthChart")}</Text>
@@ -495,9 +519,7 @@ export default function ChatSessionScreen() {
         <View style={styles.personButtonsRow}>
           <TouchableOpacity
             style={[styles.personButton, styles.createChartButton]}
-            onPress={() =>
-              navigation.navigate("MainApp" as any, { initialTab: 1 })
-            }
+            onPress={navigateToBirthMap}
             activeOpacity={0.7}
           >
             <Text style={styles.personButtonText}>{t("chat.goToBirthChart")}</Text>
@@ -527,9 +549,7 @@ export default function ChatSessionScreen() {
         <View style={styles.personButtonsRow}>
           <TouchableOpacity
             style={[styles.personButton, styles.createChartButton]}
-            onPress={() =>
-              navigation.navigate("MainApp" as any, { initialTab: 1 })
-            }
+            onPress={navigateToBirthMap}
             activeOpacity={0.7}
           >
             <Text style={styles.personButtonText}>{t("chat.goToBirthChart")}</Text>

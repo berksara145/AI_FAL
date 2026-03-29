@@ -308,7 +308,17 @@ export function drawCrossroadsCardForDate(date: Date): CrossroadsCard {
  * Weighted toward day-of-week themes.
  */
 export function drawDailyCrossroadsCard(): CrossroadsCard {
-  return drawForDate(new Date());
+  const pool: { card: CrossroadsCard; weight: number }[] = MAJOR_ARCANA_CROSSROADS.map((c) => ({
+    card: c,
+    weight: BASE_WEIGHT,
+  }));
+  const totalWeight = pool.reduce((sum, p) => sum + p.weight, 0);
+  let roll = Math.random() * totalWeight;
+  for (const entry of pool) {
+    roll -= entry.weight;
+    if (roll <= 0) return entry.card;
+  }
+  return pool[pool.length - 1].card;
 }
 
 /** Resolves the full TarotCard (image) from a CrossroadsCard. */

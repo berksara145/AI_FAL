@@ -25,7 +25,7 @@ function extractChartContext(chartGptJson: string | null): BirthChartContext {
 export async function generateCrossroadsReading(
   card: CrossroadsCard,
   question: string
-): Promise<string> {
+): Promise<{ reading: string; systemPrompt: string }> {
   const self = await getSelfPerson();
   const chart = extractChartContext(self?.chart_gpt_json ?? null);
   const systemPrompt = buildCrossroadsSystemPrompt(card, chart, question);
@@ -33,5 +33,5 @@ export async function generateCrossroadsReading(
     { role: "system", content: systemPrompt },
     { role: "user", content: question },
   ]);
-  return reply.trim();
+  return { reading: reply.trim(), systemPrompt };
 }

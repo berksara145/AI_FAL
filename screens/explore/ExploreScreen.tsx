@@ -5,35 +5,34 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/RootStack";
 import FeatureCard from "./components/FeatureCard";
 import { EXPLORE_CLASSES, type ExploreClass, type ExploreClassId } from "./exploreClasses";
-import { Colors } from "../../utils/theme";
 import { useTranslation } from "react-i18next";
 import i18n from "../../lib/i18n";
 
 const EXPLORE_IMAGES: Record<ExploreClass["imageKey"], number> = {
-  feature4: require("../../assets/feature4.png"),
-  feature5: require("../../assets/feature5.png"),
-  feature7: require("../../assets/feature7.png"),
-  feature8: require("../../assets/feature8.png"),
-  feature9: require("../../assets/feature9.png"),
+  feature4:  require("../../assets/feature4.png"),
+  feature5:  require("../../assets/feature5.png"),
+  feature7:  require("../../assets/feature7.png"),
+  feature8:  require("../../assets/feature8.png"),
+  feature9:  require("../../assets/feature9.png"),
   feature10: require("../../assets/feature10.png"),
   feature11: require("../../assets/feature11.png"),
 };
 
 const EXPLORE_TITLE_KEYS: Record<ExploreClassId, string> = {
-  "general": "explore.general",
-  "cosmic-crossroads": "explore.cosmicCrossroads",
-  "someone-on-mind": "explore.someoneSpecial",
-  "friend-dynamics": "explore.friendDynamics",
-  "tarot-reading": "explore.tarotReading",
+  "general":              "explore.general",
+  "cosmic-crossroads":    "explore.cosmicCrossroads",
+  "someone-on-mind":      "explore.someoneSpecial",
+  "friend-dynamics":      "explore.friendDynamics",
+  "tarot-reading":        "explore.tarotReading",
   "natal-chart-analysis": "explore.birthChartAnalysis",
 };
 
 const EXPLORE_INITIAL_KEYS: Record<ExploreClassId, string> = {
-  "general": "explore.initialGeneral",
-  "cosmic-crossroads": "explore.initialCrossroads",
-  "someone-on-mind": "explore.initialSomeoneSpecial",
-  "friend-dynamics": "explore.initialFriendDynamics",
-  "tarot-reading": "explore.initialTarot",
+  "general":              "explore.initialGeneral",
+  "cosmic-crossroads":    "explore.initialCrossroads",
+  "someone-on-mind":      "explore.initialSomeoneSpecial",
+  "friend-dynamics":      "explore.initialFriendDynamics",
+  "tarot-reading":        "explore.initialTarot",
   "natal-chart-analysis": "explore.initialBirthChart",
 };
 
@@ -54,16 +53,12 @@ export default function ExploreScreen() {
   };
 
   return (
-    <View
-      className="flex-1"
-      style={{ backgroundColor: Colors.bgMain }}
-    >
+    <View style={styles.root}>
       <ScrollView
         className="flex-1"
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerImageContainer}>
             <Image
@@ -74,7 +69,6 @@ export default function ExploreScreen() {
           </View>
         </View>
 
-        {/* 6 feature cards — each uses ChatSession with its own agenda */}
         <View style={styles.gridContainer}>
           {EXPLORE_CLASSES.map((exploreClass) => (
             <View key={exploreClass.id} style={styles.gridItem}>
@@ -93,8 +87,13 @@ export default function ExploreScreen() {
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: "transparent",
+  },
   scrollContent: {
     padding: 24,
+    paddingTop: 72,
     paddingBottom: 40,
   },
   header: {

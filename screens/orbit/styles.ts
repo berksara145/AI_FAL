@@ -5,14 +5,11 @@ import { Colors } from "../../utils/theme";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.bgDark,
+    backgroundColor: "transparent",
     alignItems: "center",
     justifyContent: "flex-start",
-    paddingTop: SCREEN_HEIGHT * 0.05,
+    paddingTop: SCREEN_HEIGHT * 0.05 + 50,
     overflow: "hidden",
-  },
-  backgroundImage: {
-    opacity: 0.9,
   },
   title: {
     fontSize: 26,

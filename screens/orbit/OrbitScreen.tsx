@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import { View, Text, ImageBackground, TouchableOpacity, Animated } from "react-native";
+import { View, Text, TouchableOpacity, Animated } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/RootStack";
@@ -52,12 +52,7 @@ export default function OrbitScreen() {
     rootNav?.navigate("ChatSession", { feature: "birthMap", mode: "interactive" });
 
   return (
-    <ImageBackground
-      source={require("../../assets/Orbit_background.png")}
-      resizeMode="cover"
-      style={styles.container}
-      imageStyle={styles.backgroundImage}
-    >
+    <View style={styles.container}>
       <View style={styles.orbitWrapper}>
         <View style={styles.outerOrbit} />
         <View style={styles.innerOrbit} />
@@ -153,6 +148,6 @@ export default function OrbitScreen() {
           </View>
         </View>
       )}
-    </ImageBackground>
+    </View>
   );
 }

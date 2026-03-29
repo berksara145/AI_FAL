@@ -50,7 +50,9 @@ export function useCrossroadsReading(): CrossroadsState {
     setGenerating(true);
 
     try {
-      const reading = await generateCrossroadsReading(card, question);
+      const { reading, systemPrompt } = await generateCrossroadsReading(card, question);
+      // Update service agenda so all follow-up messages include this card's context
+      service.setSystemText(systemPrompt);
       await service.addAssistantMessage(reading);
       await refreshMessages();
     } catch (e) {
