@@ -7,11 +7,12 @@ import {
   StatusBar,
   Text,
   Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
-import MessageInput from "./MessageInput";
+import MessageInput, { MessageInputHandle } from "./MessageInput";
 import TypingIndicator from "./TypingIndicator";
 import { ChatColors } from "../../../utils/theme";
 import { useTranslation } from "react-i18next";
@@ -57,6 +58,7 @@ export default function ChatSessionCore({
 }: ChatSessionCoreProps) {
   const { t } = useTranslation();
   const scrollViewRef = useRef<ScrollView>(null);
+  const inputRef = useRef<MessageInputHandle>(null);
   const insets = useSafeAreaInsets();
   const [keyboardPadding, setKeyboardPadding] = useState(0);
 
@@ -75,6 +77,7 @@ export default function ChatSessionCore({
     <>
       <ChatHeader title={title} onClose={onClose || (() => {})} mode={mode} />
 
+      <TouchableWithoutFeedback onPress={() => inputRef.current?.focus()}>
       <View style={{ flex: 1, backgroundColor: ChatColors.bg }}>
         {isLoading && messages.length === 0 ? (
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -96,9 +99,10 @@ export default function ChatSessionCore({
           </>
         )}
       </View>
+      </TouchableWithoutFeedback>
 
       {mode === "interactive" && (
-        <MessageInput onSend={onSendMessage} disabled={disabled || isTyping} bottomInset={insets.bottom} />
+        <MessageInput ref={inputRef} onSend={onSendMessage} disabled={disabled || isTyping} bottomInset={insets.bottom} />
       )}
 
       {mode !== "readonly" && children}

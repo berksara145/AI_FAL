@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 import { View, TextInput, TouchableOpacity, Platform, Keyboard } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ChatColors } from "../../../utils/theme";
 import { useTranslation } from "react-i18next";
+
+export type MessageInputHandle = { focus: () => void };
 
 type MessageInputProps = {
   onSend: (text: string) => void;
@@ -11,10 +13,14 @@ type MessageInputProps = {
   bottomInset?: number;
 };
 
-export default function MessageInput({ onSend, disabled = false, bottomInset = 0 }: MessageInputProps) {
+const MessageInput = forwardRef<MessageInputHandle, MessageInputProps>(function MessageInput(
+  { onSend, disabled = false, bottomInset = 0 }, ref
+) {
   const { t } = useTranslation();
   const [text, setText] = useState("");
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const inputRef = useRef<TextInput>(null);
+  useImperativeHandle(ref, () => ({ focus: () => inputRef.current?.focus() }));
   const ownInsets = useSafeAreaInsets();
   const resolvedBottom = Math.max(bottomInset, ownInsets.bottom, Platform.OS === "android" ? 16 : 8) + (keyboardVisible ? 15 : 0);
 
@@ -64,6 +70,7 @@ export default function MessageInput({ onSend, disabled = false, bottomInset = 0
         justifyContent: "center",
       }}>
         <TextInput
+          ref={inputRef}
           value={text}
           onChangeText={setText}
           placeholder={t("chat.inputPlaceholder")}
@@ -112,4 +119,6 @@ export default function MessageInput({ onSend, disabled = false, bottomInset = 0
       </TouchableOpacity>
     </View>
   );
-}
+});
+
+export default MessageInput;
