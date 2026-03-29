@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, TextInput, TouchableOpacity, Platform } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, TextInput, TouchableOpacity, Platform, Keyboard } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ChatColors } from "../../../utils/theme";
@@ -14,8 +14,15 @@ type MessageInputProps = {
 export default function MessageInput({ onSend, disabled = false, bottomInset = 0 }: MessageInputProps) {
   const { t } = useTranslation();
   const [text, setText] = useState("");
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const ownInsets = useSafeAreaInsets();
-  const resolvedBottom = Math.max(bottomInset, ownInsets.bottom, Platform.OS === "android" ? 16 : 8);
+  const resolvedBottom = Math.max(bottomInset, ownInsets.bottom, Platform.OS === "android" ? 16 : 8) + (keyboardVisible ? 15 : 0);
+
+  useEffect(() => {
+    const show = Keyboard.addListener("keyboardDidShow", () => setKeyboardVisible(true));
+    const hide = Keyboard.addListener("keyboardDidHide", () => setKeyboardVisible(false));
+    return () => { show.remove(); hide.remove(); };
+  }, []);
 
   const handleSend = () => {
     if (text.trim() && !disabled) {
