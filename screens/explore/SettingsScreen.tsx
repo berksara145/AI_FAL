@@ -15,6 +15,7 @@ import {
   Modal,
   Animated,
   Easing,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -60,7 +61,7 @@ function formatTime(hour: number | null, minute: number | null, notSet: string):
 
 // ── Avatar with spinning gold ring ────────────────────────────────────────────
 
-function Avatar({ initial }: { initial: string }) {
+function Avatar({ initial, zodiacImage }: { initial: string; zodiacImage?: number }) {
   const rotation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -78,18 +79,13 @@ function Avatar({ initial }: { initial: string }) {
 
   return (
     <View style={styles.avatarWrap}>
-      {/* Spinning dashed outer ring */}
-      <Animated.View style={[styles.avatarSpinRing, { transform: [{ rotate: spin }] }]} />
-      {/* Solid inner gold ring */}
-      <View style={styles.avatarRing}>
+      {zodiacImage ? (
+        <Image source={zodiacImage} style={styles.avatarZodiacImage} resizeMode="contain" />
+      ) : (
         <View style={styles.avatarCircle}>
           <Text style={styles.avatarInitial}>{initial.toUpperCase()}</Text>
         </View>
-      </View>
-      {/* Camera badge */}
-      <View style={styles.cameraBadge}>
-        <MaterialCommunityIcons name="camera" size={11} color={C.gold} />
-      </View>
+      )}
     </View>
   );
 }
@@ -332,11 +328,7 @@ export default function SettingsScreen() {
           </View>
         </Pressable>
         <Text style={styles.headerTitle}>{t("settings.title")}</Text>
-        <View style={styles.headerSide}>
-          <View style={styles.headerCircleBtn}>
-            <MaterialCommunityIcons name="cog-outline" size={16} color={C.gold} />
-          </View>
-        </View>
+        <View style={styles.headerSide} />
       </View>
       <View style={styles.headerDivider} />
 
@@ -350,7 +342,7 @@ export default function SettingsScreen() {
 
           {/* ── Profile card ── */}
           <View style={styles.profileCard}>
-            <Avatar initial={initial} />
+            <Avatar initial={initial} zodiacImage={zodiacInfo?.image} />
 
             {/* Name */}
             <Pressable
@@ -366,16 +358,6 @@ export default function SettingsScreen() {
                 </View>
               ) : null}
             </Pressable>
-
-            {/* Zodiac sign badge */}
-            {zodiacInfo ? (
-              <View style={styles.signBadge}>
-                <View style={styles.signSymbolWrap}>
-                  <Text style={styles.signSymbol}>{zodiacInfo.symbol}</Text>
-                </View>
-                <Text style={styles.signName}>{zodiacInfo.name}</Text>
-              </View>
-            ) : null}
 
             {/* Birth date pill */}
             {birthDateStr ? (
@@ -705,7 +687,7 @@ const styles = StyleSheet.create({
     width: 82,
     height: 82,
     borderRadius: 41,
-    borderWidth: 2,
+    borderWidth: 0,
     borderColor: C.gold,
     alignItems: "center",
     justifyContent: "center",
@@ -715,7 +697,8 @@ const styles = StyleSheet.create({
     width: 74,
     height: 74,
     borderRadius: 37,
-    backgroundColor: "rgba(30,13,64,1)",
+    backgroundColor: "transparent",
+    overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -723,6 +706,10 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "700",
     color: C.goldBright,
+  },
+  avatarZodiacImage: {
+    width: 90,
+    height: 90,
   },
   cameraBadge: {
     position: "absolute",
