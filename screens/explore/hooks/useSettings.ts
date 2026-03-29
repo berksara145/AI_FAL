@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { getOrCreateUser, updateUserName, updateBirthDate, updateBirthTime, type User } from "../../../db/user.repo";
 import { deleteAllChatSessions } from "../../../db/chat.repo";
+import { getSelfPerson } from "../../../db/person.repo";
 
 export type EditingField = "name" | "date" | "time" | null;
 
@@ -44,6 +45,16 @@ export function useSettings(): SettingsState {
   const loadUser = useCallback(async () => {
     try {
       const u = await getOrCreateUser();
+      // Birth time and place are written to the persons table during the birth map flow.
+      // Merge from the self person record when the users table fields are missing.
+      if (u.birth_hour == null || u.birth_minute == null || u.birth_place_name == null) {
+        const selfPerson = await getSelfPerson();
+        if (selfPerson) {
+          if (u.birth_hour == null && selfPerson.birth_hour != null) u.birth_hour = selfPerson.birth_hour;
+          if (u.birth_minute == null && selfPerson.birth_minute != null) u.birth_minute = selfPerson.birth_minute;
+          if (u.birth_place_name == null && selfPerson.birth_place_name != null) u.birth_place_name = selfPerson.birth_place_name;
+        }
+      }
       setUser(u);
     } finally {
       setLoading(false);

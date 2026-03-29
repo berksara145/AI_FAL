@@ -24,6 +24,7 @@ const tr = {
     clearHistory: "Sohbet Geçmişini Temizle",
     clearHistoryDesc: "Tüm kaydedilmiş konuşmaları sil",
     about: "Hakkında",
+    aboutDesc: "Sürüm ve yasal bilgiler",
     tagline: "Kişisel astroloji yardımcınız",
     credit: "OpenAI ile güçlendirildi · ✦ ile yapıldı",
     language: "Dil",

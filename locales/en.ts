@@ -24,6 +24,7 @@ const en = {
     clearHistory: "Clear Chat History",
     clearHistoryDesc: "Delete all saved conversations",
     about: "About",
+    aboutDesc: "Version & legal info",
     tagline: "Your personal astrology companion",
     credit: "Powered by OpenAI · Built with ✦",
     language: "Language",

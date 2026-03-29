@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   Pressable,
+  TouchableOpacity,
   TextInput,
   ActivityIndicator,
   Alert,
@@ -19,12 +20,32 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { ChatColors } from "../../utils/theme";
 import { useSettings } from "./hooks/useSettings";
 import { useTranslation } from "react-i18next";
 import i18n, { SUPPORTED_LANGUAGES, changeAppLanguage, type SupportedLanguage } from "../../lib/i18n";
 import type { RootStackParamList } from "../../navigation/RootStack";
 import { getZodiacInfoForMonthDay } from "../orbit/utils";
+
+// ── Color tokens ──────────────────────────────────────────────────────────────
+const C = {
+  bg:            "#080314",
+  cardBg:        "#0f0825",
+  headerBg:      "#0d0520",
+  gold:          "#c8922a",
+  goldBright:    "#e8c060",
+  text:          "#f0e0b0",
+  textMuted:     "rgba(200,170,120,0.65)",
+  textFaint:     "rgba(200,170,120,0.35)",
+  border:        "rgba(200,146,42,0.2)",
+  borderFaint:   "rgba(200,146,42,0.12)",
+  borderFaintest:"rgba(200,146,42,0.08)",
+  purple:        "rgba(120,80,200,0.15)",
+  purpleBorder:  "rgba(140,100,220,0.3)",
+  purpleText:    "#b090e8",
+  danger:        "#e05050",
+  dangerBg:      "rgba(180,40,40,0.12)",
+  dangerBorder:  "rgba(180,40,40,0.2)",
+} as const;
 
 function formatDate(year: number | null, month: number | null, day: number | null, notSet: string): string {
   if (!year || !month || !day) return notSet;
@@ -37,128 +58,95 @@ function formatTime(hour: number | null, minute: number | null, notSet: string):
   return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
 }
 
-// ── Spinning avatar ring ──────────────────────────────────────────────────────
+// ── Avatar with spinning gold ring ────────────────────────────────────────────
 
-function AvatarRing({ initial }: { initial: string }) {
+function Avatar({ initial }: { initial: string }) {
   const rotation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.loop(
       Animated.timing(rotation, {
         toValue: 1,
-        duration: 9000,
+        duration: 12000,
         easing: Easing.linear,
         useNativeDriver: true,
       })
     ).start();
   }, []);
 
-  const spin = rotation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
-  });
+  const spin = rotation.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
 
   return (
     <View style={styles.avatarWrap}>
-      <Animated.View style={[styles.avatarRing, { transform: [{ rotate: spin }] }]} />
-      <View style={styles.avatarCircle}>
-        <Text style={styles.avatarInitial}>{initial.toUpperCase()}</Text>
+      {/* Spinning dashed outer ring */}
+      <Animated.View style={[styles.avatarSpinRing, { transform: [{ rotate: spin }] }]} />
+      {/* Solid inner gold ring */}
+      <View style={styles.avatarRing}>
+        <View style={styles.avatarCircle}>
+          <Text style={styles.avatarInitial}>{initial.toUpperCase()}</Text>
+        </View>
+      </View>
+      {/* Camera badge */}
+      <View style={styles.cameraBadge}>
+        <MaterialCommunityIcons name="camera" size={11} color={C.gold} />
       </View>
     </View>
   );
 }
 
-// ── Section header ────────────────────────────────────────────────────────────
+// ── Section label ─────────────────────────────────────────────────────────────
 
-function SectionTitle({ label }: { label: string }) {
-  return <Text style={styles.sectionTitle}>{label}</Text>;
+function SectionLabel({ label }: { label: string }) {
+  return <Text style={styles.sectionLabel}>{label}</Text>;
 }
 
-// ── Action row (icon + text + chevron) ────────────────────────────────────────
+// ── List row ──────────────────────────────────────────────────────────────────
 
-function ActionRow({
+function ListRow({
   icon,
   iconBg,
-  label,
+  iconBorder,
+  iconColor,
+  title,
   subtitle,
+  titleColor,
+  subtitleColor,
   onPress,
-  danger,
-  hideChevron,
+  borderTop,
 }: {
   icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
   iconBg: string;
-  label: string;
+  iconBorder: string;
+  iconColor: string;
+  title: string;
   subtitle?: string;
+  titleColor?: string;
+  subtitleColor?: string;
   onPress?: () => void;
-  danger?: boolean;
-  hideChevron?: boolean;
+  borderTop?: boolean;
 }) {
-  const labelColor = danger ? "#b33b3b" : ChatColors.lunaraText;
-  const subtitleColor = danger ? "#b33b3b88" : "rgba(15,9,32,0.52)";
-
   return (
-    <Pressable
-      style={({ pressed }) => [styles.actionRow, pressed && onPress ? styles.rowPressed : null]}
+    <TouchableOpacity
+      activeOpacity={0.65}
       onPress={onPress}
       disabled={!onPress}
+      style={[styles.listRow, borderTop && styles.listRowBorderTop]}
     >
-      <View style={[styles.iconBox, { backgroundColor: iconBg }]}>
-        <MaterialCommunityIcons name={icon} size={18} color={danger ? "#b33b3b" : ChatColors.lunaraLabel} />
+      <View style={[styles.rowIcon, { backgroundColor: iconBg, borderColor: iconBorder }]}>
+        <MaterialCommunityIcons name={icon} size={16} color={iconColor} />
       </View>
-      <View style={styles.actionContent}>
-        <Text style={[styles.actionLabel, { color: labelColor }]}>{label}</Text>
-        {subtitle ? <Text style={[styles.actionSubtitle, { color: subtitleColor }]}>{subtitle}</Text> : null}
+      <View style={styles.rowText}>
+        <Text style={[styles.rowTitle, titleColor ? { color: titleColor } : null]}>{title}</Text>
+        {subtitle ? (
+          <Text style={[styles.rowSub, subtitleColor ? { color: subtitleColor } : null]}>{subtitle}</Text>
+        ) : null}
       </View>
-      {!hideChevron && (
-        <MaterialCommunityIcons
-          name="chevron-right"
-          size={18}
-          color={danger ? "#b33b3b55" : "rgba(15,9,32,0.25)"}
-        />
-      )}
-    </Pressable>
+      <MaterialCommunityIcons name="chevron-right" size={16} color={`${C.gold}55`} />
+    </TouchableOpacity>
   );
 }
 
-// ── Field card (for birth time / birth place grid) ────────────────────────────
-
-function FieldCard({
-  icon,
-  label,
-  value,
-  notSet,
-  onPress,
-}: {
-  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
-  label: string;
-  value?: string;
-  notSet: string;
-  onPress?: () => void;
-}) {
-  const isSet = !!value;
-  return (
-    <Pressable
-      style={({ pressed }) => [styles.fieldCard, pressed && onPress ? styles.rowPressed : null]}
-      onPress={onPress}
-      disabled={!onPress}
-    >
-      <View style={styles.fieldCardIcon}>
-        <MaterialCommunityIcons name={icon} size={16} color={ChatColors.lunaraLabel} />
-      </View>
-      <Text style={styles.fieldCardLabel}>{label}</Text>
-      <Text style={[styles.fieldCardValue, !isSet && styles.fieldCardValueUnset]}>
-        {isSet ? value : notSet}
-      </Text>
-      {onPress && (
-        <View style={styles.fieldCardPencil}>
-          <MaterialCommunityIcons name="pencil-outline" size={12} color="rgba(15,9,32,0.28)" />
-        </View>
-      )}
-    </Pressable>
-  );
-}
-
-// ── Inline edit panel ─────────────────────────────────────────────────────────
+// ── Edit panel ────────────────────────────────────────────────────────────────
 
 function EditPanel({
   children,
@@ -184,7 +172,7 @@ function EditPanel({
         </Pressable>
         <Pressable style={styles.saveBtn} onPress={onSave} disabled={saving}>
           {saving
-            ? <ActivityIndicator size="small" color={ChatColors.sendActive} />
+            ? <ActivityIndicator size="small" color={C.goldBright} />
             : <Text style={styles.saveBtnText}>{t("common.save")}</Text>}
         </Pressable>
       </View>
@@ -192,9 +180,9 @@ function EditPanel({
   );
 }
 
-// ── Legal modal ───────────────────────────────────────────────────────────────
+// ── Legal / About modal ───────────────────────────────────────────────────────
 
-function LegalModal({
+function ContentModal({
   visible,
   title,
   body,
@@ -224,6 +212,48 @@ function LegalModal({
   );
 }
 
+// ── About modal ───────────────────────────────────────────────────────────────
+
+function AboutModal({
+  visible,
+  onClose,
+  onTerms,
+  onPrivacy,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onTerms: () => void;
+  onPrivacy: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalSheet}>
+          <View style={styles.aboutContent}>
+            <Text style={styles.aboutStar}>✦</Text>
+            <Text style={styles.aboutApp}>LUNARA</Text>
+            <Text style={styles.aboutTagline}>{t("settings.tagline")}</Text>
+            <View style={styles.aboutRule} />
+            <Text style={styles.aboutSub}>{t("settings.credit")}</Text>
+          </View>
+          <View style={styles.aboutLegalRow}>
+            <Pressable style={styles.aboutLegalBtn} onPress={onTerms}>
+              <Text style={styles.aboutLegalBtnText}>📄  {t("settings.termsOfService")}</Text>
+            </Pressable>
+            <Pressable style={styles.aboutLegalBtn} onPress={onPrivacy}>
+              <Text style={styles.aboutLegalBtnText}>🔒  {t("settings.privacyPolicy")}</Text>
+            </Pressable>
+          </View>
+          <Pressable style={styles.modalCloseBtn} onPress={onClose}>
+            <Text style={styles.modalCloseBtnText}>{t("settings.close")}</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function SettingsScreen() {
@@ -232,6 +262,7 @@ export default function SettingsScreen() {
   const { t, i18n: i18nInstance } = useTranslation();
   const currentLang = i18nInstance.language as SupportedLanguage;
   const [legalModal, setLegalModal] = useState<"terms" | "privacy" | null>(null);
+  const [showAbout, setShowAbout] = useState(false);
 
   const notSet = t("common.notSet");
 
@@ -243,7 +274,7 @@ export default function SettingsScreen() {
   const initial = s.user?.name?.[0] ?? "✦";
   const birthDateStr = formatDate(s.user?.birth_year ?? null, s.user?.birth_month ?? null, s.user?.birth_day ?? null, "");
   const birthTimeStr = formatTime(s.user?.birth_hour ?? null, s.user?.birth_minute ?? null, notSet);
-  const birthPlaceStr = s.user?.birth_place_name ?? undefined;
+  const birthPlaceStr = s.user?.birth_place_name ?? null;
 
   const handleClearHistory = () => {
     Alert.alert(
@@ -275,15 +306,15 @@ export default function SettingsScreen() {
   if (s.loading) {
     return (
       <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
-        <StatusBar barStyle="light-content" backgroundColor={ChatColors.headerBg} />
-        <View style={styles.header}>
+        <StatusBar barStyle="light-content" backgroundColor={C.headerBg} />
+        <View style={[styles.header]}>
           <View style={styles.headerSide} />
           <Text style={styles.headerTitle}>{t("settings.title")}</Text>
           <View style={styles.headerSide} />
         </View>
         <View style={styles.headerDivider} />
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: ChatColors.bg }}>
-          <ActivityIndicator size="large" color={ChatColors.lunaraLabel} />
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: C.bg }}>
+          <ActivityIndicator size="large" color={C.gold} />
         </View>
       </SafeAreaView>
     );
@@ -291,16 +322,20 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
-      <StatusBar barStyle="light-content" backgroundColor={ChatColors.headerBg} />
+      <StatusBar barStyle="light-content" backgroundColor={C.headerBg} />
 
       {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={styles.headerSide}>
-          <MaterialCommunityIcons name="arrow-left" size={22} color={ChatColors.sendActive} />
+          <View style={styles.headerCircleBtn}>
+            <MaterialCommunityIcons name="arrow-left" size={16} color={C.gold} />
+          </View>
         </Pressable>
         <Text style={styles.headerTitle}>{t("settings.title")}</Text>
         <View style={styles.headerSide}>
-          <Text style={styles.headerOrb}>⚙</Text>
+          <View style={styles.headerCircleBtn}>
+            <MaterialCommunityIcons name="cog-outline" size={16} color={C.gold} />
+          </View>
         </View>
       </View>
       <View style={styles.headerDivider} />
@@ -315,39 +350,47 @@ export default function SettingsScreen() {
 
           {/* ── Profile card ── */}
           <View style={styles.profileCard}>
-            <AvatarRing initial={initial} />
+            <Avatar initial={initial} />
 
+            {/* Name */}
             <Pressable
               onPress={s.editingField === "name" ? undefined : () => s.startEditing("name")}
-              style={styles.profileNameWrap}
+              style={styles.nameRow}
             >
               <Text style={[styles.profileName, !s.user?.name && styles.profileNameUnset]}>
                 {s.user?.name || notSet}
               </Text>
               {s.user?.name ? (
-                <MaterialCommunityIcons name="pencil-outline" size={13} color="rgba(15,9,32,0.28)" style={{ marginLeft: 6, marginTop: 2 }} />
+                <View style={styles.editIconWrap}>
+                  <MaterialCommunityIcons name="pencil-outline" size={9} color={C.gold} />
+                </View>
               ) : null}
             </Pressable>
 
+            {/* Zodiac sign badge */}
             {zodiacInfo ? (
-              <Text style={styles.profileZodiac}>
-                {zodiacInfo.symbol}  {zodiacInfo.name}
-              </Text>
+              <View style={styles.signBadge}>
+                <View style={styles.signSymbolWrap}>
+                  <Text style={styles.signSymbol}>{zodiacInfo.symbol}</Text>
+                </View>
+                <Text style={styles.signName}>{zodiacInfo.name}</Text>
+              </View>
             ) : null}
 
+            {/* Birth date pill */}
             {birthDateStr ? (
               <Pressable
                 onPress={s.editingField === "date" ? undefined : () => s.startEditing("date")}
-                style={styles.profileDatePill}
+                style={styles.datePill}
               >
-                <Text style={styles.profileDateText}>{birthDateStr}</Text>
+                <Text style={styles.datePillText}>{birthDateStr}</Text>
               </Pressable>
             ) : (
               <Pressable
                 onPress={s.editingField === "date" ? undefined : () => s.startEditing("date")}
-                style={[styles.profileDatePill, styles.profileDatePillUnset]}
+                style={[styles.datePill, styles.datePillUnset]}
               >
-                <Text style={styles.profileDateTextUnset}>{t("settings.birthDate")}</Text>
+                <Text style={styles.datePillTextUnset}>{t("settings.birthDate")}</Text>
               </Pressable>
             )}
 
@@ -360,8 +403,8 @@ export default function SettingsScreen() {
                     value={s.nameBuffer}
                     onChangeText={s.setNameBuffer}
                     placeholder={t("settings.namePlaceholder")}
-                    placeholderTextColor="rgba(212,175,55,0.35)"
-                    selectionColor={ChatColors.sendActive}
+                    placeholderTextColor={C.textFaint}
+                    selectionColor={C.goldBright}
                     autoFocus
                   />
                 </EditPanel>
@@ -379,8 +422,8 @@ export default function SettingsScreen() {
                       value={s.dateBuffer.day}
                       onChangeText={(v) => s.setDateBuffer({ ...s.dateBuffer, day: v })}
                       placeholder="DD"
-                      placeholderTextColor="rgba(212,175,55,0.35)"
-                      selectionColor={ChatColors.sendActive}
+                      placeholderTextColor={C.textFaint}
+                      selectionColor={C.goldBright}
                       keyboardType="number-pad"
                       maxLength={2}
                       textAlign="center"
@@ -391,8 +434,8 @@ export default function SettingsScreen() {
                       value={s.dateBuffer.month}
                       onChangeText={(v) => s.setDateBuffer({ ...s.dateBuffer, month: v })}
                       placeholder="MM"
-                      placeholderTextColor="rgba(212,175,55,0.35)"
-                      selectionColor={ChatColors.sendActive}
+                      placeholderTextColor={C.textFaint}
+                      selectionColor={C.goldBright}
                       keyboardType="number-pad"
                       maxLength={2}
                       textAlign="center"
@@ -402,8 +445,8 @@ export default function SettingsScreen() {
                       value={s.dateBuffer.year}
                       onChangeText={(v) => s.setDateBuffer({ ...s.dateBuffer, year: v })}
                       placeholder="YYYY"
-                      placeholderTextColor="rgba(212,175,55,0.35)"
-                      selectionColor={ChatColors.sendActive}
+                      placeholderTextColor={C.textFaint}
+                      selectionColor={C.goldBright}
                       keyboardType="number-pad"
                       maxLength={4}
                       textAlign="center"
@@ -413,25 +456,33 @@ export default function SettingsScreen() {
               </View>
             )}
 
-            {/* ── Birth time + place inside profile card ── */}
-            <View style={styles.profileInnerDivider} />
-            <View style={styles.fieldGrid}>
-              <View style={styles.fieldGridCell}>
-                <FieldCard
-                  icon="clock-outline"
-                  label={t("settings.birthTime")}
-                  value={birthTimeStr !== notSet ? birthTimeStr : undefined}
-                  notSet={notSet}
-                  onPress={s.editingField === "time" ? undefined : () => s.startEditing("time")}
-                />
-              </View>
-              <View style={styles.fieldGridCell}>
-                <FieldCard
-                  icon="map-marker-outline"
-                  label={t("settings.birthPlace")}
-                  value={birthPlaceStr}
-                  notSet={notSet}
-                />
+            {/* Divider */}
+            <View style={styles.profileDivider} />
+
+            {/* Birth time + place — two-column */}
+            <View style={styles.birthRow}>
+              <Pressable
+                style={styles.birthCol}
+                onPress={s.editingField === "time" ? undefined : () => s.startEditing("time")}
+              >
+                <MaterialCommunityIcons name="clock-outline" size={14} color={`${C.gold}66`} />
+                <Text style={styles.birthLabel}>{t("settings.birthTime")}</Text>
+                <Text style={[styles.birthValue, birthTimeStr !== notSet && styles.birthValueSet]}>
+                  {birthTimeStr}
+                </Text>
+              </Pressable>
+
+              <View style={styles.birthColDivider} />
+
+              <View style={styles.birthCol}>
+                <MaterialCommunityIcons name="map-marker-outline" size={14} color={`${C.gold}66`} />
+                <Text style={styles.birthLabel}>{t("settings.birthPlace")}</Text>
+                <Text
+                  style={[styles.birthValue, !!birthPlaceStr && styles.birthValueSet]}
+                  numberOfLines={1}
+                >
+                  {birthPlaceStr ?? notSet}
+                </Text>
               </View>
             </View>
 
@@ -446,8 +497,8 @@ export default function SettingsScreen() {
                       value={s.timeBuffer.hour}
                       onChangeText={(v) => s.setTimeBuffer({ ...s.timeBuffer, hour: v })}
                       placeholder="HH"
-                      placeholderTextColor="rgba(212,175,55,0.35)"
-                      selectionColor={ChatColors.sendActive}
+                      placeholderTextColor={C.textFaint}
+                      selectionColor={C.goldBright}
                       keyboardType="number-pad"
                       maxLength={2}
                       textAlign="center"
@@ -459,8 +510,8 @@ export default function SettingsScreen() {
                       value={s.timeBuffer.minute}
                       onChangeText={(v) => s.setTimeBuffer({ ...s.timeBuffer, minute: v })}
                       placeholder="MM"
-                      placeholderTextColor="rgba(212,175,55,0.35)"
-                      selectionColor={ChatColors.sendActive}
+                      placeholderTextColor={C.textFaint}
+                      selectionColor={C.goldBright}
                       keyboardType="number-pad"
                       maxLength={2}
                       textAlign="center"
@@ -472,20 +523,16 @@ export default function SettingsScreen() {
           </View>
 
           {/* ── Language ── */}
-          <SectionTitle label={t("settings.language")} />
+          <SectionLabel label={t("settings.language")} />
           <View style={styles.card}>
-            <View style={styles.languageRow}>
-              {SUPPORTED_LANGUAGES.map((lang, idx) => (
+            <View style={styles.langToggle}>
+              {SUPPORTED_LANGUAGES.map((lang) => (
                 <Pressable
                   key={lang.code}
-                  style={[
-                    styles.langButton,
-                    currentLang === lang.code && styles.langButtonActive,
-                    idx > 0 && styles.langButtonBorder,
-                  ]}
+                  style={[styles.langOpt, currentLang === lang.code && styles.langOptActive]}
                   onPress={() => changeAppLanguage(lang.code)}
                 >
-                  <Text style={[styles.langButtonText, currentLang === lang.code && styles.langButtonTextActive]}>
+                  <Text style={[styles.langOptText, currentLang === lang.code && styles.langOptTextActive]}>
                     {lang.nativeLabel}
                   </Text>
                 </Pressable>
@@ -494,77 +541,66 @@ export default function SettingsScreen() {
           </View>
 
           {/* ── Data ── */}
-          <SectionTitle label={t("settings.data")} />
+          <SectionLabel label={t("settings.data")} />
           <View style={styles.card}>
-            <ActionRow
+            <ListRow
               icon="delete-outline"
-              iconBg="rgba(229,115,115,0.12)"
-              label={t("settings.clearHistory")}
+              iconBg={C.dangerBg}
+              iconBorder={C.dangerBorder}
+              iconColor={C.danger}
+              title={t("settings.clearHistory")}
               subtitle={t("settings.clearHistoryDesc")}
+              titleColor={C.danger}
+              subtitleColor={`${C.danger}88`}
               onPress={handleClearHistory}
-              danger
             />
           </View>
 
           {/* ── Support ── */}
-          <SectionTitle label={t("settings.support")} />
+          <SectionLabel label={t("settings.support")} />
           <View style={styles.card}>
-            <ActionRow
+            <ListRow
               icon="message-outline"
-              iconBg="rgba(212,175,55,0.12)"
-              label={t("settings.contactUs")}
+              iconBg={`${C.gold}14`}
+              iconBorder={`${C.gold}28`}
+              iconColor={C.gold}
+              title={t("settings.contactUs")}
               subtitle={t("settings.contactUsDesc")}
               onPress={handleContactUs}
             />
-          </View>
-
-          {/* Legal side-by-side */}
-          <View style={styles.legalRow}>
-            <Pressable
-              style={({ pressed }) => [styles.legalCard, pressed && styles.rowPressed]}
-              onPress={() => setLegalModal("terms")}
-            >
-              <Text style={styles.legalEmoji}>📄</Text>
-              <Text style={styles.legalLabel}>{t("settings.termsOfService")}</Text>
-              <MaterialCommunityIcons name="chevron-right" size={14} color="rgba(15,9,32,0.25)" />
-            </Pressable>
-            <Pressable
-              style={({ pressed }) => [styles.legalCard, pressed && styles.rowPressed]}
-              onPress={() => setLegalModal("privacy")}
-            >
-              <Text style={styles.legalEmoji}>🔒</Text>
-              <Text style={styles.legalLabel}>{t("settings.privacyPolicy")}</Text>
-              <MaterialCommunityIcons name="chevron-right" size={14} color="rgba(15,9,32,0.25)" />
-            </Pressable>
-          </View>
-
-          {/* ── About ── */}
-          <SectionTitle label={t("settings.about")} />
-          <View style={styles.card}>
-            <View style={styles.aboutContent}>
-              <Text style={styles.aboutStar}>✦</Text>
-              <Text style={styles.aboutApp}>LUNARA</Text>
-              <Text style={styles.aboutTagline}>{t("settings.tagline")}</Text>
-              <View style={styles.aboutRule} />
-              <Text style={styles.aboutSub}>{t("settings.credit")}</Text>
-            </View>
+            <ListRow
+              icon="information-outline"
+              iconBg={`${C.gold}14`}
+              iconBorder={`${C.gold}28`}
+              iconColor={C.gold}
+              title={t("settings.about")}
+              subtitle={t("settings.aboutDesc", { defaultValue: "Version & legal info" })}
+              onPress={() => setShowAbout(true)}
+              borderTop
+            />
           </View>
 
           <View style={{ height: 48 }} />
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <LegalModal
+      <ContentModal
         visible={legalModal === "terms"}
         title={t("settings.termsTitle")}
         body={t("settings.termsBody")}
         onClose={() => setLegalModal(null)}
       />
-      <LegalModal
+      <ContentModal
         visible={legalModal === "privacy"}
         title={t("settings.privacyTitle")}
         body={t("settings.privacyBody")}
         onClose={() => setLegalModal(null)}
+      />
+      <AboutModal
+        visible={showAbout}
+        onClose={() => setShowAbout(false)}
+        onTerms={() => { setShowAbout(false); setTimeout(() => setLegalModal("terms"), 350); }}
+        onPrivacy={() => { setShowAbout(false); setTimeout(() => setLegalModal("privacy"), 350); }}
       />
     </SafeAreaView>
   );
@@ -573,361 +609,359 @@ export default function SettingsScreen() {
 // ── Styles ────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: ChatColors.headerBg },
+  container: { flex: 1, backgroundColor: C.headerBg },
 
+  // Header
   header: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: ChatColors.headerBg,
-    gap: 14,
+    paddingVertical: 14,
+    backgroundColor: C.headerBg,
   },
   headerSide: {
-    width: 36,
+    width: 40,
     alignItems: "center",
     justifyContent: "center",
   },
   headerTitle: {
     flex: 1,
-    fontSize: 21,
-    fontWeight: "600",
-    color: ChatColors.sendActive,
-    letterSpacing: 0.5,
+    fontSize: 15,
+    fontWeight: "700",
+    color: C.goldBright,
+    letterSpacing: 3,
     textAlign: "center",
-    textShadowColor: "rgba(201,168,76,0.35)",
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 20,
-  },
-  headerOrb: {
-    fontSize: 18,
-    color: "rgba(201,168,76,0.5)",
+    textTransform: "uppercase",
   },
   headerDivider: {
-    height: 1,
-    backgroundColor: ChatColors.sendActive,
-    opacity: 0.3,
+    height: 0.5,
+    backgroundColor: C.border,
+  },
+  headerCircleBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: `${C.gold}14`,
+    borderWidth: 0.5,
+    borderColor: C.border,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
-  scroll: { flex: 1, backgroundColor: ChatColors.bg },
-  scrollContent: { paddingHorizontal: 18, paddingTop: 20 },
+  scroll: { flex: 1, backgroundColor: C.bg },
+  scrollContent: { paddingHorizontal: 20, paddingTop: 24 },
 
-  sectionTitle: {
-    fontSize: 10,
+  sectionLabel: {
+    fontSize: 9,
     fontWeight: "700",
-    color: ChatColors.lunaraLabel,
-    letterSpacing: 2.2,
+    color: `${C.gold}66`,
+    letterSpacing: 3,
     textTransform: "uppercase",
-    marginTop: 28,
+    marginTop: 24,
     marginBottom: 10,
-    opacity: 0.8,
+    paddingLeft: 2,
   },
 
   card: {
-    backgroundColor: ChatColors.inputBarBg,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "rgba(100,80,40,0.22)",
+    backgroundColor: C.cardBg,
+    borderRadius: 16,
+    borderWidth: 0.5,
+    borderColor: `${C.gold}26`,
     overflow: "hidden",
   },
 
-  rowPressed: { backgroundColor: "rgba(100,80,40,0.08)" },
+  rowPressed: { backgroundColor: `${C.gold}0f` },
 
   // ── Profile card ──
   profileCard: {
-    backgroundColor: ChatColors.inputBarBg,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: "rgba(100,80,40,0.22)",
+    backgroundColor: C.cardBg,
+    borderRadius: 20,
+    borderWidth: 0.5,
+    borderColor: C.border,
     alignItems: "center",
-    paddingVertical: 32,
+    paddingVertical: 28,
     paddingHorizontal: 20,
-    gap: 10,
+    gap: 12,
   },
 
   // Avatar
   avatarWrap: {
-    width: 88,
-    height: 88,
+    width: 90,
+    height: 90,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 4,
   },
-  avatarRing: {
+  avatarSpinRing: {
     position: "absolute",
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    borderWidth: 1.5,
-    borderColor: ChatColors.lunaraLabel,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 1,
+    borderColor: `${C.gold}55`,
     borderStyle: "dashed",
-    opacity: 0.5,
+  },
+  avatarRing: {
+    width: 82,
+    height: 82,
+    borderRadius: 41,
+    borderWidth: 2,
+    borderColor: C.gold,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "transparent",
   },
   avatarCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: "rgba(122,88,16,0.12)",
-    borderWidth: 1,
-    borderColor: "rgba(122,88,16,0.3)",
+    width: 74,
+    height: 74,
+    borderRadius: 37,
+    backgroundColor: "rgba(30,13,64,1)",
     alignItems: "center",
     justifyContent: "center",
   },
   avatarInitial: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: "700",
-    color: ChatColors.lunaraLabel,
+    color: C.goldBright,
   },
-
-  // Profile info
-  profileNameWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  profileName: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: ChatColors.lunaraText,
-    letterSpacing: 0.5,
-    textAlign: "center",
-  },
-  profileNameUnset: {
-    color: "rgba(15,9,32,0.3)",
-    fontStyle: "italic",
-    fontSize: 18,
-    fontWeight: "400",
-  },
-  profileZodiac: {
-    fontSize: 14,
-    color: "rgba(15,9,32,0.55)",
-    letterSpacing: 0.3,
-  },
-  profileDatePill: {
-    paddingHorizontal: 14,
-    paddingVertical: 5,
-    borderRadius: 20,
-    backgroundColor: "rgba(122,88,16,0.1)",
-    borderWidth: 1,
-    borderColor: "rgba(122,88,16,0.25)",
-  },
-  profileDatePillUnset: {
-    backgroundColor: "rgba(122,88,16,0.05)",
-    borderColor: "rgba(122,88,16,0.15)",
-  },
-  profileDateText: {
-    fontSize: 13,
-    color: ChatColors.lunaraLabel,
-    letterSpacing: 0.3,
-  },
-  profileDateTextUnset: {
-    fontSize: 13,
-    color: "rgba(15,9,32,0.3)",
-    letterSpacing: 0.3,
-    fontStyle: "italic",
-  },
-  profileEditWrap: {
-    width: "100%",
-    marginTop: 6,
-    borderTopWidth: 1,
-    borderTopColor: ChatColors.divider,
-    paddingTop: 14,
-  },
-  profileInnerDivider: {
-    width: "100%",
-    height: 1,
-    backgroundColor: ChatColors.divider,
-    marginTop: 6,
-  },
-
-  // ── Field grid (birth time + place) ──
-  fieldGrid: {
-    flexDirection: "row",
-    gap: 10,
-    width: "100%",
-    marginTop: 12,
-  },
-  fieldGridCell: {
-    flex: 1,
-  },
-  fieldCard: {
-    backgroundColor: "rgba(100,80,40,0.08)",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "rgba(100,80,40,0.18)",
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    gap: 4,
-  },
-  fieldCardIcon: {
-    marginBottom: 4,
-  },
-  fieldCardLabel: {
-    fontSize: 10,
-    fontWeight: "700",
-    color: ChatColors.lunaraLabel,
-    letterSpacing: 1.6,
-    textTransform: "uppercase",
-    opacity: 0.7,
-  },
-  fieldCardValue: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: ChatColors.lunaraText,
-    marginTop: 2,
-  },
-  fieldCardValueUnset: {
-    color: "rgba(15,9,32,0.3)",
-    fontStyle: "italic",
-    fontWeight: "400",
-    fontSize: 13,
-  },
-  fieldCardPencil: {
+  cameraBadge: {
     position: "absolute",
-    top: 10,
-    right: 10,
-  },
-
-  // ── Language ──
-  languageRow: { flexDirection: "row" },
-  langButton: {
-    flex: 1,
-    paddingVertical: 15,
-    alignItems: "center",
-  },
-  langButtonBorder: {
-    borderLeftWidth: 1,
-    borderLeftColor: "rgba(100,80,40,0.22)",
-  },
-  langButtonActive: {
-    backgroundColor: ChatColors.headerBg,
-  },
-  langButtonText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "rgba(15,9,32,0.45)",
-  },
-  langButtonTextActive: {
-    color: ChatColors.sendActive,
-    fontWeight: "700",
-  },
-
-  // ── Action rows ──
-  actionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 15,
-    gap: 14,
-  },
-  iconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 11,
+    bottom: 4,
+    right: 4,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#1a0a35",
+    borderWidth: 1.5,
+    borderColor: C.gold,
     alignItems: "center",
     justifyContent: "center",
-    flexShrink: 0,
-  },
-  actionContent: { flex: 1, gap: 2 },
-  actionLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    letterSpacing: 0.1,
-  },
-  actionSubtitle: {
-    fontSize: 12,
-    letterSpacing: 0.1,
   },
 
-  // ── Legal side-by-side ──
-  legalRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 10,
-  },
-  legalCard: {
-    flex: 1,
-    backgroundColor: ChatColors.inputBarBg,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "rgba(100,80,40,0.22)",
-    paddingVertical: 18,
-    paddingHorizontal: 14,
+  // Name
+  nameRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
-  legalEmoji: {
+  profileName: {
     fontSize: 20,
-  },
-  legalLabel: {
-    flex: 1,
-    fontSize: 12,
     fontWeight: "600",
-    color: ChatColors.lunaraText,
-    letterSpacing: 0.1,
+    color: C.text,
+    letterSpacing: 1,
+  },
+  profileNameUnset: {
+    color: C.textFaint,
+    fontStyle: "italic",
+    fontWeight: "400",
+    fontSize: 17,
+  },
+  editIconWrap: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: `${C.gold}1e`,
+    borderWidth: 0.5,
+    borderColor: `${C.gold}4d`,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
-  // ── About ──
-  aboutContent: {
+  // Sign badge
+  signBadge: {
+    flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 32,
     gap: 6,
+    backgroundColor: C.purple,
+    borderWidth: 0.5,
+    borderColor: C.purpleBorder,
+    borderRadius: 20,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
   },
-  aboutStar: {
-    fontSize: 28,
-    color: ChatColors.lunaraLabel,
+  signSymbolWrap: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: "rgba(140,100,220,0.25)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  signSymbol: {
+    fontSize: 11,
+    color: C.purpleText,
+  },
+  signName: {
+    fontSize: 14,
+    color: C.purpleText,
+    fontStyle: "italic",
+    letterSpacing: 0.5,
+  },
+
+  // Date pill
+  datePill: {
+    backgroundColor: `${C.gold}14`,
+    borderWidth: 0.5,
+    borderColor: C.border,
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+  },
+  datePillUnset: {
+    backgroundColor: `${C.gold}0a`,
+    borderColor: `${C.gold}1a`,
+  },
+  datePillText: {
+    fontSize: 14,
+    color: `rgba(200,170,100,0.8)`,
+    letterSpacing: 0.5,
+  },
+  datePillTextUnset: {
+    fontSize: 14,
+    color: C.textFaint,
+    fontStyle: "italic",
+    letterSpacing: 0.5,
+  },
+
+  // Profile edit wrap
+  profileEditWrap: {
+    width: "100%",
+    marginTop: 6,
+    borderTopWidth: 0.5,
+    borderTopColor: C.borderFaint,
+    paddingTop: 14,
+  },
+
+  // Profile divider
+  profileDivider: {
+    width: "100%",
+    height: 0.5,
+    backgroundColor: C.borderFaint,
+    marginTop: 4,
+  },
+
+  // Birth time + place columns
+  birthRow: {
+    flexDirection: "row",
+    width: "100%",
+  },
+  birthCol: {
+    flex: 1,
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 8,
+  },
+  birthColDivider: {
+    width: 0.5,
+    backgroundColor: C.borderFaint,
+    alignSelf: "stretch",
+  },
+  birthLabel: {
+    fontSize: 9,
+    fontWeight: "700",
+    letterSpacing: 2,
+    color: `${C.gold}80`,
+    textTransform: "uppercase",
+  },
+  birthValue: {
+    fontSize: 13,
+    color: C.textFaint,
+    fontStyle: "italic",
+  },
+  birthValueSet: {
+    color: "rgba(200,170,120,0.9)",
+    fontStyle: "italic",
+  },
+
+  // ── Language ──
+  langToggle: {
+    flexDirection: "row",
+    padding: 6,
+    gap: 4,
+  },
+  langOpt: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  langOptActive: {
+    backgroundColor: `${C.gold}26`,
+    borderWidth: 0.5,
+    borderColor: `${C.gold}59`,
+  },
+  langOptText: {
+    fontSize: 13,
+    letterSpacing: 1,
+    color: C.textFaint,
+    fontWeight: "500",
+  },
+  langOptTextActive: {
+    color: C.goldBright,
+    fontWeight: "700",
+  },
+
+  // ── List rows ──
+  listRowBorderTop: {
+    borderTopWidth: 0.5,
+    borderTopColor: C.borderFaintest,
+  },
+  listRow: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    gap: 14,
+    alignSelf: "stretch",
+  },
+  rowIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    borderWidth: 0.5,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  rowText: { flex: 1, flexShrink: 1 },
+  rowTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: C.text,
+    letterSpacing: 0.3,
     marginBottom: 2,
   },
-  aboutApp: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: ChatColors.lunaraLabel,
-    letterSpacing: 6,
-    marginTop: 2,
-  },
-  aboutTagline: {
-    fontSize: 14,
-    color: ChatColors.lunaraText,
-    letterSpacing: 0.3,
-    opacity: 0.7,
-  },
-  aboutRule: {
-    width: 40,
-    height: 1,
-    backgroundColor: ChatColors.divider,
-    marginVertical: 6,
-  },
-  aboutSub: {
+  rowSub: {
     fontSize: 12,
-    color: "rgba(15,9,32,0.40)",
-    letterSpacing: 0.3,
+    color: C.textFaint,
+    fontStyle: "italic",
+    letterSpacing: 0.2,
   },
 
   // ── Edit panels ──
-  editPanel: {
-    gap: 10,
-  },
+  editPanel: { gap: 10 },
   editHint: {
     fontSize: 11,
-    color: "rgba(15,9,32,0.45)",
+    color: C.textFaint,
     letterSpacing: 0.4,
   },
   textInput: {
-    backgroundColor: ChatColors.inputFieldBg,
+    backgroundColor: "rgba(255,255,255,0.04)",
     borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: "rgba(100,80,40,0.25)",
+    borderWidth: 1,
+    borderColor: C.border,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 15,
-    color: ChatColors.lunaraText,
+    color: C.text,
   },
   dateRow: { flexDirection: "row", gap: 8, alignItems: "center" },
   dateCell: { flex: 1 },
   yearCell: { flex: 1.6 },
   timeSep: {
     fontSize: 22,
-    color: ChatColors.lunaraLabel,
+    color: C.gold,
     fontWeight: "200",
   },
   editActions: { flexDirection: "row", gap: 10 },
@@ -935,84 +969,141 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: "rgba(100,80,40,0.30)",
+    borderWidth: 1,
+    borderColor: C.border,
     alignItems: "center",
   },
   cancelBtnText: {
     fontSize: 14,
-    color: "rgba(15,9,32,0.55)",
+    color: C.textMuted,
     fontWeight: "500",
   },
   saveBtn: {
     flex: 1,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: ChatColors.headerBg,
+    backgroundColor: C.headerBg,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "rgba(201,168,76,0.35)",
+    borderColor: `${C.gold}59`,
   },
   saveBtnText: {
     fontSize: 14,
     fontWeight: "700",
-    color: ChatColors.sendActive,
+    color: C.goldBright,
     letterSpacing: 0.3,
   },
   errorText: {
     fontSize: 12,
-    color: "#b33b3b",
+    color: C.danger,
   },
 
-  // ── Legal modal ──
+  // ── Modal ──
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.55)",
+    backgroundColor: "rgba(0,0,0,0.65)",
     justifyContent: "flex-end",
   },
   modalSheet: {
-    backgroundColor: ChatColors.bg,
+    backgroundColor: C.cardBg,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    borderTopWidth: 0.5,
+    borderLeftWidth: 0.5,
+    borderRightWidth: 0.5,
+    borderColor: C.border,
     paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 36,
     maxHeight: "75%",
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "700",
-    color: ChatColors.lunaraLabel,
-    letterSpacing: 0.5,
+    color: C.goldBright,
+    letterSpacing: 1,
     textAlign: "center",
     marginBottom: 12,
+    textTransform: "uppercase",
   },
   modalRule: {
-    height: 1,
-    backgroundColor: ChatColors.divider,
+    height: 0.5,
+    backgroundColor: C.borderFaint,
     marginBottom: 16,
   },
-  modalScroll: {
-    marginBottom: 20,
-  },
+  modalScroll: { marginBottom: 20 },
   modalBody: {
     fontSize: 14,
-    color: ChatColors.lunaraText,
+    color: C.textMuted,
     lineHeight: 22,
-    opacity: 0.85,
   },
   modalCloseBtn: {
-    backgroundColor: ChatColors.headerBg,
+    backgroundColor: C.headerBg,
     borderRadius: 12,
     paddingVertical: 13,
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(201,168,76,0.35)",
+    borderWidth: 0.5,
+    borderColor: `${C.gold}59`,
   },
   modalCloseBtnText: {
     fontSize: 15,
     fontWeight: "700",
-    color: ChatColors.sendActive,
+    color: C.goldBright,
+    letterSpacing: 0.3,
+  },
+
+  // ── About modal content ──
+  aboutContent: {
+    alignItems: "center",
+    paddingVertical: 24,
+    gap: 6,
+  },
+  aboutStar: {
+    fontSize: 26,
+    color: C.gold,
+    marginBottom: 2,
+  },
+  aboutApp: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: C.goldBright,
+    letterSpacing: 6,
+    marginTop: 2,
+  },
+  aboutTagline: {
+    fontSize: 14,
+    color: C.textMuted,
+    letterSpacing: 0.3,
+  },
+  aboutRule: {
+    width: 40,
+    height: 0.5,
+    backgroundColor: C.borderFaint,
+    marginVertical: 6,
+  },
+  aboutSub: {
+    fontSize: 12,
+    color: `${C.gold}66`,
+    letterSpacing: 0.3,
+  },
+  aboutLegalRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 16,
+  },
+  aboutLegalBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: `${C.gold}0f`,
+    borderWidth: 0.5,
+    borderColor: C.border,
+    alignItems: "center",
+  },
+  aboutLegalBtnText: {
+    fontSize: 12,
+    color: C.textMuted,
+    fontWeight: "500",
     letterSpacing: 0.3,
   },
 });
