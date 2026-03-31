@@ -50,12 +50,19 @@ export function useSettings(): SettingsState {
       // entered by the user (birth_time_known = 1), not a default noon value.
       const selfPerson = await getSelfPerson();
       if (selfPerson) {
-        if (selfPerson.birth_time_known === 1 && selfPerson.birth_hour != null) u.birth_hour = selfPerson.birth_hour;
-        if (selfPerson.birth_time_known === 1 && selfPerson.birth_minute != null) u.birth_minute = selfPerson.birth_minute;
         if (selfPerson.birth_place_name != null) u.birth_place_name = selfPerson.birth_place_name;
       }
-      // Also respect users table birth_time_known — clear time if not actually set
-      if (u.birth_time_known !== 1) {
+      // Show birth time only if it was explicitly entered during chart creation (persons table)
+      // or manually saved in settings (users table). Ignore stale users.birth_time_known data
+      // that may have been written by old code paths.
+      const timeKnown = selfPerson?.birth_time_known === 1 || u.birth_time_known === 1;
+      if (timeKnown) {
+        // Prefer the persons table value (set during chart creation)
+        if (selfPerson?.birth_time_known === 1 && selfPerson.birth_hour != null) {
+          u.birth_hour = selfPerson.birth_hour;
+          u.birth_minute = selfPerson.birth_minute ?? null;
+        }
+      } else {
         u.birth_hour = null;
         u.birth_minute = null;
       }
@@ -140,6 +147,11 @@ export function useSettings(): SettingsState {
     setSaving(true);
     try {
       await updateBirthTime(h, min);
+      // Also update self person so the time shows correctly in display
+      const selfPerson = await getSelfPerson();
+      if (selfPerson?.name) {
+        await updateBirthTime(h, min, selfPerson.name, true);
+      }
       await loadUser();
       setEditingField(null);
     } catch {

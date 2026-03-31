@@ -44,10 +44,12 @@ export function useBirthMapFlow(
     setShowTimePicker(false);
     const timeString = `${birthTime.hour.toString().padStart(2, "0")}:${birthTime.minute.toString().padStart(2, "0")}`;
 
-    try {
-      await updateBirthTime(birthTime.hour, birthTime.minute, personName ?? undefined, true);
-    } catch (error) {
-      console.error("[useBirthMapFlow] Error saving birth time:", error);
+    if (personName) {
+      try {
+        await updateBirthTime(birthTime.hour, birthTime.minute, personName, true);
+      } catch (error) {
+        console.error("[useBirthMapFlow] Error saving birth time:", error);
+      }
     }
 
     await appendMessage("user", timeString);
@@ -61,10 +63,12 @@ export function useBirthMapFlow(
   const handleTimeUnknown = async () => {
     setShowTimePicker(false);
 
-    try {
-      await updateBirthTime(12, 0, personName ?? undefined, false);
-    } catch (error) {
-      console.error("[useBirthMapFlow] Error saving unknown birth time:", error);
+    if (personName) {
+      try {
+        await updateBirthTime(12, 0, personName, false);
+      } catch (error) {
+        console.error("[useBirthMapFlow] Error saving unknown birth time:", error);
+      }
     }
 
     await appendMessage("user", "I don't know my birth time");

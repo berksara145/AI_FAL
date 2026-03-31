@@ -17,7 +17,7 @@ import {
   Easing,
   Image,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -190,10 +190,11 @@ function ContentModal({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
-        <View style={styles.modalSheet}>
+        <View style={[styles.modalSheet, { paddingBottom: Math.max(36, insets.bottom + 16) }]}>
           <Text style={styles.modalTitle}>{title}</Text>
           <View style={styles.modalRule} />
           <ScrollView showsVerticalScrollIndicator={false} style={styles.modalScroll}>
@@ -222,10 +223,11 @@ function AboutModal({
   onPrivacy: () => void;
 }) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
-        <View style={styles.modalSheet}>
+        <View style={[styles.modalSheet, { paddingBottom: Math.max(36, insets.bottom + 16) }]}>
           <View style={styles.aboutContent}>
             <Text style={styles.aboutStar}>✦</Text>
             <Text style={styles.aboutApp}>LUNARA</Text>
