@@ -139,10 +139,6 @@ export default function PremiumScreen() {
   const glowOpacity = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
   const glowScale   = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1.3] });
 
-  // Auto-close if already premium
-  useEffect(() => {
-    if (isPremium) navigation.goBack();
-  }, [isPremium]);
 
   return (
     <View style={styles.container}>
