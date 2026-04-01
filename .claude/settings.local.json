@@ -13,7 +13,10 @@
       "Bash(node -e \"const i18n = require\\(''''./lib/i18n''''\\); console.log\\(''''i18n loaded ok''''\\);\")",
       "WebSearch",
       "Bash(xargs grep:*)",
-      "Bash(npx expo:*)"
+      "Bash(npx expo:*)",
+      "Bash(find C:/Users/PC/Documents/GitHub/AI_FAL/screens -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx \\\\\\))",
+      "Bash(find C:/Users/PC/Documents/GitHub/AI_FAL/lib -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx \\\\\\))",
+      "Bash(xargs wc:*)"
     ]
   }
 }

@@ -18,10 +18,23 @@ AI_FAL/
 ├── CLAUDE.md                   ← you are here
 ├── App.tsx                     ← entry point, NavigationContainer
 ├── navigation/                 ← all navigation config
+│   ├── MainTabs.tsx            ← bottom tabs + stack (Settings, History, PersonDetail)
+│   ├── RootStack.tsx           ← root navigator
+│   └── types.ts
 ├── screens/                    ← one folder per feature
 │   ├── orbit/                  ← people management + birth charts
+│   │   ├── components/         ← InterpretationSection, NatalChartView, TimePicker, LocationSearch
+│   │   ├── hooks/              ← usePersonDetail, useOrbitNodes, useBirthMapFlow, etc.
+│   │   ├── personDetailStyles.ts ← styles for PersonDetailScreen only
+│   │   └── styles.ts           ← styles for OrbitScreen
 │   ├── chat/                   ← chat session UI
+│   │   ├── components/         ← ChatSessionCore, MessageBubble, TarotReveal, etc.
+│   │   ├── hooks/              ← useChatPersons, useTarotReading, etc.
+│   │   └── styles.ts           ← shared chat styles
 │   ├── explore/                ← insights/horoscopes
+│   │   ├── components/         ← Avatar, ContentModal, EditPanel, ListRow, FeatureCard, etc.
+│   │   ├── hooks/              ← useSettings, useHistory
+│   │   └── styles.ts           ← shared explore styles (exports C color tokens + styles)
 │   └── onboarding/             ← first-launch user setup
 ├── lib/                        ← business logic, no UI
 │   ├── natalChart/             ← modular chart engine (index.ts re-exports all)
@@ -31,6 +44,8 @@ AI_FAL/
 ├── types/                      ← shared TypeScript types
 ├── utils/                      ← pure utility functions
 ├── components/                 ← truly shared UI components
+│   ├── StarfieldBackground.tsx ← animated nebula + stars + constellations (used by Splash + MainTabs)
+│   └── ...
 └── assets/                     ← images, fonts
 ```
 
@@ -119,12 +134,20 @@ const chart = await generateAndSaveNatalChart(chartStyle, undefined, personName)
 ```
 
 ## Theme / Colors
-All colors live in `utils/theme.ts`. Never hardcode hex values in screens or styles.
+All colors live in `utils/theme.ts`. Prefer using theme tokens over hardcoded hex values.
 ```ts
 import { Colors, ChartColors } from "../../utils/theme";
 // Colors.bgMain, Colors.goldPrimary, Colors.textMuted, etc.
 // ChartColors for natal chart backgroundColor/primaryRing/etc.
 ```
+The `screens/explore/styles.ts` exports its own `C` color token object — this is the canonical style source for all explore-feature screens (SettingsScreen, HistoryScreen) and their components. Import `{ styles, C }` from there instead of redefining locally.
+
+## Shared Components
+- **`components/StarfieldBackground`** — renders nebula gradients, constellations, static stars, twinkling stars, and shooting stars. Used by `SplashScreen` and `MainTabs/BottomTabs`. Pass `idPrefix` prop to avoid SVG gradient ID collisions.
+  ```ts
+  import StarfieldBackground from "../../components/StarfieldBackground";
+  <StarfieldBackground idPrefix="sp" />
+  ```
 
 ## What NOT to Do
 - Don't add features not asked for

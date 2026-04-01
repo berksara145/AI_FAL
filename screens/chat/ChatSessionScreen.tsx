@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -20,9 +20,9 @@ import { drawCrossroadsCardForDate, resolveTarotCard, type CrossroadsCard as Cro
 import { useSavePersonFlow } from "./hooks/useSavePersonFlow";
 import { useTarotReading } from "./hooks/useTarotReading";
 import { useCrossroadsReading } from "./hooks/useCrossroadsReading";
-import { Colors } from "../../utils/theme";
 import { useTranslation } from "react-i18next";
 import i18n from "../../lib/i18n";
+import { styles } from "./styles";
 
 type ChatSessionRouteProp = RouteProp<RootStackParamList, "ChatSession">;
 
@@ -662,72 +662,3 @@ export default function ChatSessionScreen() {
     </ChatSessionCore>
   );
 }
-
-const styles = StyleSheet.create({
-  personButtonsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    paddingHorizontal: 20,
-    paddingTop: 4,
-    paddingBottom: 16,
-  },
-  personButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 18,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "rgba(120,80,200,0.35)",
-    backgroundColor: "#2d1f5e",
-  },
-  createChartButton: {
-    backgroundColor: "#2d1f5e",
-  },
-  personButtonText: {
-    color: Colors.goldPrimary,
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  savePersonSection: {
-    backgroundColor: Colors.bgMain,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderGold,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-  },
-  savePersonTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: Colors.goldPrimary,
-    marginBottom: 4,
-  },
-  savePersonSubtitle: {
-    fontSize: 13,
-    color: Colors.textMuted,
-    marginBottom: 12,
-  },
-  nameInput: {
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    fontSize: 16,
-    color: Colors.white,
-    marginBottom: 12,
-  },
-  errorText: {
-    fontSize: 13,
-    color: Colors.error,
-    marginBottom: 12,
-  },
-  cancelButton: {
-    alignSelf: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginTop: 8,
-  },
-  cancelButtonText: {
-    color: Colors.textMuted,
-    fontSize: 15,
-  },
-});
