@@ -48,6 +48,15 @@
         "backgroundColor": "#1a0d2e"
       },
       "package": "com.berk8174985.myexpoapp"
+    },
+    "extra": {
+      "expo-navigation-bar": {
+        "backgroundColor": "#1a0d2e",
+        "barStyle": "light-content"
+      },
+      "eas": {
+        "projectId": "6bfed295-13d3-41b1-999f-0a9c8e6656cf"
+      }
     }
   }
 }
