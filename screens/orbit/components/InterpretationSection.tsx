@@ -3,9 +3,14 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Colors } from "../../../utils/theme";
 
 const SECTION_META: Record<string, { subtitle: string; accent: string }> = {
-  "Core Identity": { subtitle: "Sun · Moon · Rising",    accent: "rgba(212,175,55,0.8)"  },
-  "Inner World":   { subtitle: "Emotions · Aspects",     accent: "rgba(180,140,255,0.8)" },
-  "Life Path":     { subtitle: "Purpose · Growth",       accent: "rgba(100,210,190,0.8)" },
+  // English
+  "Core Identity": { subtitle: "Sun · Moon · Rising",       accent: "rgba(212,175,55,0.8)"  },
+  "Inner World":   { subtitle: "Emotions · Aspects",        accent: "rgba(180,140,255,0.8)" },
+  "Life Path":     { subtitle: "Purpose · Growth",          accent: "rgba(100,210,190,0.8)" },
+  // Turkish
+  "Temel Kimlik":  { subtitle: "Güneş · Ay · Yükselen",     accent: "rgba(212,175,55,0.8)"  },
+  "İç Dünya":      { subtitle: "Duygular · Açılar",         accent: "rgba(180,140,255,0.8)" },
+  "Yaşam Yolu":    { subtitle: "Amaç · Büyüme",             accent: "rgba(100,210,190,0.8)" },
 };
 
 function parseSections(text: string): { header: string; body: string }[] {

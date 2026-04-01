@@ -7,23 +7,17 @@ import type { RootStackParamList } from "../../navigation/RootStack";
 import ViewShot from "react-native-view-shot";
 import NatalChartView from "./components/NatalChartView";
 
-// i18n
 import { useTranslation } from "react-i18next";
 
-// Hooks
 import { useChatSession } from "./hooks/useChatSession";
 import { useAddPersonFlow } from "./hooks/useAddPersonFlow";
 import { useBirthMapFlow } from "./hooks/useBirthMapFlow";
 import { useChartCapture } from "./hooks/useChartCapture";
 import { personToBirthDate } from "./hooks/useOrbitNodes";
 
-// Utils
 import { getZodiacInfoForMonthDay } from "./utils";
-
-// DB
 import { getPersonByName } from "../../db/person.repo";
 
-// Components
 import ChatSessionCore from "../chat/components/ChatSessionCore";
 import TimePicker from "./components/TimePicker";
 import LocationSearch from "./components/LocationSearch";
@@ -46,21 +40,16 @@ export default function BirthMapChatWrapper(
   const isAddPersonFlow = !personNameFromParams;
 
   const effectivePersonNameRef = useRef<string | null>(null);
-  const navigateBack = useCallback(() => {
-    navigation.goBack();
-  }, [navigation]);
+  const navigateBack = useCallback(() => navigation.goBack(), [navigation]);
 
-  // --- Hooks ---
+  // --- Hooks (order matters for deps) ---
   const chat = useChatSession({
     sessionId: sessionIdParam ? Number(sessionIdParam) : undefined,
     isAddPersonFlow,
     personName: personNameFromParams,
   });
 
-  const addPerson = useAddPersonFlow(
-    chat.appendMessage,
-    () => navigateBack()
-  );
+  const addPerson = useAddPersonFlow(chat.appendMessage, navigateBack);
 
   const effectivePersonName = personNameFromParams ?? addPerson.createdPersonName;
   effectivePersonNameRef.current = effectivePersonName;
@@ -100,18 +89,25 @@ export default function BirthMapChatWrapper(
         navigateBack();
       }
     },
-    () => navigateBack()
+    navigateBack
   );
 
-  // --- Streaming complete: trigger pickers based on message content ---
+  // --- Streaming complete ---
+  // No English keyword matching — uses explicit flags set by the hooks themselves
   const handleStreamingComplete = (messageId: string) => {
     chat.setMessages((prev) =>
       prev.map((msg) => {
         if (msg.id !== messageId) return msg;
-        const content = msg.content.toLowerCase();
 
-        if (isAddPersonFlow && addPerson.step === "birthDate" && content.includes("birth date") && content.includes("below")) {
-          setTimeout(() => addPerson.openBirthDatePicker(), 800);
+        if (isAddPersonFlow) {
+          if (addPerson.pendingTimePicker) {
+            // "What time was X born?" message just finished streaming → show time picker
+            addPerson.clearPendingTimePicker();
+            birthMap.expectTimePicker();
+          } else if (addPerson.step === "birthDate") {
+            // "Select birth date below" message finished → show date picker
+            setTimeout(() => addPerson.openBirthDatePicker(), 800);
+          }
         }
 
         birthMap.handleStreamingComplete(messageId, msg.content);
@@ -121,7 +117,7 @@ export default function BirthMapChatWrapper(
     );
   };
 
-  // --- Send message: route to correct handler ---
+  // --- Send message ---
   const handleSendMessage = async (text: string) => {
     const isBlocked =
       birthMap.showTimePicker ||
@@ -134,7 +130,6 @@ export default function BirthMapChatWrapper(
     if (isAddPersonFlow && addPerson.step === "name") {
       await addPerson.handleNameMessage(text);
     }
-    // birthDate step handled by picker, not text input
   };
 
   const isStreaming = chat.messages.some((m) => m.isStreaming);
@@ -154,7 +149,7 @@ export default function BirthMapChatWrapper(
         isTyping={isStreaming}
         mode="interactive"
         disabled={isDisabled}
-        onClose={() => navigateBack()}
+        onClose={navigateBack}
         onStreamingComplete={handleStreamingComplete}
       >
         {addPerson.showBirthDatePicker && (
@@ -188,7 +183,6 @@ export default function BirthMapChatWrapper(
         )}
       </ChatSessionCore>
 
-      {/* Hidden view to capture chart as PNG */}
       {chartCapture.pendingCapture && (
         <View style={[StyleSheet.absoluteFill, styles.hiddenCapture]} pointerEvents="none">
           <ViewShot

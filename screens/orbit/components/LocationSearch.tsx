@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import { ChatColors } from "../../../utils/theme";
 import Constants from "expo-constants";
+import { useTranslation } from "react-i18next";
 
 const GOOGLE_PLACES_API_KEY = (Constants.expoConfig?.extra?.googlePlacesApiKey ?? "") as string;
 
@@ -20,6 +21,7 @@ interface LocationSearchProps {
 }
 
 export default function LocationSearch({ onLocationSelect, onConfirm }: LocationSearchProps) {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<BirthLocation | null>(null);
   const [queryText, setQueryText] = useState<string>("");
   const insets = useSafeAreaInsets();
@@ -54,13 +56,13 @@ export default function LocationSearch({ onLocationSelect, onConfirm }: Location
   return (
     <View style={styles.fullscreenContainer}>
       <View style={styles.header}>
-        <Text style={styles.title}>Enter Your Birth Location</Text>
+        <Text style={styles.title}>{t("locationSearch.title")}</Text>
       </View>
 
 
       <View style={styles.autocompleteContainer}>
         <GooglePlacesAutocomplete
-          placeholder="Search for a place..."
+          placeholder={t("locationSearch.placeholder")}
           fetchDetails
           onPress={(data, details) => {
             const placeName = data.description || details?.formatted_address || details?.name || "";
@@ -156,12 +158,10 @@ export default function LocationSearch({ onLocationSelect, onConfirm }: Location
           activeOpacity={0.85}
           disabled={!canOpenMaps}
         >
-          <Text style={styles.mapsButtonText}>Open in Google Maps</Text>
+          <Text style={styles.mapsButtonText}>{t("locationSearch.openInMaps")}</Text>
         </TouchableOpacity>
 
-        <Text style={styles.hintText}>
-          Tip: pick a suggestion to save the exact coordinates (lat/lng).
-        </Text>
+        <Text style={styles.hintText}>{t("locationSearch.hint")}</Text>
       </View>
 
       <View style={[styles.confirmWrapper, { paddingBottom: Math.max(insets.bottom + 8, 16) }]}>
@@ -174,7 +174,7 @@ export default function LocationSearch({ onLocationSelect, onConfirm }: Location
           activeOpacity={0.8}
           disabled={!selected}
         >
-          <Text style={styles.confirmButtonText}>Continue</Text>
+          <Text style={styles.confirmButtonText}>{t("common.continue")}</Text>
         </TouchableOpacity>
       </View>
     </View>

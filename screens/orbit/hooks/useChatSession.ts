@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   createChatSession,
   getChatSession,
@@ -23,6 +24,7 @@ type InitOptions = {
 };
 
 export function useChatSession({ sessionId, isAddPersonFlow, personName }: InitOptions) {
+  const { t } = useTranslation();
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(
     sessionId ?? null
   );
@@ -46,8 +48,8 @@ export function useChatSession({ sessionId, isAddPersonFlow, personName }: InitO
         }
 
         const firstMessage = isAddPersonFlow
-          ? "Let's add someone to your birth chart. What's their name?"
-          : "To generate your birth map, I'll need a few details. First, what time were you born? Please provide the hour and minute.";
+          ? t("birthMap.addPersonPrompt")
+          : t("birthMap.existingPersonPrompt");
 
         const session = await createChatSession({
           mode: "interactive",

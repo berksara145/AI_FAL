@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { getAllPersons, getSelfPerson, MAX_PERSONS } from "../../../db/person.repo";
+import { getAllPersons, getSelfPerson, MAX_PERSONS, upsertSelfPersonFromCurrentUser } from "../../../db/person.repo";
+import { isOnboardingCompleted } from "../../../db/user.repo";
 import type { Person } from "../../../db/person.repo";
 import { getZodiacInfoForMonthDay } from "../utils";
 
@@ -51,7 +52,18 @@ export function useOrbitNodes() {
 
   const load = useCallback(async () => {
     try {
-      const [persons, self] = await Promise.all([getAllPersons(), getSelfPerson()]);
+      const [persons, selfRaw] = await Promise.all([getAllPersons(), getSelfPerson()]);
+
+      // Recovery: onboarding completed but person record missing (e.g. app crashed mid-onboarding)
+      let self = selfRaw;
+      if (!self) {
+        const completed = await isOnboardingCompleted();
+        if (completed) {
+          await upsertSelfPersonFromCurrentUser();
+          self = await getSelfPerson();
+        }
+      }
+
       setSelfPerson(self);
 
       const others = self != null ? persons.filter((p) => p.id !== self.id) : persons;

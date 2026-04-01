@@ -9,11 +9,21 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import RootStack from "./navigation/RootStack";
 import "./global.css";
 import i18n, { loadStoredLanguage } from "./lib/i18n";
+import { initDatabase, resetDatabaseForDev } from "./db/database";
+
+// ============================================================
+// DEV ONLY — Delete these 2 lines before production build
+const DEV_RESET_DB = true;
+// ============================================================
 
 export default function App() {
   useEffect(() => {
     if (Platform.OS === "android") {
       NavigationBar.setButtonStyleAsync("light").catch(() => {});
+    }
+    // DEV ONLY — Delete this block before production build
+    if (DEV_RESET_DB) {
+      initDatabase().then(() => resetDatabaseForDev()).catch(() => {});
     }
     loadStoredLanguage().then((lang) => {
       if (i18n.language !== lang) i18n.changeLanguage(lang);

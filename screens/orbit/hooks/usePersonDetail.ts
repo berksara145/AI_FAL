@@ -1,25 +1,19 @@
 import { useState, useRef, useCallback } from "react";
 import { InteractionManager } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { getPersonByName, updatePersonInterpretation } from "../../../db/person.repo";
 import { generateChartInterpretation } from "../../../lib/chartInterpretationService";
 
-const LOADING_PHRASES = [
-  "Mapping planetary positions...",
-  "Analyzing aspects and houses...",
-  "Reading the celestial patterns...",
-  "Consulting the cosmic blueprint...",
-  "Decoding the birth map...",
-  "Weaving your cosmic story...",
-];
-
 export function usePersonDetail(name: string) {
+  const { t } = useTranslation();
+  const loadingPhrases: string[] = t("personDetail.loadingPhrases", { returnObjects: true }) as string[];
   const [loadingChart, setLoadingChart] = useState(true);
   const [pngUri, setPngUri] = useState<string | null>(null);
   const [interpretation, setInterpretation] = useState<string | null>(null);
   const [generatingInterpretation, setGeneratingInterpretation] = useState(false);
   const [interpretationError, setInterpretationError] = useState<string | null>(null);
-  const [loadingPhrase, setLoadingPhrase] = useState(LOADING_PHRASES[0]);
+  const [loadingPhrase, setLoadingPhrase] = useState(loadingPhrases[0]);
   const [birthTimeKnown, setBirthTimeKnown] = useState(true);
 
   const chartGptJsonRef = useRef<string | null>(null);
@@ -28,8 +22,8 @@ export function usePersonDetail(name: string) {
   const startPhraseRotation = () => {
     let idx = 0;
     phraseIntervalRef.current = setInterval(() => {
-      idx = (idx + 1) % LOADING_PHRASES.length;
-      setLoadingPhrase(LOADING_PHRASES[idx]);
+      idx = (idx + 1) % loadingPhrases.length;
+      setLoadingPhrase(loadingPhrases[idx]);
     }, 2500);
   };
 
@@ -44,7 +38,7 @@ export function usePersonDetail(name: string) {
     if (mounted.value) {
       setGeneratingInterpretation(true);
       setInterpretationError(null);
-      setLoadingPhrase(LOADING_PHRASES[0]);
+      setLoadingPhrase(loadingPhrases[0]);
       startPhraseRotation();
     }
     try {
@@ -55,7 +49,7 @@ export function usePersonDetail(name: string) {
       }
     } catch {
       if (mounted.value) {
-        setInterpretationError("Could not generate interpretation. Tap to retry.");
+        setInterpretationError(t("personDetail.interpretationError"));
       }
     } finally {
       if (mounted.value) {

@@ -112,11 +112,11 @@ export default function PersonDetailScreen({ route }: Props) {
         <View style={styles.pillsRow}>
           <View style={styles.pill}>
             <Image source={zodiacImageSource} style={styles.pillIconImage} resizeMode="contain" />
-            <Text style={styles.pillText}>{zodiacInfo?.name}</Text>
+            <Text style={styles.pillText}>{i18n.language === "tr" ? zodiacInfo?.nameTr : zodiacInfo?.name}</Text>
           </View>
           <View style={styles.pill}>
             <Text style={styles.pillIcon}>✧</Text>
-            <Text style={styles.pillText}>Born: {birthDate}</Text>
+            <Text style={styles.pillText}>{t("personDetail.born")}: {birthDate}</Text>
           </View>
         </View>
 

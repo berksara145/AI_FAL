@@ -17,108 +17,25 @@ export function getNodePosition(angleDegrees: number) {
 // Order matches files in assets/zodiacs/zodiacSign{index}.png
 const ZODIAC_CONFIG: {
   name: string;
+  nameTr: string;
   symbol: string;
   index: number;
   start: { month: number; day: number };
   end: { month: number; day: number };
   image: any;
 }[] = [
-  {
-    name: "Aries",
-    symbol: "♈",
-    index: 1,
-    start: { month: 3, day: 21 },
-    end: { month: 4, day: 19 },
-    image: require("../../assets/zodiacs/zodiacSign1.png"),
-  },
-  {
-    name: "Taurus",
-    symbol: "♉",
-    index: 2,
-    start: { month: 4, day: 20 },
-    end: { month: 5, day: 20 },
-    image: require("../../assets/zodiacs/zodiacSign2.png"),
-  },
-  {
-    name: "Gemini",
-    symbol: "♊",
-    index: 3,
-    start: { month: 5, day: 21 },
-    end: { month: 6, day: 20 },
-    image: require("../../assets/zodiacs/zodiacSign3.png"),
-  },
-  {
-    name: "Cancer",
-    symbol: "♋",
-    index: 4,
-    start: { month: 6, day: 21 },
-    end: { month: 7, day: 22 },
-    image: require("../../assets/zodiacs/zodiacSign4.png"),
-  },
-  {
-    name: "Leo",
-    symbol: "♌",
-    index: 5,
-    start: { month: 7, day: 23 },
-    end: { month: 8, day: 22 },
-    image: require("../../assets/zodiacs/zodiacSign5.png"),
-  },
-  {
-    name: "Virgo",
-    symbol: "♍",
-    index: 6,
-    start: { month: 8, day: 23 },
-    end: { month: 9, day: 22 },
-    image: require("../../assets/zodiacs/zodiacSign6.png"),
-  },
-  {
-    name: "Libra",
-    symbol: "♎",
-    index: 7,
-    start: { month: 9, day: 23 },
-    end: { month: 10, day: 22 },
-    image: require("../../assets/zodiacs/zodiacSign7.png"),
-  },
-  {
-    name: "Scorpio",
-    symbol: "♏",
-    index: 8,
-    start: { month: 10, day: 23 },
-    end: { month: 11, day: 21 },
-    image: require("../../assets/zodiacs/zodiacSign8.png"),
-  },
-  {
-    name: "Sagittarius",
-    symbol: "♐",
-    index: 9,
-    start: { month: 11, day: 22 },
-    end: { month: 12, day: 21 },
-    image: require("../../assets/zodiacs/zodiacSign9.png"),
-  },
-  {
-    name: "Capricorn",
-    symbol: "♑",
-    index: 10,
-    start: { month: 12, day: 22 },
-    end: { month: 1, day: 19 },
-    image: require("../../assets/zodiacs/zodiacSign10.png"),
-  },
-  {
-    name: "Aquarius",
-    symbol: "♒",
-    index: 11,
-    start: { month: 1, day: 20 },
-    end: { month: 2, day: 18 },
-    image: require("../../assets/zodiacs/zodiacSign11.png"),
-  },
-  {
-    name: "Pisces",
-    symbol: "♓",
-    index: 12,
-    start: { month: 2, day: 19 },
-    end: { month: 3, day: 20 },
-    image: require("../../assets/zodiacs/zodiacSign12.png"),
-  },
+  { name: "Aries",       nameTr: "Koç",      symbol: "♈", index: 1,  start: { month: 3,  day: 21 }, end: { month: 4,  day: 19 }, image: require("../../assets/zodiacs/zodiacSign1.png")  },
+  { name: "Taurus",      nameTr: "Boğa",     symbol: "♉", index: 2,  start: { month: 4,  day: 20 }, end: { month: 5,  day: 20 }, image: require("../../assets/zodiacs/zodiacSign2.png")  },
+  { name: "Gemini",      nameTr: "İkizler",  symbol: "♊", index: 3,  start: { month: 5,  day: 21 }, end: { month: 6,  day: 20 }, image: require("../../assets/zodiacs/zodiacSign3.png")  },
+  { name: "Cancer",      nameTr: "Yengeç",   symbol: "♋", index: 4,  start: { month: 6,  day: 21 }, end: { month: 7,  day: 22 }, image: require("../../assets/zodiacs/zodiacSign4.png")  },
+  { name: "Leo",         nameTr: "Aslan",    symbol: "♌", index: 5,  start: { month: 7,  day: 23 }, end: { month: 8,  day: 22 }, image: require("../../assets/zodiacs/zodiacSign5.png")  },
+  { name: "Virgo",       nameTr: "Başak",    symbol: "♍", index: 6,  start: { month: 8,  day: 23 }, end: { month: 9,  day: 22 }, image: require("../../assets/zodiacs/zodiacSign6.png")  },
+  { name: "Libra",       nameTr: "Terazi",   symbol: "♎", index: 7,  start: { month: 9,  day: 23 }, end: { month: 10, day: 22 }, image: require("../../assets/zodiacs/zodiacSign7.png")  },
+  { name: "Scorpio",     nameTr: "Akrep",    symbol: "♏", index: 8,  start: { month: 10, day: 23 }, end: { month: 11, day: 21 }, image: require("../../assets/zodiacs/zodiacSign8.png")  },
+  { name: "Sagittarius", nameTr: "Yay",      symbol: "♐", index: 9,  start: { month: 11, day: 22 }, end: { month: 12, day: 21 }, image: require("../../assets/zodiacs/zodiacSign9.png")  },
+  { name: "Capricorn",   nameTr: "Oğlak",    symbol: "♑", index: 10, start: { month: 12, day: 22 }, end: { month: 1,  day: 19 }, image: require("../../assets/zodiacs/zodiacSign10.png") },
+  { name: "Aquarius",    nameTr: "Kova",     symbol: "♒", index: 11, start: { month: 1,  day: 20 }, end: { month: 2,  day: 18 }, image: require("../../assets/zodiacs/zodiacSign11.png") },
+  { name: "Pisces",      nameTr: "Balık",    symbol: "♓", index: 12, start: { month: 2,  day: 19 }, end: { month: 3,  day: 20 }, image: require("../../assets/zodiacs/zodiacSign12.png") },
 ];
 
 function isBetweenMonthDay(
@@ -149,8 +66,8 @@ function isBetweenMonthDay(
 export function getZodiacInfoForMonthDay(month: number, day: number): ZodiacInfo | null {
   const config = ZODIAC_CONFIG.find((z) => isBetweenMonthDay(month, day, z.start, z.end));
   if (!config) return null;
-  const { name, symbol, index, image } = config;
-  return { name, symbol, index, image };
+  const { name, nameTr, symbol, index, image } = config;
+  return { name, nameTr, symbol, index, image };
 }
 
 /**

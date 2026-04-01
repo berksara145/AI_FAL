@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { updateBirthLocation, updateBirthTime } from "../../../db/user.repo";
 import { generateAndSaveNatalChart } from "../../../lib/natalChartService";
 import { getZodiacImageDataUris } from "../../../lib/zodiacImageLoader";
@@ -34,11 +35,16 @@ export function useBirthMapFlow(
   onChartReady: (chart: GeneratedChart) => void,
   onDone: () => void
 ) {
+  const { t } = useTranslation();
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [birthTime, setBirthTime] = useState({ hour: 12, minute: 0 });
   const [birthLocation, setBirthLocation] = useState<BirthLocation | undefined>(undefined);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Explicit flags instead of English keyword matching — works regardless of language
+  const awaitingTimePickerRef = useRef(personName !== null);
+  const awaitingLocationSearchRef = useRef(false);
 
   const handleTimeConfirm = async () => {
     setShowTimePicker(false);
@@ -53,9 +59,10 @@ export function useBirthMapFlow(
     }
 
     await appendMessage("user", timeString);
+    awaitingLocationSearchRef.current = true;
     await appendMessage(
       "assistant",
-      `Thank you! You were born at ${timeString}. Now, please enter the location where you were born.`,
+      t("birthMap.timeConfirmed", { time: timeString, name: personName ?? "you" }),
       true
     );
   };
@@ -71,10 +78,11 @@ export function useBirthMapFlow(
       }
     }
 
-    await appendMessage("user", "I don't know my birth time");
+    await appendMessage("user", t("birthMap.timeUnknownUser"));
+    awaitingLocationSearchRef.current = true;
     await appendMessage(
       "assistant",
-      "No problem! We'll use a noon chart — you'll still get accurate planetary positions and aspects. Now, please enter the location where you were born.",
+      t("birthMap.timeUnknown", { name: personName ?? "you" }),
       true
     );
   };
@@ -103,10 +111,7 @@ export function useBirthMapFlow(
 
   const generateChart = async () => {
     if (!personName) {
-      await appendMessage(
-        "assistant",
-        "Please tell me the person's name and birth date first, or open Birth Map from a person's profile."
-      );
+      await appendMessage("assistant", t("birthMap.locationMissingError"));
       return;
     }
 
@@ -121,24 +126,24 @@ export function useBirthMapFlow(
       onChartReady(chart);
     } catch (error) {
       console.error("[useBirthMapFlow] Chart generation error:", error);
-      await appendMessage(
-        "assistant",
-        "I encountered an error generating your natal chart. Please ensure all information (birth date, time, and location) is complete."
-      );
+      await appendMessage("assistant", t("birthMap.chartError"));
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleStreamingComplete = (messageId: string, content: string) => {
-    const lower = content.toLowerCase();
-    if (lower.includes("what time were you born") || (lower.includes("what time was ") && lower.includes(" born"))) {
+  const handleStreamingComplete = (_messageId: string, _content: string) => {
+    if (awaitingTimePickerRef.current) {
+      awaitingTimePickerRef.current = false;
       setTimeout(() => setShowTimePicker(true), 800);
     }
-    if (lower.includes("location where you were born") || (lower.includes("location where") && lower.includes("born"))) {
+    if (awaitingLocationSearchRef.current) {
+      awaitingLocationSearchRef.current = false;
       setTimeout(() => setShowLocationSearch(true), 2000);
     }
   };
+
+  const expectTimePicker = () => { awaitingTimePickerRef.current = true; };
 
   return {
     showTimePicker,
@@ -152,5 +157,6 @@ export function useBirthMapFlow(
     handleTimeUnknown,
     handleLocationConfirm,
     handleStreamingComplete,
+    expectTimePicker,
   };
 }

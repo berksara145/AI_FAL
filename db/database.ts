@@ -209,14 +209,6 @@ export const initDatabase = (): Promise<void> => {
         // ignore
       }
 
-      // One-time reset: clear persons table so app starts with 0 people (remove this block when no longer needed)
-      try {
-        db.runSync("DELETE FROM persons", []);
-        console.log("Persons table cleared (one-time reset)");
-      } catch (e) {
-        console.warn("Persons table clear skipped:", e);
-      }
-
       // Tarot readings table — one row per calendar day
       db.execSync(`
         CREATE TABLE IF NOT EXISTS tarot_readings (
@@ -245,6 +237,17 @@ export const initDatabase = (): Promise<void> => {
     }
   });
 };
+
+// ─── DEV ONLY — delete this function before production build ───────────────
+export const resetDatabaseForDev = (): void => {
+  db.execSync("DELETE FROM messages");
+  db.execSync("DELETE FROM chat_sessions");
+  db.execSync("DELETE FROM tarot_readings");
+  db.execSync("DELETE FROM persons");
+  db.execSync("DELETE FROM users");
+  console.log("[DEV] Database wiped for onboarding test");
+};
+// ────────────────────────────────────────────────────────────────────────────
 
 // Helper function to execute SQL queries
 export const executeSql = (

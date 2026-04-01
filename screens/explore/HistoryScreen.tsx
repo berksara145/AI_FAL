@@ -44,16 +44,18 @@ const C = {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function timeAgo(iso: string): string {
+type TFn = (key: string, opts?: Record<string, unknown>) => string;
+
+function timeAgo(iso: string, t: TFn): string {
   try {
     const diff = Date.now() - new Date(iso).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return "Just now";
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1) return t("history.justNow");
+    if (mins < 60) return t("history.minutesAgo", { n: mins });
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
+    if (hrs < 24) return t("history.hoursAgo", { n: hrs });
     const days = Math.floor(hrs / 24);
-    if (days < 7) return `${days}d ago`;
+    if (days < 7) return t("history.daysAgo", { n: days });
     return new Date(iso).toLocaleDateString([], { month: "short", day: "numeric" });
   } catch { return ""; }
 }
@@ -86,13 +88,26 @@ function featureIcon(feature: string | null): IconName {
   return "chat-outline";
 }
 
-function sessionLabel(session: ChatSession): string {
+// Maps the English feature strings (stored in DB) to translation keys
+const FEATURE_I18N: Record<string, string> = {
+  "What's on your mind?": "explore.general",
+  "Cosmic Crossroads":    "explore.cosmicCrossroads",
+  "Someone Special":      "explore.someoneSpecial",
+  "Friend Dynamics":      "explore.friendDynamics",
+  "Tarot Reading":        "explore.tarotReading",
+  "Natal Chart Analysis": "explore.birthChartAnalysis",
+  "birthMap":             "birthMap.title",
+};
+
+function sessionLabel(session: ChatSession, t: TFn): string {
   if (session.title?.trim()) return session.title.trim();
   if (session.feature?.trim()) {
+    const key = FEATURE_I18N[session.feature.trim()];
+    if (key) return t(key);
     const f = session.feature.trim();
     return f.charAt(0).toUpperCase() + f.slice(1);
   }
-  return "Chat";
+  return t("history.chat");
 }
 
 type SessionWithMeta = ChatSession & { firstMessage: Message | null; messageCount: number };
@@ -111,10 +126,10 @@ function DatePill({ label }: { label: string }) {
 
 // ── Chat card ─────────────────────────────────────────────────────────────────
 
-function ChatCard({ session, onPress }: { session: SessionWithMeta; onPress: () => void }) {
-  const label = sessionLabel(session);
+function ChatCard({ session, onPress, t }: { session: SessionWithMeta; onPress: () => void; t: TFn }) {
+  const label = sessionLabel(session, t);
   const icon = featureIcon(session.feature ?? null);
-  const time = timeAgo(session.updated_at || session.created_at);
+  const time = timeAgo(session.updated_at || session.created_at, t);
   const preview = session.firstMessage?.content ?? null;
 
   return (
@@ -149,7 +164,7 @@ function ChatCard({ session, onPress }: { session: SessionWithMeta; onPress: () 
         </View>
       ) : (
         <View style={[styles.previewBubble, styles.previewBubbleEmpty]}>
-          <Text style={styles.previewEmpty}>No messages yet</Text>
+          <Text style={styles.previewEmpty}>{t("history.noMessages")}</Text>
         </View>
       )}
 
@@ -257,7 +272,7 @@ export default function HistoryScreen() {
               <DatePill label={label} />
               {items.map((session) => (
                 <React.Fragment key={session.id}>
-                  <ChatCard session={session} onPress={() => openSession(session)} />
+                  <ChatCard session={session} onPress={() => openSession(session)} t={t} />
                   <View style={{ height: 50 }} />
                 </React.Fragment>
               ))}

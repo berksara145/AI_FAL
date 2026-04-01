@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { isOnboardingCompleted } from "../db/user.repo";
 
 // Screens
 import SplashScreen from "../screens/SplashScreen";
@@ -38,8 +39,18 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootStack() {
+  const [initialRoute, setInitialRoute] = useState<"Splash" | "MainApp" | null>(null);
+
+  useEffect(() => {
+    isOnboardingCompleted()
+      .then((done) => setInitialRoute(done ? "MainApp" : "Splash"))
+      .catch(() => setInitialRoute("Splash"));
+  }, []);
+
+  if (initialRoute === null) return null;
+
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={initialRoute}>
       {/* Splash - demo/MVP showcase */}
       <Stack.Screen name="Splash" component={SplashScreen} />
 

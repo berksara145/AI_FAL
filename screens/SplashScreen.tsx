@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/RootStack";
-import { getOrCreateUser, isOnboardingCompleted } from "../db/user.repo";
+import { getOrCreateUser } from "../db/user.repo";
 import { useTranslation } from "react-i18next";
 import StarfieldBackground from "../components/StarfieldBackground";
 
@@ -59,10 +59,7 @@ export default function SplashScreen() {
   };
 
   useEffect(() => {
-    getOrCreateUser()
-      .then(() => isOnboardingCompleted())
-      .then((done) => { if (done) navigation.replace("MainApp"); })
-      .catch(() => {});
+    getOrCreateUser().catch(() => {});
 
     Animated.timing(fadeAnim, { toValue: 1, duration: 900, useNativeDriver: true }).start();
 

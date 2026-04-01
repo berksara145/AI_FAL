@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { createPersonMinimal, MAX_PERSONS } from "../../../db/person.repo";
 import type { BirthDateState } from "../../onboarding/hooks/useOnboardingState";
 
@@ -8,10 +9,12 @@ export function useAddPersonFlow(
   appendMessage: AppendMessage,
   onDone: () => void
 ) {
+  const { t } = useTranslation();
   const [step, setStep] = useState<"name" | "birthDate">("name");
   const [collectedName, setCollectedName] = useState<string | null>(null);
   const [createdPersonName, setCreatedPersonName] = useState<string | null>(null);
   const [showBirthDatePicker, setShowBirthDatePicker] = useState(false);
+  const [pendingTimePicker, setPendingTimePicker] = useState(false);
 
   const defaultYear = new Date().getFullYear() - 25;
   const [birthDateState, setBirthDateState] = useState<BirthDateState>({
@@ -28,7 +31,7 @@ export function useAddPersonFlow(
     setCollectedName(name);
     setStep("birthDate");
 
-    await appendMessage("assistant", `Great! Select ${name}'s birth date below:`, true);
+    await appendMessage("assistant", t("birthMap.selectBirthDate", { name }), true);
     // Birth date picker opens after streaming completes (handled by onStreamingComplete)
   };
 
@@ -48,7 +51,7 @@ export function useAddPersonFlow(
       if (e?.message === "PERSON_LIMIT_REACHED") {
         await appendMessage(
           "assistant",
-          `You've reached the maximum of ${MAX_PERSONS} people in your birth chart. Remove someone to add a new person.`
+          t("birthMap.personLimitReached", { max: MAX_PERSONS })
         );
         return;
       }
@@ -56,9 +59,10 @@ export function useAddPersonFlow(
     }
 
     setCreatedPersonName(collectedName);
+    setPendingTimePicker(true);
     await appendMessage(
       "assistant",
-      `Now, what time was ${collectedName} born? Select the birth time below.`,
+      t("birthMap.timeQuestion", { name: collectedName }),
       true
     );
   };
@@ -68,6 +72,8 @@ export function useAddPersonFlow(
     collectedName,
     createdPersonName,
     showBirthDatePicker,
+    pendingTimePicker,
+    clearPendingTimePicker: () => setPendingTimePicker(false),
     birthDateState,
     setBirthDateState,
     handleNameMessage,
