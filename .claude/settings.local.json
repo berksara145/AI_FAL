@@ -16,7 +16,8 @@
       "Bash(npx expo:*)",
       "Bash(find C:/Users/PC/Documents/GitHub/AI_FAL/screens -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx \\\\\\))",
       "Bash(find C:/Users/PC/Documents/GitHub/AI_FAL/lib -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx \\\\\\))",
-      "Bash(xargs wc:*)"
+      "Bash(xargs wc:*)",
+      "Bash(ls /c/Users/PC/Documents/GitHub/AI_FAL/app.config.*)"
     ]
   }
 }

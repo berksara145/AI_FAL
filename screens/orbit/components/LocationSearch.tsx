@@ -3,7 +3,9 @@ import { View, Text, TouchableOpacity, StyleSheet, Linking, Platform } from "rea
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import { ChatColors } from "../../../utils/theme";
-const GOOGLE_PLACES_API_KEY = "AIzaSyAh7fHuXzW2sl7mItwWFFdIzzOZFOSCoSU";
+import Constants from "expo-constants";
+
+const GOOGLE_PLACES_API_KEY = (Constants.expoConfig?.extra?.googlePlacesApiKey ?? "") as string;
 
 type BirthLocation = {
   placeName: string;

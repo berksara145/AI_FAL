@@ -1,14 +1,9 @@
-// Simple OpenAI Chat client helper.
-// IMPORTANT: Do NOT hardcode API keys in source. Provide key via
-// - environment variable OPENAI_API_KEY, or
-// - pass an apiKey string to sendChatToOpenAI at runtime.
-//
-// This file intentionally does NOT store any secrets.
+import Constants from "expo-constants";
 
 export type ChatMsg = { role: "system" | "user" | "assistant"; content: string };
 
-const apiKey = "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";
-          
+const apiKey = (Constants.expoConfig?.extra?.openAiApiKey ?? "") as string;
+
 
 export async function sendChatToOpenAI(messages: ChatMsg[],): Promise<string> {
   const key = apiKey;

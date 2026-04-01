@@ -4,9 +4,11 @@ import Purchases, {
   CustomerInfo,
 } from "react-native-purchases";
 import { Alert, Platform } from "react-native";
+import Constants from "expo-constants";
 
-const RC_API_KEY_IOS     = "test_nvTtTRzmtDbnpPLqLrKUCGTqhwp";
-const RC_API_KEY_ANDROID = "test_nvTtTRzmtDbnpPLqLrKUCGTqhwp";
+const extra = Constants.expoConfig?.extra ?? {};
+const RC_API_KEY_IOS     = extra.revenueCatKeyIos     as string;
+const RC_API_KEY_ANDROID = extra.revenueCatKeyAndroid as string;
 
 export type PlanId = "weekly" | "monthly";
 
