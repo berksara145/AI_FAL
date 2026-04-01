@@ -1,6 +1,7 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import {
   View,
+  Animated,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -60,15 +61,19 @@ export default function ChatSessionCore({
   const scrollViewRef = useRef<ScrollView>(null);
   const inputRef = useRef<MessageInputHandle>(null);
   const insets = useSafeAreaInsets();
-  const [keyboardPadding, setKeyboardPadding] = useState(0);
+
+  // Android: Animated.Value bypasses React re-render on each keyboard event,
+  // updating the native layer directly — fixes the one-frame delay that caused
+  // the input to not rise on the first tap.
+  const keyboardPadding = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (Platform.OS !== "android") return;
     const show = Keyboard.addListener("keyboardDidShow", (e) => {
-      setKeyboardPadding(e.endCoordinates.height);
+      keyboardPadding.setValue(e.endCoordinates.height);
     });
     const hide = Keyboard.addListener("keyboardDidHide", () => {
-      setKeyboardPadding(0);
+      keyboardPadding.setValue(0);
     });
     return () => { show.remove(); hide.remove(); };
   }, []);
@@ -78,27 +83,27 @@ export default function ChatSessionCore({
       <ChatHeader title={title} onClose={onClose || (() => {})} mode={mode} />
 
       <TouchableWithoutFeedback onPress={() => inputRef.current?.focus()}>
-      <View style={{ flex: 1, backgroundColor: ChatColors.bg }}>
-        {isLoading && messages.length === 0 ? (
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <Text style={{ color: ChatColors.loadingText, fontSize: 14, fontStyle: "italic" }}>
-              {t("chat.loading")}
-            </Text>
-          </View>
-        ) : (
-          <>
-            <MessageList
-              messages={messages}
-              scrollViewRef={scrollViewRef}
-              onStreamingComplete={onStreamingComplete || undefined}
-              trailingContent={mode === "readonly" ? undefined : trailingContent}
-              headerContent={headerContent}
-              staticDisplay={mode === "readonly"}
-            />
-            {(isTyping || isLoading) && <TypingIndicator />}
-          </>
-        )}
-      </View>
+        <View style={{ flex: 1, backgroundColor: ChatColors.bg }}>
+          {isLoading && messages.length === 0 ? (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+              <Text style={{ color: ChatColors.loadingText, fontSize: 14, fontStyle: "italic" }}>
+                {t("chat.loading")}
+              </Text>
+            </View>
+          ) : (
+            <>
+              <MessageList
+                messages={messages}
+                scrollViewRef={scrollViewRef}
+                onStreamingComplete={onStreamingComplete || undefined}
+                trailingContent={mode === "readonly" ? undefined : trailingContent}
+                headerContent={headerContent}
+                staticDisplay={mode === "readonly"}
+              />
+              {(isTyping || isLoading) && <TypingIndicator />}
+            </>
+          )}
+        </View>
       </TouchableWithoutFeedback>
 
       {mode === "interactive" && (
@@ -118,9 +123,9 @@ export default function ChatSessionCore({
         behavior="padding"
         enabled={Platform.OS === "ios"}
       >
-        <View style={{ flex: 1, paddingBottom: keyboardPadding }}>
+        <Animated.View style={{ flex: 1, paddingBottom: keyboardPadding }}>
           {content}
-        </View>
+        </Animated.View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
