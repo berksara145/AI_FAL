@@ -19,6 +19,8 @@ web-build/
 ios
 android
 
+.env
+.env.local
 .env.d.ts
 
 # macOS
