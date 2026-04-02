@@ -7,10 +7,7 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "android": {
-        "applicationIdSuffix": ".dev"
-      },
-      "env": {
+"env": {
         "REVENUECAT_KEY_IOS": "test_nvTtTRzmtDbnpPLqLrKUCGTqhwp",
         "REVENUECAT_KEY_ANDROID": "test_nvTtTRzmtDbnpPLqLrKUCGTqhwp",
         "OPENAI_API_KEY": "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",

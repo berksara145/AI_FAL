@@ -23,7 +23,7 @@
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/lunara.png",
       "resizeMode": "contain",
       "backgroundColor": "#1a0d2e"
     },
@@ -31,10 +31,12 @@
       "**/*"
     ],
     "ios": {
+      "icon": "./assets/logo.png",
       "supportsTablet": true
     },
     "android": {
       "softwareKeyboardLayoutMode": "resize",
+      "icon": "./assets/logo.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#1a0d2e"
