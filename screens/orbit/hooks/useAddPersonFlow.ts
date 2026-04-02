@@ -10,7 +10,7 @@ export function useAddPersonFlow(
   onDone: () => void
 ) {
   const { t } = useTranslation();
-  const [step, setStep] = useState<"name" | "birthDate">("name");
+  const [step, setStep] = useState<"name" | "birthDate" | "time">("name");
   const [collectedName, setCollectedName] = useState<string | null>(null);
   const [createdPersonName, setCreatedPersonName] = useState<string | null>(null);
   const [showBirthDatePicker, setShowBirthDatePicker] = useState(false);
@@ -59,6 +59,7 @@ export function useAddPersonFlow(
     }
 
     setCreatedPersonName(collectedName);
+    setStep("time");
     setPendingTimePicker(true);
     await appendMessage(
       "assistant",

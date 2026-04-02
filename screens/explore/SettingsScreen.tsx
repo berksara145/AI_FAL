@@ -133,29 +133,24 @@ export default function SettingsScreen() {
             <Avatar initial={initial} zodiacImage={zodiacInfo?.image} />
 
             <Pressable
-              onPress={s.editingField === "name" ? undefined : () => s.startEditing("name")}
+              onPress={undefined}
               style={styles.nameRow}
             >
               <Text style={[styles.profileName, !s.user?.name && styles.profileNameUnset]}>
                 {s.user?.name || notSet}
               </Text>
-              {s.user?.name ? (
-                <View style={styles.editIconWrap}>
-                  <MaterialCommunityIcons name="pencil-outline" size={9} color={C.gold} />
-                </View>
-              ) : null}
             </Pressable>
 
             {birthDateStr ? (
               <Pressable
-                onPress={s.editingField === "date" ? undefined : () => s.startEditing("date")}
+                onPress={undefined}
                 style={styles.datePill}
               >
                 <Text style={styles.datePillText}>{birthDateStr}</Text>
               </Pressable>
             ) : (
               <Pressable
-                onPress={s.editingField === "date" ? undefined : () => s.startEditing("date")}
+                onPress={undefined}
                 style={[styles.datePill, styles.datePillUnset]}
               >
                 <Text style={styles.datePillTextUnset}>{t("settings.birthDate")}</Text>
@@ -227,7 +222,7 @@ export default function SettingsScreen() {
             <View style={styles.birthRow}>
               <Pressable
                 style={styles.birthCol}
-                onPress={s.editingField === "time" ? undefined : () => s.startEditing("time")}
+                onPress={undefined}
               >
                 <MaterialCommunityIcons name="clock-outline" size={14} color={`${C.gold}66`} />
                 <Text style={styles.birthLabel}>{t("settings.birthTime")}</Text>
