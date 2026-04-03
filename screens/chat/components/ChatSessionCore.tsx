@@ -115,7 +115,7 @@ export default function ChatSessionCore({
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: ChatColors.headerBg }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: ChatColors.headerBg }} edges={[]}>
       <StatusBar barStyle="light-content" backgroundColor={ChatColors.headerBg} />
 
       <KeyboardAvoidingView

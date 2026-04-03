@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, Animated } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ChatColors } from "../../../utils/theme";
 import { useTranslation } from "react-i18next";
@@ -12,6 +13,7 @@ type ChatHeaderProps = {
 
 export default function ChatHeader({ title, onClose, mode = "interactive" }: ChatHeaderProps) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const iconScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -29,7 +31,8 @@ export default function ChatHeader({ title, onClose, mode = "interactive" }: Cha
         flexDirection: "row",
         alignItems: "center",
         paddingHorizontal: 20,
-        paddingVertical: 15,
+        paddingTop: insets.top + 15,
+        paddingBottom: 15,
         backgroundColor: ChatColors.headerBg,
         gap: 14,
         shadowColor: "#0c0818",

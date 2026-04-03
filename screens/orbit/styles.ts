@@ -114,7 +114,7 @@ export const styles = StyleSheet.create({
   pageDescription: {
     alignItems: "center",
     paddingHorizontal: 32,
-    paddingTop: 16,
+    paddingTop: 40,
     paddingBottom: 4,
   },
   pageDescriptionTitle: {
