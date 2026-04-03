@@ -6,6 +6,7 @@ import {
   Text,
   StyleSheet,
   Dimensions,
+  Platform,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -215,7 +216,10 @@ export default function MainTabs() {
       <Stack.Screen
         name="PersonDetail"
         component={PersonDetailScreen}
-        options={{ title: "", headerShown: false }}
+        options={Platform.select({
+          ios: { headerShown: false, presentation: "fullScreenModal" },
+          default: { title: "", headerShown: false },
+        })}
       />
     </Stack.Navigator>
   );

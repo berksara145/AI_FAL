@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Linking, Platform } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import { ChatColors } from "../../../utils/theme";
 import Constants from "expo-constants";
@@ -54,7 +54,7 @@ export default function LocationSearch({ onLocationSelect, onConfirm }: Location
   };
 
   return (
-    <View style={styles.fullscreenContainer}>
+    <SafeAreaView style={styles.fullscreenContainer} edges={["top"]}>
       <View style={styles.header}>
         <Text style={styles.title}>{t("locationSearch.title")}</Text>
       </View>
@@ -177,7 +177,7 @@ export default function LocationSearch({ onLocationSelect, onConfirm }: Location
           <Text style={styles.confirmButtonText}>{t("common.continue")}</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

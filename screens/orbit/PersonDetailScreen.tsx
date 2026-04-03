@@ -97,6 +97,7 @@ export default function PersonDetailScreen({ route }: Props) {
       <ScrollView
         contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 60 }]}
         showsVerticalScrollIndicator={false}
+        contentInsetAdjustmentBehavior="never"
       >
         {/* Zodiac symbol */}
         <View style={styles.symbolWrapper}>
