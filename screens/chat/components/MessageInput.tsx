@@ -22,7 +22,7 @@ const MessageInput = forwardRef<MessageInputHandle, MessageInputProps>(function 
   const inputRef = useRef<TextInput>(null);
   useImperativeHandle(ref, () => ({ focus: () => inputRef.current?.focus() }));
   const ownInsets = useSafeAreaInsets();
-  const resolvedBottom = Math.max(bottomInset, ownInsets.bottom, Platform.OS === "android" ? 16 : 8) + (keyboardVisible ? 15 : 0);
+  const resolvedBottom = Math.max(bottomInset, ownInsets.bottom, Platform.OS === "android" ? 16 : 8) + (Platform.OS === "android" && keyboardVisible ? 15 : 0);
 
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", () => setKeyboardVisible(true));

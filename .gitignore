@@ -15,7 +15,7 @@ web-build/
 .plan.txt
 .plans.txt
 .plans.txt
-
+eas.json
 ios
 android
 

@@ -1,5 +1,6 @@
 import React from "react";
 import { View, ScrollView, StyleSheet, Image } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/RootStack";
@@ -39,6 +40,7 @@ const EXPLORE_INITIAL_KEYS: Record<ExploreClassId, string> = {
 export default function ExploreScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const insets = useSafeAreaInsets();
 
   const handleClassPress = (classId: ExploreClassId) => {
     const exploreClass = EXPLORE_CLASSES.find((c) => c.id === classId);
@@ -56,7 +58,7 @@ export default function ExploreScreen() {
     <View style={styles.root}>
       <ScrollView
         className="flex-1"
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 40 + insets.bottom }]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
@@ -94,7 +96,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 24,
     paddingTop: 72,
-    paddingBottom: 40,
+    paddingBottom: 0,
   },
   header: {
     alignItems: "center",

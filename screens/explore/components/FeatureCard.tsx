@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: "400",
     color: "#F7C354",
     textAlign: "center",
     paddingHorizontal: 4,
