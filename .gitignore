@@ -22,7 +22,7 @@ android
 .env
 .env.local
 .env.d.ts
-
+ 
 # macOS
 .DS_Store
 

@@ -49,19 +49,13 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  centerGlow: {
+  // iOS: wrapper for SVG radial glow
+  centerGlowContainer: {
     position: "absolute",
-    width: CENTER_SIZE * 1.15,
-    height: CENTER_SIZE * 1.15,
-    borderRadius: (CENTER_SIZE * 1.15) / 2,
-    borderWidth: 0,
-    borderColor: "rgba(250, 218, 134, 0.25)",
-    shadowColor: "#FADA86",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 25,
-    elevation: 25,
-    top: -20,
+    width: CENTER_SIZE * 2.0,
+    height: CENTER_SIZE * 2.0,
+    alignItems: "center",
+    justifyContent: "center",
   },
   centerCircle: {
     width: CENTER_SIZE,

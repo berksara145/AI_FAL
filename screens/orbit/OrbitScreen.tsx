@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { View, Text, TouchableOpacity, Animated } from "react-native";
+import Svg, { Defs, RadialGradient, Stop, Circle } from "react-native-svg";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/RootStack";
@@ -9,6 +10,7 @@ import { OrbitNode } from "./OrbitNode";
 import { getNodePosition, getZodiacInfoForMonthDay } from "./utils";
 import { styles } from "./styles";
 import { useOrbitNodes, personToBirthDate } from "./hooks/useOrbitNodes";
+import { CENTER_SIZE } from "./constants";
 
 export default function OrbitScreen() {
   const { t } = useTranslation();
@@ -18,6 +20,7 @@ export default function OrbitScreen() {
     | undefined;
 
   const { nodes, selfPerson } = useOrbitNodes();
+  const GLOW_SIZE = CENTER_SIZE * 2.0;
 
   const selfHasChart = !!selfPerson?.chart_gpt_json;
   const hasOthers = nodes.some((n) => n.type === "person");
@@ -58,13 +61,28 @@ export default function OrbitScreen() {
         <View style={styles.innerOrbit} />
 
         <View style={styles.centerWrapper}>
-          {/* Pulsing glow — animated when user hasn't generated their chart yet */}
+          {/* Soft radial glow — always visible, pulses when chart not yet generated */}
           <Animated.View
+            pointerEvents="none"
             style={[
-              styles.centerGlow,
-              showYouFirst && { opacity: glowOpacity, transform: [{ scale: glowScale }] },
+              styles.centerGlowContainer,
+              showYouFirst
+                ? { opacity: glowOpacity, transform: [{ scale: glowScale }] }
+                : { opacity: 0.65 },
             ]}
-          />
+          >
+            <Svg width={GLOW_SIZE} height={GLOW_SIZE}>
+              <Defs>
+                <RadialGradient id="youGlow" cx="50%" cy="50%" r="50%" gradientUnits="objectBoundingBox">
+                  <Stop offset="0%" stopColor="#FADA86" stopOpacity="0.55" />
+                  <Stop offset="40%" stopColor="#FADA86" stopOpacity="0.22" />
+                  <Stop offset="75%" stopColor="#FADA86" stopOpacity="0.06" />
+                  <Stop offset="100%" stopColor="#FADA86" stopOpacity="0" />
+                </RadialGradient>
+              </Defs>
+              <Circle cx={GLOW_SIZE / 2} cy={GLOW_SIZE / 2} r={GLOW_SIZE / 2} fill="url(#youGlow)" />
+            </Svg>
+          </Animated.View>
           <TouchableOpacity
             activeOpacity={0.85}
             style={styles.centerCircle}

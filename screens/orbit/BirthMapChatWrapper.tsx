@@ -1,6 +1,6 @@
 import React, { useRef, useCallback } from "react";
 import { View, StyleSheet } from "react-native";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useRoute, useNavigation, CommonActions } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/RootStack";
@@ -67,15 +67,33 @@ export default function BirthMapChatWrapper(
         ? getZodiacInfoForMonthDay(person.birth_month, person.birth_day)
         : null;
 
-    (navigation as any).navigate("MainApp", {
-      screen: "PersonDetail",
-      params: {
-        name,
-        zodiac: zodiacInfo?.name ?? "",
-        zodiacSymbol: zodiacInfo?.symbol ?? "",
-        birthDate: person ? personToBirthDate(person) : "",
-      },
-    });
+    // Reset the root stack: dismiss ChatSession entirely and land on PersonDetail
+    // as a regular card push inside MainApp — avoids sheet/modal presentation on iOS
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [
+          {
+            name: "MainApp",
+            state: {
+              index: 1,
+              routes: [
+                { name: "MainTabs" },
+                {
+                  name: "PersonDetail",
+                  params: {
+                    name,
+                    zodiac: zodiacInfo?.name ?? "",
+                    zodiacSymbol: zodiacInfo?.symbol ?? "",
+                    birthDate: person ? personToBirthDate(person) : "",
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      })
+    );
   });
 
   const birthMap = useBirthMapFlow(
