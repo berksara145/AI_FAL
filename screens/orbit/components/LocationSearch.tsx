@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Linking, Platform } from "react-native";
-import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import { ChatColors } from "../../../utils/theme";
 import Constants from "expo-constants";
@@ -54,8 +54,8 @@ export default function LocationSearch({ onLocationSelect, onConfirm }: Location
   };
 
   return (
-    <SafeAreaView style={styles.fullscreenContainer} edges={["top"]}>
-      <View style={styles.header}>
+    <View style={styles.fullscreenContainer}>
+      <View style={[styles.header, { paddingTop: insets.top + 15 }]}>
         <Text style={styles.title}>{t("locationSearch.title")}</Text>
       </View>
 
@@ -177,7 +177,7 @@ export default function LocationSearch({ onLocationSelect, onConfirm }: Location
           <Text style={styles.confirmButtonText}>{t("common.continue")}</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -189,16 +189,14 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: ChatColors.bg,
-    paddingTop: 16,
     paddingHorizontal: 16,
     paddingBottom: 24,
   },
   header: {
-    marginTop: -16,
     marginBottom: 16,
     marginHorizontal: -16,
     backgroundColor: ChatColors.headerBg,
-    paddingVertical: 16,
+    paddingBottom: 16,
     paddingHorizontal: 20,
     alignItems: "center",
   },

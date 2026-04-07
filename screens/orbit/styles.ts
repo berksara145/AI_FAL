@@ -49,6 +49,12 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  // Add node glow — positioned in orbitWrapper, outside OrbitNode to avoid clipping
+  addNodeGlowContainer: {
+    position: "absolute",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   // iOS: wrapper for SVG radial glow
   centerGlowContainer: {
     position: "absolute",
@@ -167,16 +173,10 @@ export const styles = StyleSheet.create({
   },
   addPromptButtonGlow: {
     position: "absolute",
-    top: -50,
-    left: -40,
-    right: -40,
-    bottom: -8,
-    borderRadius: 50,
-    shadowColor: "#FADA86",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.95,
-    shadowRadius: 32,
-    elevation: 32,
+    width: 260,
+    height: 200,
+    alignItems: "center",
+    justifyContent: "center",
   },
   addPromptButton: {
     backgroundColor: Colors.goldLight,

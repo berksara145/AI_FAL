@@ -21,6 +21,7 @@ export default function OrbitScreen() {
 
   const { nodes, selfPerson } = useOrbitNodes();
   const GLOW_SIZE = CENTER_SIZE * 2.0;
+  const ADD_GLOW_SIZE = 64 * 2.5;
 
   const selfHasChart = !!selfPerson?.chart_gpt_json;
   const hasOthers = nodes.some((n) => n.type === "person");
@@ -116,13 +117,42 @@ export default function OrbitScreen() {
 
         {nodes.map((node) =>
           node.type === "add" ? (
-            <OrbitNode
-              key={node.id}
-              label=""
-              style={getNodePosition(node.angle)}
-              isAddButton
-              onPress={navigateToAddPerson}
-            />
+            <React.Fragment key={node.id}>
+              {/* Add node radial glow — rendered outside OrbitNode to avoid clipping */}
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.addNodeGlowContainer,
+                  {
+                    width: ADD_GLOW_SIZE,
+                    height: ADD_GLOW_SIZE,
+                    left: getNodePosition(node.angle).left + 32 - ADD_GLOW_SIZE / 2,
+                    top: getNodePosition(node.angle).top + 32 - ADD_GLOW_SIZE / 2,
+                  },
+                  showAddPrompt
+                    ? { opacity: glowOpacity, transform: [{ scale: glowScale }] }
+                    : { opacity: 0.65 },
+                ]}
+              >
+                <Svg width={ADD_GLOW_SIZE} height={ADD_GLOW_SIZE}>
+                  <Defs>
+                    <RadialGradient id="addGlow" cx="50%" cy="50%" r="50%" gradientUnits="objectBoundingBox">
+                      <Stop offset="0%" stopColor="#FADA86" stopOpacity="0.55" />
+                      <Stop offset="40%" stopColor="#FADA86" stopOpacity="0.22" />
+                      <Stop offset="75%" stopColor="#FADA86" stopOpacity="0.06" />
+                      <Stop offset="100%" stopColor="#FADA86" stopOpacity="0" />
+                    </RadialGradient>
+                  </Defs>
+                  <Circle cx={ADD_GLOW_SIZE / 2} cy={ADD_GLOW_SIZE / 2} r={ADD_GLOW_SIZE / 2} fill="url(#addGlow)" />
+                </Svg>
+              </Animated.View>
+              <OrbitNode
+                label=""
+                style={getNodePosition(node.angle)}
+                isAddButton
+                onPress={navigateToAddPerson}
+              />
+            </React.Fragment>
           ) : (
             <OrbitNode
               key={node.id}
@@ -159,7 +189,22 @@ export default function OrbitScreen() {
           <Text style={styles.addPromptTitle}>{t("orbit.whosInYourOrbit")}</Text>
           <Text style={styles.addPromptText}>{t("orbit.addPromptText")}</Text>
           <View style={styles.addPromptButtonWrapper}>
-            <Animated.View style={[styles.addPromptButtonGlow, { opacity: glowOpacity }]} />
+            <Animated.View
+              pointerEvents="none"
+              style={[styles.addPromptButtonGlow, { opacity: glowOpacity, transform: [{ scale: glowScale }] }]}
+            >
+              <Svg width={260} height={200}>
+                <Defs>
+                  <RadialGradient id="btnGlow" cx="50%" cy="50%" r="50%" gradientUnits="objectBoundingBox">
+                    <Stop offset="0%" stopColor="#FADA86" stopOpacity="0.6" />
+                    <Stop offset="40%" stopColor="#FADA86" stopOpacity="0.25" />
+                    <Stop offset="75%" stopColor="#FADA86" stopOpacity="0.07" />
+                    <Stop offset="100%" stopColor="#FADA86" stopOpacity="0" />
+                  </RadialGradient>
+                </Defs>
+                <Circle cx={130} cy={100} r={100} fill="url(#btnGlow)" />
+              </Svg>
+            </Animated.View>
             <TouchableOpacity style={styles.addPromptButton} activeOpacity={0.85} onPress={navigateToAddPerson}>
               <Text style={styles.addPromptButtonText}>{t("orbit.addPerson")}</Text>
             </TouchableOpacity>
