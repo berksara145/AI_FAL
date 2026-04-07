@@ -88,11 +88,11 @@ export default function RootStack() {
         component={ChatSessionScreen}
         options={Platform.select({
           // On iOS: fullScreenModal slides up and is a true modal (correct keyboard behavior)
-          ios: { presentation: "fullScreenModal", headerShown: false },
+          ios: { presentation: "fullScreenModal", headerShown: false, gestureEnabled: false },
           // On Android: fullScreenModal = Dialog → ignores windowSoftInputMode (adjustResize broken).
           // Use card + slide_from_bottom for identical visuals with working keyboard.
-          android: { presentation: "card", animation: "slide_from_bottom", headerShown: false },
-          default: { presentation: "fullScreenModal", headerShown: false },
+          android: { presentation: "card", animation: "slide_from_bottom", headerShown: false, gestureEnabled: false },
+          default: { presentation: "fullScreenModal", headerShown: false, gestureEnabled: false },
         })}
       />
     </Stack.Navigator>

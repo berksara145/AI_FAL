@@ -8,7 +8,6 @@ import {
   StatusBar,
   Text,
   Keyboard,
-  TouchableWithoutFeedback,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import ChatHeader from "./ChatHeader";
@@ -82,29 +81,27 @@ export default function ChatSessionCore({
     <>
       <ChatHeader title={title} onClose={onClose || (() => {})} mode={mode} />
 
-      <TouchableWithoutFeedback onPress={() => inputRef.current?.focus()}>
-        <View style={{ flex: 1, backgroundColor: ChatColors.bg }}>
-          {isLoading && messages.length === 0 ? (
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-              <Text style={{ color: ChatColors.loadingText, fontSize: 14, fontStyle: "italic" }}>
-                {t("chat.loading")}
-              </Text>
-            </View>
-          ) : (
-            <>
-              <MessageList
-                messages={messages}
-                scrollViewRef={scrollViewRef}
-                onStreamingComplete={onStreamingComplete || undefined}
-                trailingContent={mode === "readonly" ? undefined : trailingContent}
-                headerContent={headerContent}
-                staticDisplay={mode === "readonly"}
-              />
-              {(isTyping || isLoading) && <TypingIndicator />}
-            </>
-          )}
-        </View>
-      </TouchableWithoutFeedback>
+      <View style={{ flex: 1, backgroundColor: ChatColors.bg }}>
+        {isLoading && messages.length === 0 ? (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Text style={{ color: ChatColors.loadingText, fontSize: 14, fontStyle: "italic" }}>
+              {t("chat.loading")}
+            </Text>
+          </View>
+        ) : (
+          <>
+            <MessageList
+              messages={messages}
+              scrollViewRef={scrollViewRef}
+              onStreamingComplete={onStreamingComplete || undefined}
+              trailingContent={mode === "readonly" ? undefined : trailingContent}
+              headerContent={headerContent}
+              staticDisplay={mode === "readonly"}
+            />
+            {(isTyping || isLoading) && <TypingIndicator />}
+          </>
+        )}
+      </View>
 
       {mode === "interactive" && (
         <MessageInput ref={inputRef} onSend={onSendMessage} disabled={disabled || isTyping} bottomInset={insets.bottom} />
