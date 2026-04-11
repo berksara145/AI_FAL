@@ -253,17 +253,32 @@ const en = {
     subheadline: "Open the doors to the universe's wisdom.",
     popularBadge: "✦ MOST POPULAR",
     plans: {
-      weekly:  { label: "Weekly",  sublabel: "Renewed each week",  period: "/ wk" },
-      monthly: { label: "Monthly", sublabel: "Renewed each month", period: "/ mo", savings: "30% off" },
+      weekly:  { label: "Weekly",  sublabel: "Try free for 1 week",  period: "/ wk" },
+      monthly: { label: "Monthly", sublabel: "Try free for 1 week", period: "/ mo", savings: "30% off" },
     },
     featuresDesc: "Unlimited tarot & astrology readings, personalized birth charts, compatibility insights, and daily planetary transits — everything you need for your cosmic journey.",
     cta: {
       weekly:  "✦  Start Premium  ✦",
       monthly: "✦  Monthly Premium  ✦",
+      trial: {
+        weekly:  "✦  Start Free Trial  ✦",
+        monthly: "✦  Start Free Trial  ✦",
+      },
     },
+    trialBanner: {
+      title: "7 days completely free — no payment now",
+      sub:   "We just need your card to start. You won't be charged a single cent until your trial ends.",
+    },
+    trialNote: "Your free trial starts today. Cancel before day 7 and pay nothing.",
+    reassurance: {
+      noCharge:     "No charge for 7 days",
+      cancelAnytime: "Cancel anytime",
+      noQuestions:  "No questions asked",
+    },
+    trialSuffix: "Cancel anytime.",
     trial: {
-      weekly:  "Cancel anytime, no questions asked.",
-      monthly: "3-day free trial · Cancel anytime.",
+      weekly:  "1-week free trial · Cancel anytime.",
+      monthly: "1-week free trial · Cancel anytime.",
     },
     footer: {
       privacy: "Privacy",

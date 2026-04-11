@@ -32,7 +32,8 @@
     ],
     "ios": {
       "icon": "./assets/logo.png",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.berk8174985.lunara"
     },
     "android": {
       "softwareKeyboardLayoutMode": "resize",
@@ -49,7 +50,7 @@
         "barStyle": "light-content",
         "backgroundColor": "#1a0d2e"
       },
-      "package": "com.berk8174985.myexpoapp"
+      "package": "com.berk8174985.lunara"
     },
     "extra": {
       "expo-navigation-bar": {

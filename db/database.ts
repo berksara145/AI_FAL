@@ -7,8 +7,6 @@ export const db = SQLite.openDatabaseSync("ai_fal.db");
 export const initDatabase = (): Promise<void> => {
   return new Promise((resolve, reject) => {
     try {
-      // DEV: wipe persons on every restart (onboarding/users preserved)
-      db.execSync(`DELETE FROM persons;`);
 
       // Users table - only one user for local database
       db.execSync(`

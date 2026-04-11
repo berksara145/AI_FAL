@@ -259,17 +259,32 @@ const tr = {
     subheadline: "Evrenin bilgeliğine kapılarını aç.",
     popularBadge: "✦ EN POPÜLER",
     plans: {
-      weekly:  { label: "Haftalık", sublabel: "Her hafta yenilenir", period: "/ hafta" },
-      monthly: { label: "Aylık",    sublabel: "Her ay yenilenir",    period: "/ ay",    savings: "%30 tasarruf" },
+      weekly:  { label: "Haftalık", sublabel: "1 hafta ücretsiz dene", period: "/ hafta" },
+      monthly: { label: "Aylık",    sublabel: "1 hafta ücretsiz dene", period: "/ ay",  savings: "%30 tasarruf" },
     },
     featuresDesc: "Sınırsız tarot ve astroloji okumaları, kişisel doğum haritaları, uyumluluk analizleri ve günlük gezegen geçişleri — kozmik yolculuğun için ihtiyacın olan her şey.",
     cta: {
       weekly:  "✦  Premium'u Başlat  ✦",
       monthly: "✦  Aylık Premium  ✦",
+      trial: {
+        weekly:  "✦  Ücretsiz Denemeyi Başlat  ✦",
+        monthly: "✦  Ücretsiz Denemeyi Başlat  ✦",
+      },
     },
+    trialBanner: {
+      title: "7 gün tamamen ücretsiz — şimdi ödeme yok",
+      sub:   "Başlamak için yalnızca kart bilgin gerekli. Deneme süresi bitene kadar tek kuruş ödemezsin.",
+    },
+    trialNote: "Ücretsiz denemen bugün başlıyor. 7. günden önce iptal edersen hiçbir şey ödemezsin.",
+    reassurance: {
+      noCharge:      "7 gün boyunca ücret yok",
+      cancelAnytime: "İstediğin zaman iptal et",
+      noQuestions:   "Soru sorulmaz",
+    },
+    trialSuffix: "İstediğin zaman iptal et.",
     trial: {
-      weekly:  "İstediğin zaman iptal edebilirsin.",
-      monthly: "3 günlük deneme · İstediğin zaman iptal et.",
+      weekly:  "1 haftalık ücretsiz deneme · İstediğin zaman iptal et.",
+      monthly: "1 haftalık ücretsiz deneme · İstediğin zaman iptal et.",
     },
     footer: {
       privacy: "Gizlilik",

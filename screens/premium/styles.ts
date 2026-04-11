@@ -291,12 +291,57 @@ export default StyleSheet.create({
     zIndex: 1,
   },
 
+  // ── Trial banner ─────────────────────────────────────
+  trialBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: "rgba(201,168,76,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(201,168,76,0.35)",
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  trialBannerEmoji: {
+    fontSize: 26,
+  },
+  trialBannerText: {
+    flex: 1,
+  },
+  trialBannerTitle: {
+    fontSize: 13.5,
+    fontWeight: "700",
+    color: GOLD_LIGHT,
+    letterSpacing: 0.2,
+    marginBottom: 2,
+  },
+  trialBannerSub: {
+    fontSize: 11.5,
+    color: "rgba(245,237,216,0.5)",
+    lineHeight: 17,
+  },
+
   trialNote: {
     textAlign: "center",
-    fontSize: 11,
-    color: "rgba(245,237,216,0.28)",
+    fontSize: 12,
+    color: "rgba(201,168,76,0.75)",
     fontStyle: "italic",
     marginTop: 8,
+    letterSpacing: 0.2,
+  },
+
+  reassuranceRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 14,
+    marginTop: 7,
+    flexWrap: "wrap",
+  },
+  reassuranceItem: {
+    fontSize: 10.5,
+    color: "rgba(245,237,216,0.38)",
+    letterSpacing: 0.1,
   },
 
   // ── Footer ───────────────────────────────────────────

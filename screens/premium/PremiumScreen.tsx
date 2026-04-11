@@ -202,6 +202,15 @@ export default function PremiumScreen() {
           <Text style={styles.featuresDescText}>{t("premium.featuresDesc")}</Text>
         </Animated.View>
 
+        {/* ── Free trial banner ──────────────────────── */}
+        <View style={styles.trialBanner}>
+          <Text style={styles.trialBannerEmoji}>🎁</Text>
+          <View style={styles.trialBannerText}>
+            <Text style={styles.trialBannerTitle}>{t("premium.trialBanner.title")}</Text>
+            <Text style={styles.trialBannerSub}>{t("premium.trialBanner.sub")}</Text>
+          </View>
+        </View>
+
         {/* ── Pricing ────────────────────────────────── */}
         {isLoading ? (
           <ActivityIndicator color="#C9A84C" style={{ marginVertical: 24 }} />
@@ -275,11 +284,20 @@ export default function PremiumScreen() {
               {isPurchasing ? (
                 <ActivityIndicator color="#060412" />
               ) : (
-                <Text style={styles.ctaText}>{t(`premium.cta.${selectedPlan}`)}</Text>
+                <Text style={styles.ctaText}>
+                  {plans.find(p => p.id === selectedPlan)?.trialText
+                    ? t(`premium.cta.trial.${selectedPlan}`)
+                    : t(`premium.cta.${selectedPlan}`)}
+                </Text>
               )}
             </View>
           </TouchableOpacity>
-          <Text style={styles.trialNote}>{t(`premium.trial.${selectedPlan}`)}</Text>
+          <Text style={styles.trialNote}>{t("premium.trialNote")}</Text>
+          <View style={styles.reassuranceRow}>
+            <Text style={styles.reassuranceItem}>✓ {t("premium.reassurance.noCharge")}</Text>
+            <Text style={styles.reassuranceItem}>✓ {t("premium.reassurance.cancelAnytime")}</Text>
+            <Text style={styles.reassuranceItem}>✓ {t("premium.reassurance.noQuestions")}</Text>
+          </View>
         </View>
 
         {/* ── Footer ─────────────────────────────────── */}

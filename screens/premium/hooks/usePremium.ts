@@ -18,6 +18,7 @@ export interface PremiumPlan {
   price: string;        // formatted price string from store (e.g. "₺284,99")
   popular: boolean;
   hasSavings: boolean;
+  trialText: string | null;  // e.g. "1-week free trial" if store has intro offer
 }
 
 interface UsePremiumReturn {
@@ -38,8 +39,8 @@ const FALLBACK_PRICES: Record<PlanId, string> = {
 
 export function usePremium(): UsePremiumReturn {
   const [plans, setPlans] = useState<PremiumPlan[]>([
-    { id: "weekly",  pkg: null, price: FALLBACK_PRICES.weekly,  popular: true,  hasSavings: false },
-    { id: "monthly", pkg: null, price: FALLBACK_PRICES.monthly, popular: false, hasSavings: true  },
+    { id: "weekly",  pkg: null, price: FALLBACK_PRICES.weekly,  popular: true,  hasSavings: false, trialText: "1-week free trial" },
+    { id: "monthly", pkg: null, price: FALLBACK_PRICES.monthly, popular: false, hasSavings: true,  trialText: "1-week free trial" },
   ]);
   const [isPremium, setIsPremium]       = useState(false);
   const [isLoading, setIsLoading]       = useState(true);
@@ -71,10 +72,15 @@ export function usePremium(): UsePremiumReturn {
                     p.identifier === `$rc_${plan.id}` ||
                     p.identifier.toLowerCase().includes(plan.id)
                 ) ?? null;
+              const intro = pkg?.product.introductoryPrice;
+              const trialText = intro
+                ? `${intro.periodNumberOfUnits}-${intro.periodUnit.toLowerCase()} free trial`
+                : plan.trialText;
               return {
                 ...plan,
                 pkg,
                 price: pkg?.product.priceString ?? FALLBACK_PRICES[plan.id],
+                trialText,
               };
             })
           );
